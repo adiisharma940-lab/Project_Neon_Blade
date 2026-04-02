@@ -10,7 +10,7 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
-#bgc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+#bgc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;will-change:contents;}
 
 /* ── HERO ── */
 #hero{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:2;}
@@ -30,6 +30,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
   pointer-events:none;
   width:min(400px,82%);height:auto;display:block;
   transform-origin:center center;
+  backface-visibility:hidden;
 }
 .sword-canvas-wrap{
   position:absolute;left:50%;top:50%;
@@ -37,6 +38,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
   will-change:transform,filter;
   transform-origin:center center;
   width:min(400px,82%);height:auto;display:block;
+  backface-visibility:hidden;
 }
 .sword-info{width:45%;min-height:220vh;padding:clamp(30px,5vw,80px) clamp(14px,3.5vw,70px) clamp(30px,5vw,80px) clamp(10px,2vw,30px);display:flex;flex-direction:column;justify-content:center;background:linear-gradient(90deg,rgba(4,5,10,0) 0%,rgba(4,5,10,0.65) 18%,rgba(4,5,10,0.8) 55%,rgba(4,5,10,0.65) 100%);position:relative;z-index:3;}
 
@@ -105,11 +107,14 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
     position:absolute;
     left:50%;
     top:50%;
-    /* scale canvas to 88vw wide — at 88vw, rotated = 88vw tall,
-       which fits inside 360px anchor on most phones (360/vw ≈ 88) */
     width:min(320px,88vw);
     height:auto;
     transform-origin:center center;
+    /* Force GPU layer — prevents software rasterisation on rotation */
+    will-change:transform,opacity;
+    backface-visibility:hidden;
+    /* Shorter transitions on mobile keep things snappy */
+    transition:none;
   }
 
   /* Text panel: no top padding needed since anchor provides space */
@@ -536,22 +541,17 @@ function applyTransform(d,p){
     }
 
     // Glow peaks at vertical hold phase
+    // On mobile: NO drop-shadow (too expensive). Just boost opacity slightly.
     let g=0;
     if(p>=0.42 && p<0.54) g=lerp(0,1,eio((p-0.42)/0.12));
     else if(p>=0.54 && p<0.66) g=1;
     else if(p>=0.66 && p<0.78) g=lerp(1,0,eio((p-0.66)/0.12));
-    const g1=Math.round(8+g*28), g2=Math.round(12+g*38), g3=Math.round(g*20);
-    const gh=Math.round(g*200).toString(16).padStart(2,'0');
-    const gk=Math.round(g*130).toString(16).padStart(2,'0');
-    const fs=g>0.03
-      ?`drop-shadow(0 0 ${g1}px ${sw.c1}) drop-shadow(0 0 ${g2}px ${sw.c1}${gh}) drop-shadow(0 0 ${g3}px ${sw.c2}${gk})`
-      :'none';
 
     // CSS already places canvas at left:50%;top:50%;translate(-50%,-50%)
     // Our transform REPLACES that, so we must keep the centering:
     swordEl.style.transform=`translate(calc(-50% + ${swordTX}px), calc(-50% + ${swordTY}px)) rotate(${rot}deg)`;
     swordEl.style.opacity=swordOp;
-    swordEl.style.filter=fs;
+    swordEl.style.filter='none'; // no drop-shadow on mobile — too slow
     scabbardEl.style.transform=`translate(-50%, calc(-50% + ${scabTY}px)) rotate(0deg)`;
     scabbardEl.style.opacity=scabOp;
     return;
@@ -607,43 +607,74 @@ for(let i=0;i<TOTAL;i++){
 }
 root.appendChild(frag);
 
-for(let i=0;i<8;i++) createSection(i);
+for(let i=0;i<6;i++) createSection(i);
 
-let lastScrollY=-1;
+let lastLazyY=-1;
 function lazyRender(){
   const sy=window.scrollY;
-  if(Math.abs(sy-lastScrollY)<50) return;
-  lastScrollY=sy;
+  if(Math.abs(sy-lastLazyY)<80) return;
+  lastLazyY=sy;
   const vh=window.innerHeight;
   const sectionH=PH+1;
   const heroH=document.getElementById('hero').offsetHeight||vh;
   const relY=sy-heroH;
-  const firstIdx=Math.max(0,Math.floor((relY-vh*1.5)/sectionH));
-  const lastIdx=Math.min(TOTAL-1,Math.ceil((relY+vh*2.5)/sectionH));
+  // On mobile load fewer sections ahead/behind to save memory
+  const ahead=IS_MOB?1.2:1.8;
+  const firstIdx=Math.max(0,Math.floor((relY-vh*ahead)/sectionH));
+  const lastIdx=Math.min(TOTAL-1,Math.ceil((relY+vh*(ahead+1))/sectionH));
   for(let i=firstIdx;i<=lastIdx;i++) createSection(i);
+
+  // Prune sections that are far off-screen to limit forEach cost
+  if(IS_MOB && liveSections.size > 8){
+    liveSections.forEach((d,idx)=>{
+      const top=d.sec.getBoundingClientRect().top;
+      if(top > vh*4 || top < -vh*4){
+        visObs.unobserve(d.sec);
+        liveSections.delete(idx);
+      }
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════
-// MAIN SCROLL HANDLER
+// MAIN SCROLL HANDLER — rAF throttled
 // ══════════════════════════════════════════════════════
-function onScroll(){
+let scrollRafPending=false;
+let lastScrollY=window.scrollY;
+
+function processScroll(){
+  scrollRafPending=false;
   lazyRender();
+  const sy=window.scrollY;
   const vh=window.innerHeight;
+  // Early exit: nothing moved meaningfully
+  if(Math.abs(sy-lastScrollY)<1 && liveSections.size===0) return;
+  lastScrollY=sy;
+
   liveSections.forEach((d)=>{
     const r=d.sec.getBoundingClientRect();
-    if(r.bottom<-vh*0.5||r.top>vh*2) return;
-    const h=d.sec.offsetHeight;
+    // Tight cull on mobile — skip anything more than 1 screen away
+    const cullDist=IS_MOB ? vh*1.2 : vh*1.5;
+    if(r.bottom < -cullDist || r.top > cullDist*1.5) return;
+    const h=d.sec.offsetHeight||PH;
     const p=clamp((vh-r.top)/(h+vh),0,1);
-    if(Math.abs(p-d.lastP)>0.0004){
+    if(Math.abs(p-d.lastP)>0.0008){
       d.lastP=p;
       applyTransform(d,p);
     }
   });
 }
 
+function onScroll(){
+  if(!scrollRafPending){
+    scrollRafPending=true;
+    requestAnimationFrame(processScroll);
+  }
+}
+
 window.addEventListener('scroll',onScroll,{passive:true});
-window.addEventListener('resize',()=>{setTimeout(onScroll,80);},{passive:true});
-setTimeout(()=>{lazyRender();onScroll();},50);
+window.addEventListener('resize',()=>{setTimeout(processScroll,100);},{passive:true});
+setTimeout(()=>{lazyRender();processScroll();},50);
 
 // ══════════════════════════════════════════════════════
 // BACKGROUND
@@ -652,19 +683,53 @@ setTimeout(()=>{lazyRender();onScroll();},50);
   const cv=document.getElementById('bgc'),cx=cv.getContext('2d');
   let W,H;
   const isMob=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)||window.innerWidth<680;
-  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+  function resize(){
+    W=cv.width=window.innerWidth;
+    H=cv.height=window.innerHeight;
+    vigCache=null; // invalidate cached vignette on resize
+  }
   window.addEventListener('resize',resize);resize();
 
+  // Stars — far fewer on mobile
+  const STAR_COUNT=isMob?25:280;
   const STARS=[];
-  for(let i=0;i<(isMob?80:280);i++) STARS.push({x:Math.random(),y:Math.random(),r:Math.random()*(isMob?1:1.4)+0.2,a:Math.random()*0.7+0.1,tw:Math.random()*Math.PI*2,ts:0.008+Math.random()*0.015});
+  for(let i=0;i<STAR_COUNT;i++) STARS.push({
+    x:Math.random(),y:Math.random(),
+    r:Math.random()*(isMob?0.9:1.4)+0.2,
+    a:Math.random()*0.6+0.1,
+    tw:Math.random()*Math.PI*2,
+    ts:0.008+Math.random()*0.015
+  });
+
+  // Streaks — desktop only
   const STREAKS=[];
   function spawnS(col){if(isMob)return;STREAKS.push({x:Math.random()*W,y:Math.random()*H,len:60+Math.random()*200,ang:Math.PI*(-0.05+Math.random()*0.1),vx:-0.3-Math.random()*0.6,life:1,decay:0.004+Math.random()*0.006,col,w:0.5+Math.random()*1.2});}
-  const MOTES=[];
-  for(let i=0;i<(isMob?15:50);i++) MOTES.push({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*0.0001,vy:-(0.00005+Math.random()*0.0001),r:.8+Math.random()*2,a:.15+Math.random()*.35,life:Math.random(),col:'#ff00cc'});
 
-  const NW=isMob?640:1920,NH=isMob?360:1080,nOc=document.createElement('canvas');
+  // Motes — desktop only (skip entirely on mobile)
+  const MOTES=[];
+  if(!isMob){
+    for(let i=0;i<50;i++) MOTES.push({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*0.0001,vy:-(0.00005+Math.random()*0.0001),r:.8+Math.random()*2,a:.15+Math.random()*.35,life:Math.random(),col:'#ff00cc'});
+  }
+
+  // Nebula offscreen canvas — smaller on mobile
+  const NW=isMob?320:1920,NH=isMob?180:1080,nOc=document.createElement('canvas');
   nOc.width=NW;nOc.height=NH;const noc=nOc.getContext('2d');
-  [{x:.15,y:.3,r:isMob?130:400,c:'rgba(120,0,180,.025)'},{x:.85,y:.7,r:isMob?110:350,c:'rgba(0,150,255,.02)'},{x:.5,y:.5,r:isMob?160:500,c:'rgba(180,0,120,.018)'},{x:.3,y:.8,r:isMob?100:300,c:'rgba(0,200,150,.015)'},{x:.7,y:.2,r:isMob?120:380,c:'rgba(255,100,0,.015)'}].forEach(n=>{const g=noc.createRadialGradient(n.x*NW,n.y*NH,0,n.x*NW,n.y*NH,n.r);g.addColorStop(0,n.c);g.addColorStop(1,'transparent');noc.fillStyle=g;noc.fillRect(0,0,NW,NH);});
+  [{x:.15,y:.3,r:isMob?80:400,c:'rgba(120,0,180,.025)'},{x:.85,y:.7,r:isMob?70:350,c:'rgba(0,150,255,.02)'},{x:.5,y:.5,r:isMob?100:500,c:'rgba(180,0,120,.018)'},{x:.3,y:.8,r:isMob?60:300,c:'rgba(0,200,150,.015)'},{x:.7,y:.2,r:isMob?75:380,c:'rgba(255,100,0,.015)'}].forEach(n=>{const g=noc.createRadialGradient(n.x*NW,n.y*NH,0,n.x*NW,n.y*NH,n.r);g.addColorStop(0,n.c);g.addColorStop(1,'transparent');noc.fillStyle=g;noc.fillRect(0,0,NW,NH);});
+
+  // Cached vignette — only rebuild on resize
+  let vigCache=null;
+  function getVig(){
+    if(vigCache) return vigCache;
+    const vc=document.createElement('canvas');
+    vc.width=W;vc.height=H;
+    const vx=vc.getContext('2d');
+    const vg=vx.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,H*.9);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,.7)');
+    vx.fillStyle=vg;vx.fillRect(0,0,W,H);
+    vigCache=vc;
+    return vc;
+  }
 
   let aR=255,aG=0,aB=200,tR=255,tG=0,tB=200;
   function updateAccent(){
@@ -681,29 +746,56 @@ setTimeout(()=>{lazyRender();onScroll();},50);
   let scanPat=null;
   if(!isMob){const s=document.createElement('canvas');s.width=4;s.height=4;const sc=s.getContext('2d');sc.fillStyle='rgba(0,0,0,.06)';sc.fillRect(0,0,4,2);scanPat=cx.createPattern(s,'repeat');}
 
-  let lastT=0;
+  // Mobile: cap at ~20fps to save battery/CPU
+  const MOB_FRAME_MS=isMob?50:0; // 50ms = 20fps; 0 = uncapped (desktop)
+  let lastT=0, lastFrameT=0;
+
   function frame(ts){
+    requestAnimationFrame(frame);
+    // Throttle on mobile
+    if(isMob && ts-lastFrameT < MOB_FRAME_MS) return;
+    lastFrameT=ts;
+
     const dt=Math.min(ts-lastT,50);lastT=ts;
-    aR+=(tR-aR)*.008;aG+=(tG-aG)*.008;aB+=(tB-aB)*.008;
+    // Ease accent color — slower on mobile to reduce per-frame work
+    const ease=isMob?0.004:0.008;
+    aR+=(tR-aR)*ease;aG+=(tG-aG)*ease;aB+=(tB-aB)*ease;
     const ar=Math.round(aR),ag=Math.round(aG),ab=Math.round(aB);
+
     cx.clearRect(0,0,W,H);
-    const bg=cx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.8);
-    bg.addColorStop(0,`rgba(${Math.round(ar*.04)},${Math.round(ag*.04)},${Math.round(ab*.06+8)},1)`);
-    bg.addColorStop(.5,`rgba(${Math.round(ar*.02)},${Math.round(ag*.02)},${Math.round(ab*.04+5)},1)`);
-    bg.addColorStop(1,'rgba(2,3,6,1)');
-    cx.fillStyle=bg;cx.fillRect(0,0,W,H);
+
+    // Background gradient — on mobile use a simple fillRect instead of radialGradient per frame
+    if(isMob){
+      cx.fillStyle=`rgb(${Math.round(ar*.04)},${Math.round(ag*.04)},${Math.round(ab*.06+8)})`;
+      cx.fillRect(0,0,W,H);
+    } else {
+      const bg=cx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.8);
+      bg.addColorStop(0,`rgba(${Math.round(ar*.04)},${Math.round(ag*.04)},${Math.round(ab*.06+8)},1)`);
+      bg.addColorStop(.5,`rgba(${Math.round(ar*.02)},${Math.round(ag*.02)},${Math.round(ab*.04+5)},1)`);
+      bg.addColorStop(1,'rgba(2,3,6,1)');
+      cx.fillStyle=bg;cx.fillRect(0,0,W,H);
+    }
+
     cx.save();cx.globalAlpha=.8;cx.drawImage(nOc,0,0,W,H);cx.restore();
-    STARS.forEach(s=>{s.tw+=s.ts*dt;const a=s.a*(.6+.4*Math.sin(s.tw));cx.fillStyle=`rgba(${180+Math.round(ar*.3)},${180+Math.round(ag*.2)},${200+Math.round(ab*.2)},${a})`;cx.beginPath();cx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);cx.fill();});
+
+    // Stars — no shadowBlur on mobile
+    const sr=180+Math.round(ar*.3), sg2=180+Math.round(ag*.2), sb2=200+Math.round(ab*.2);
+    STARS.forEach(s=>{
+      s.tw+=s.ts*dt;
+      const a=s.a*(.6+.4*Math.sin(s.tw));
+      cx.fillStyle=`rgba(${sr},${sg2},${sb2},${a})`;
+      cx.beginPath();cx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);cx.fill();
+    });
+
     if(!isMob){
       if(Math.random()<.04)spawnS(`rgb(${ar},${ag},${ab})`);
       for(let i=STREAKS.length-1;i>=0;i--){const s=STREAKS[i];s.x+=s.vx*dt;s.life-=s.decay*dt;if(s.life<=0||s.x<-s.len){STREAKS.splice(i,1);continue;}cx.save();cx.globalAlpha=s.life*.7;cx.shadowColor=s.col;cx.shadowBlur=6;const sg=cx.createLinearGradient(s.x,s.y,s.x+s.len,s.y);sg.addColorStop(0,'transparent');sg.addColorStop(.3,s.col+'88');sg.addColorStop(.7,s.col);sg.addColorStop(1,'transparent');cx.strokeStyle=sg;cx.lineWidth=s.w;cx.beginPath();cx.moveTo(s.x,s.y);cx.lineTo(s.x+Math.cos(s.ang)*s.len,s.y+Math.sin(s.ang)*s.len);cx.stroke();cx.restore();}
+      MOTES.forEach(m=>{m.x+=m.vx*dt;m.y+=m.vy*dt;m.life-=.0002*dt;if(m.y<0||m.life<=0){m.x=Math.random();m.y=1+Math.random()*.2;m.life=.5+Math.random()*.5;m.col=`rgb(${ar},${ag},${ab})`;}cx.save();cx.globalAlpha=m.a*m.life;cx.shadowColor=m.col;cx.shadowBlur=8;cx.fillStyle=m.col;cx.beginPath();cx.arc(m.x*W,m.y*H,m.r,0,Math.PI*2);cx.fill();cx.restore();});
+      if(scanPat){cx.fillStyle=scanPat;cx.fillRect(0,0,W,H);}
     }
-    MOTES.forEach(m=>{m.x+=m.vx*dt;m.y+=m.vy*dt;m.life-=.0002*dt;if(m.y<0||m.life<=0){m.x=Math.random();m.y=1+Math.random()*.2;m.life=.5+Math.random()*.5;m.col=`rgb(${ar},${ag},${ab})`;}cx.save();cx.globalAlpha=m.a*m.life;cx.shadowColor=m.col;cx.shadowBlur=isMob?4:8;cx.fillStyle=m.col;cx.beginPath();cx.arc(m.x*W,m.y*H,m.r,0,Math.PI*2);cx.fill();cx.restore();});
-    if(scanPat){cx.fillStyle=scanPat;cx.fillRect(0,0,W,H);}
-    const vig=cx.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,H*.9);
-    vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.7)');
-    cx.fillStyle=vig;cx.fillRect(0,0,W,H);
-    requestAnimationFrame(frame);
+
+    // Vignette — use cached canvas
+    cx.drawImage(getVig(),0,0);
   }
   requestAnimationFrame(frame);
 })();

@@ -40,6 +40,9 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
 }
 .sword-info{width:45%;min-height:220vh;padding:clamp(30px,5vw,80px) clamp(14px,3.5vw,70px) clamp(30px,5vw,80px) clamp(10px,2vw,30px);display:flex;flex-direction:column;justify-content:center;background:linear-gradient(90deg,rgba(4,5,10,0) 0%,rgba(4,5,10,0.65) 18%,rgba(4,5,10,0.8) 55%,rgba(4,5,10,0.65) 100%);position:relative;z-index:3;}
 
+/* ── MOBILE SWORD ANCHOR ── shared wrapper that gives rotated canvas room */
+.mob-sword-anchor{display:none;}
+
 /* ── STATS ── */
 .sword-stats{margin:18px 0 10px;opacity:0;transform:translateX(14px);transition:opacity .7s ease .52s,transform .7s ease .52s;}
 .sword-section.vis .sword-stats{opacity:1;transform:translateX(0);}
@@ -65,61 +68,65 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
 .sword-section.vis .sword-divider{opacity:1;transform:scaleX(1);}
 
 /* ══════════════════════════════════════════════════════
-   MOBILE LAYOUT — sword floats OVER the text area
+   MOBILE LAYOUT
+   The sword canvas (400×80) needs 200px clearance from its
+   center when rotated 90°. We give it a dedicated anchor
+   block that is 420px tall with overflow:visible so rotation
+   never clips. The canvases are positioned absolute inside it,
+   centered at the anchor's midpoint.
    ══════════════════════════════════════════════════════ */
 @media(max-width:680px){
   .sword-section{
     flex-direction:column;
     min-height:auto;
-    /* single stacking context so sword can float over text */
     position:relative;
+    overflow:visible; /* allow sword to overlap text below */
   }
 
-  /* Stage becomes a thin horizontal strip at the top —
-     the sword will overflow out of it downward via position:absolute */
-  .sword-stage{
+  /* Desktop stage: hide on mobile */
+  .sword-stage{ display:none; }
+
+  /* Mobile anchor: sits above the info panel, tall enough
+     for the canvas at 90° (canvas width = 320px → need ~160px
+     above + below center = 320px + some breathing = 360px) */
+  .mob-sword-anchor{
+    display:block;
     width:100%;
-    height:0;          /* zero height — acts only as anchor point */
-    min-height:0;
-    flex-shrink:0;
-    overflow:visible;  /* let sword spill into the text area below */
+    height:360px;
     position:relative;
+    overflow:visible;  /* CRITICAL — never clip rotating canvas */
     z-index:5;
+    flex-shrink:0;
   }
 
-  /* Both canvases: anchor to top-centre of the stage strip,
-     initial position off-screen-left (JS will animate them in) */
-  .scabbard-el,
-  .sword-canvas-wrap{
+  /* Canvases sit centered in the anchor */
+  .mob-sword-anchor .scabbard-el,
+  .mob-sword-anchor .sword-canvas-wrap{
     position:absolute;
-    /* Start at the stage top-centre */
     left:50%;
-    top:0;
-    width:min(320px,90vw);
+    top:50%;
+    /* scale canvas to 88vw wide — at 88vw, rotated = 88vw tall,
+       which fits inside 360px anchor on most phones (360/vw ≈ 88) */
+    width:min(320px,88vw);
     height:auto;
     transform-origin:center center;
   }
 
-  /* Text panel fills full width, has top padding so content
-     starts below where the sword will float */
+  /* Text panel: no top padding needed since anchor provides space */
   .sword-info{
     width:100%;
     min-height:auto;
-    /* Enough top padding to clear the sword canvas height (~80px scaled)
-       plus a little breathing room */
-    padding:100px 22px 50px;
+    padding:24px 22px 50px;
     background:linear-gradient(
       to bottom,
-      rgba(4,5,10,0.0) 0%,
-      rgba(4,5,10,0.72) 12%,
-      rgba(4,5,10,0.88) 40%,
+      rgba(4,5,10,0.6) 0%,
+      rgba(4,5,10,0.88) 20%,
       rgba(4,5,10,0.80) 100%
     );
     position:relative;
     z-index:3;
   }
 
-  /* Tighten up font sizes slightly on mobile */
   .sword-name{font-size:clamp(22px,6vw,34px);}
   .sword-jp{font-size:clamp(14px,4vw,20px);}
   .sword-desc{font-size:14px;max-width:100%;}
@@ -221,7 +228,7 @@ const TAG_POOLS=[
   ['Truth-compelling','Fate-sealed','Doom-marked','Prophecy-bound','Destiny-forged','Oracle-touched','Wyrd-woven'],
   ['Soul-drinking','Life-stealing','Mind-breaking','Fear-inducing','Hope-giving','Courage-granting','Will-breaking'],
   ['World-cutting','Reality-piercing','Dimension-crossing','Time-touching','Death-defying','Life-granting','Fate-altering'],
-  ['Swift','Silent','Invisible','Phase-shifting','Light-bending','Shadow-walking','Sound-stealing'],
+  ['Swift','Relentless','Unstoppable','Fate-driven','Iron-willed','Unyielding','Ever-seeking'],
 ];
 const COLORS=[['#ff00ff','#ff88ff','#cc00cc'],['#ff0044','#ff4488','#cc0000'],['#ff8800','#ffcc44','#ff4400'],['#ffff00','#ffe666','#ffaa00'],['#00ff88','#44ffcc','#009966'],['#00ffcc','#00ff88','#00ccff'],['#00ccff','#66eeff','#0088cc'],['#4488ff','#88bbff','#0044ff'],['#cc00ff','#ff44ff','#8800cc'],['#ffffff','#cceeff','#aabbcc'],['#ffe066','#ffffff','#ffd700'],['#88aaff','#ccddff','#4466cc'],['#ff6600','#ffaa44','#cc3300'],['#44ff88','#88ffcc','#00cc55'],['#ff4444','#ff8888','#cc0000'],['#aa88ff','#ddccff','#7744cc'],['#aaddff','#ffffff','#66aadd'],['#ffee88','#ffffff','#ccaa00'],['#ff00aa','#ff66cc','#cc0088'],['#00ffff','#88ffff','#0099cc'],['#ff3300','#ff7744','#cc2200'],['#33ff00','#88ff44','#22cc00'],['#0033ff','#4466ff','#0022cc'],['#ff0099','#ff44bb','#cc0077'],['#ffcc00','#ffee44','#cc9900'],['#00ff44','#44ff88','#00cc33'],['#ff6699','#ffaacc','#cc4477'],['#66ffff','#aaffff','#44cccc'],['#9944ff','#cc88ff','#6622cc'],['#ff9900','#ffcc44','#cc6600'],['#22ffaa','#66ffcc','#00cc88'],['#ff2244','#ff6688','#cc1133'],['#44aaff','#88ccff','#2288cc'],['#ffbb00','#ffdd44','#cc8800'],['#00ffbb','#44ffdd','#00cc99'],['#ff44aa','#ff88cc','#cc2288'],['#77ff00','#aaff44','#55cc00'],['#0044ff','#4488ff','#0033cc'],['#ff7700','#ffaa44','#cc5500'],['#00bbff','#44ddff','#0099cc']];
 const GRIPS=['#1a0008','#081828','#1a2a1a','#2a1808','#180818','#0a1e18','#2a3848','#3a1808','#1a2030','#281010','#1a001a','#001828','#2a2010','#1a1030','#0a0c12','#f0f0f0','#3a2810','#102010','#080818','#181808','#180808','#081818'];
@@ -413,18 +420,27 @@ function createSection(idx){
   sec.id=`sec_${idx}`;
   sec.style.minHeight=PH+'px';
 
-  // Stage
-  const stage=document.createElement('div');
-  stage.className='sword-stage';
-  if(!IS_MOB) stage.style.minHeight=PH+'px';
-
   const sc=drawSwordCanvas(sw);
   sc.className='sword-canvas-wrap';
   const sb=drawScabbardCanvas(sw);
   sb.className='scabbard-el';
-  stage.appendChild(sb);
-  stage.appendChild(sc);
-  sec.appendChild(stage);
+
+  if(IS_MOB){
+    // Mobile: dedicated anchor block above the text panel
+    const anchor=document.createElement('div');
+    anchor.className='mob-sword-anchor';
+    anchor.appendChild(sb);
+    anchor.appendChild(sc);
+    sec.appendChild(anchor);
+  } else {
+    // Desktop: original stage layout
+    const stage=document.createElement('div');
+    stage.className='sword-stage';
+    stage.style.minHeight=PH+'px';
+    stage.appendChild(sb);
+    stage.appendChild(sc);
+    sec.appendChild(stage);
+  }
 
   // Info panel
   const info=document.createElement('div');
@@ -444,7 +460,7 @@ function createSection(idx){
 
   ph.replaceWith(sec);
 
-  const meta={sec,swordEl:sc,scabbardEl:sb,stage,sw,lastP:-1};
+  const meta={sec,swordEl:sc,scabbardEl:sb,sw,lastP:-1};
   liveSections.set(idx,meta);
 
   visObs.observe(sec);
@@ -463,64 +479,80 @@ function applyTransform(d,p){
   const{swordEl,scabbardEl,sw}=d;
 
   if(IS_MOB){
-    // ── MOBILE: sword slides in horizontally from left, then rotates vertical and fades ──
-    let rot=0,swordOp=0,swordTY=0,swordTX=0;
-    let scabOp=0,scabTX=0,scabTY=0;
+    // ── MOBILE ANIMATION ──
+    // Canvas is 400×80 (scaled to ~88vw × ~17vw on phone).
+    // Centered in a 360px-tall anchor via CSS. overflow:visible on anchor
+    // means rotation NEVER clips — the canvas just rotates in space.
+    //
+    // Sequence (p = 0→1 across section scroll):
+    //  0.00–0.08  fade in, horizontal
+    //  0.08–0.45  rotate 0° → 90° (tip pointing DOWN)
+    //  0.40–0.62  scabbard drops away downward
+    //  0.45–0.68  sword holds vertical, glow peaks
+    //  0.68–0.85  sword drifts RIGHT (+TX) and fades out
+    //  0.85+      both gone
 
-    if(p<0.04){
-      swordOp=0;scabOp=0;
-      swordTX=-160;scabTX=-160;
-    } else if(p<0.12){
-      // Both slide in from left
-      const t=eio((p-0.04)/0.08);
-      swordOp=t;scabOp=t;
-      swordTX=lerp(-160,0,t);scabTX=lerp(-160,0,t);
-      rot=0;
-    } else if(p<0.20){
-      // Hold horizontal, fully visible
-      swordOp=1;scabOp=1;
-      swordTX=0;scabTX=0;rot=0;
-    } else if(p<0.50){
-      // Sword rotates 0→90°; scabbard holds then drops
-      swordOp=1;swordTX=0;
-      rot=lerp(0,90,eio((p-0.20)/0.30));
-      if(p<0.32){
-        scabOp=1;scabTX=0;scabTY=0;
+    let rot=0, swordOp=0, swordTX=0, swordTY=0;
+    let scabOp=0, scabTY=0;
+
+    if(p < 0.04){
+      swordOp=0; scabOp=0; rot=0;
+    }
+    else if(p < 0.10){
+      // Fade in horizontal
+      const t=eio((p-0.04)/0.06);
+      swordOp=t; scabOp=t; rot=0;
+    }
+    else if(p < 0.46){
+      // Rotate horizontal → vertical (tip down = 90°)
+      swordOp=1; scabOp=1;
+      rot=lerp(0, 90, eio((p-0.10)/0.36));
+      // Scabbard starts dropping partway through rotation
+      if(p < 0.34){
+        scabOp=1; scabTY=0;
       } else {
-        const t2=eio((p-0.32)/0.18);
+        const t2=eio((p-0.34)/0.12);
         scabOp=lerp(1,0,t2);
-        scabTY=lerp(0,200,t2);
-        scabTX=0;
+        scabTY=lerp(0,220,t2);
       }
-    } else if(p<0.68){
-      // Sword fully vertical, glowing
-      swordOp=1;rot=90;swordTX=0;
-      scabOp=0;scabTY=200;
-    } else if(p<0.82){
-      // Sword fades out upward
-      const t=(p-0.68)/0.14;
-      swordOp=lerp(1,0,eout(t));
-      rot=90;swordTX=0;
-      swordTY=lerp(0,-40,eout(t));
+    }
+    else if(p < 0.68){
+      // Sword fully vertical, hold, glow
+      swordOp=1; rot=90; swordTX=0; swordTY=0;
+      scabOp=0; scabTY=220;
+    }
+    else if(p < 0.86){
+      // Drift RIGHT and fade
+      const t=eio((p-0.68)/0.18);
+      swordOp=lerp(1,0,t);
+      rot=90;
+      // vw-based right drift: roughly half the screen width
+      swordTX=lerp(0, window.innerWidth*0.55, t);
+      swordTY=0;
       scabOp=0;
-    } else {
-      swordOp=0;rot=90;scabOp=0;
+    }
+    else{
+      swordOp=0; rot=90; scabOp=0;
     }
 
-    // Glow
+    // Glow peaks at vertical hold phase
     let g=0;
-    if(p>=0.44&&p<0.54) g=lerp(0,1,eio((p-0.44)/0.10));
-    else if(p>=0.54&&p<0.66) g=1;
-    else if(p>=0.66&&p<0.78) g=lerp(1,0,eio((p-0.66)/0.12));
-    const g1=Math.round(8+g*30),g2=Math.round(12+g*40),g3=Math.round(g*22);
+    if(p>=0.42 && p<0.54) g=lerp(0,1,eio((p-0.42)/0.12));
+    else if(p>=0.54 && p<0.66) g=1;
+    else if(p>=0.66 && p<0.78) g=lerp(1,0,eio((p-0.66)/0.12));
+    const g1=Math.round(8+g*28), g2=Math.round(12+g*38), g3=Math.round(g*20);
     const gh=Math.round(g*200).toString(16).padStart(2,'0');
-    const gk=Math.round(g*140).toString(16).padStart(2,'0');
-    const fs=g>0.03?`drop-shadow(0 0 ${g1}px ${sw.c1}) drop-shadow(0 0 ${g2}px ${sw.c1}${gh}) drop-shadow(0 0 ${g3}px ${sw.c2}${gk})`:'none';
+    const gk=Math.round(g*130).toString(16).padStart(2,'0');
+    const fs=g>0.03
+      ?`drop-shadow(0 0 ${g1}px ${sw.c1}) drop-shadow(0 0 ${g2}px ${sw.c1}${gh}) drop-shadow(0 0 ${g3}px ${sw.c2}${gk})`
+      :'none';
 
+    // CSS already places canvas at left:50%;top:50%;translate(-50%,-50%)
+    // Our transform REPLACES that, so we must keep the centering:
     swordEl.style.transform=`translate(calc(-50% + ${swordTX}px), calc(-50% + ${swordTY}px)) rotate(${rot}deg)`;
     swordEl.style.opacity=swordOp;
     swordEl.style.filter=fs;
-    scabbardEl.style.transform=`translate(calc(-50% + ${scabTX}px), calc(-50% + ${scabTY}px)) rotate(0deg)`;
+    scabbardEl.style.transform=`translate(-50%, calc(-50% + ${scabTY}px)) rotate(0deg)`;
     scabbardEl.style.opacity=scabOp;
     return;
   }

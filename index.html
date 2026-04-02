@@ -20,10 +20,9 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
 .scroll-hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);font-family:'Orbitron',monospace;font-size:8px;letter-spacing:4px;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:8px;animation:bob 2s ease-in-out infinite;}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}
 
-/* ── SWORD SECTION ── */
+/* ── SWORD SECTION — DESKTOP ── */
 .sword-section{min-height:220vh;display:flex;align-items:stretch;position:relative;z-index:2;overflow:hidden;}
 .sword-stage{width:55%;min-height:220vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
-/* Both sword and scabbard pivot from their own center */
 .scabbard-el{
   position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);
@@ -65,12 +64,67 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;ov
 .sword-section.vis .sword-desc,.sword-section.vis .sword-lore,.sword-section.vis .sword-tags{opacity:1;transform:translateX(0);}
 .sword-section.vis .sword-divider{opacity:1;transform:scaleX(1);}
 
-/* ── MOBILE ── */
+/* ══════════════════════════════════════════════════════
+   MOBILE LAYOUT — sword floats OVER the text area
+   ══════════════════════════════════════════════════════ */
 @media(max-width:680px){
-  .sword-section{flex-direction:column;min-height:auto;}
-  .sword-stage{width:100%;min-height:60vw;height:60vw;flex-shrink:0;}
-  .scabbard-el,.sword-canvas-wrap{width:min(340px,88vw);height:auto;}
-  .sword-info{width:100%;min-height:auto;padding:28px 22px 44px;background:linear-gradient(to bottom,rgba(4,5,10,0.6) 0%,rgba(4,5,10,0.85) 40%,rgba(4,5,10,0.7) 100%);}
+  .sword-section{
+    flex-direction:column;
+    min-height:auto;
+    /* single stacking context so sword can float over text */
+    position:relative;
+  }
+
+  /* Stage becomes a thin horizontal strip at the top —
+     the sword will overflow out of it downward via position:absolute */
+  .sword-stage{
+    width:100%;
+    height:0;          /* zero height — acts only as anchor point */
+    min-height:0;
+    flex-shrink:0;
+    overflow:visible;  /* let sword spill into the text area below */
+    position:relative;
+    z-index:5;
+  }
+
+  /* Both canvases: anchor to top-centre of the stage strip,
+     initial position off-screen-left (JS will animate them in) */
+  .scabbard-el,
+  .sword-canvas-wrap{
+    position:absolute;
+    /* Start at the stage top-centre */
+    left:50%;
+    top:0;
+    width:min(320px,90vw);
+    height:auto;
+    transform-origin:center center;
+  }
+
+  /* Text panel fills full width, has top padding so content
+     starts below where the sword will float */
+  .sword-info{
+    width:100%;
+    min-height:auto;
+    /* Enough top padding to clear the sword canvas height (~80px scaled)
+       plus a little breathing room */
+    padding:100px 22px 50px;
+    background:linear-gradient(
+      to bottom,
+      rgba(4,5,10,0.0) 0%,
+      rgba(4,5,10,0.72) 12%,
+      rgba(4,5,10,0.88) 40%,
+      rgba(4,5,10,0.80) 100%
+    );
+    position:relative;
+    z-index:3;
+  }
+
+  /* Tighten up font sizes slightly on mobile */
+  .sword-name{font-size:clamp(22px,6vw,34px);}
+  .sword-jp{font-size:clamp(14px,4vw,20px);}
+  .sword-desc{font-size:14px;max-width:100%;}
+  .sword-lore{font-size:12px;max-width:100%;}
+  .stat-label{width:60px;}
 }
 
 .sep{height:1px;z-index:2;position:relative;background:linear-gradient(90deg,transparent,rgba(255,0,200,0.12) 30%,rgba(255,0,200,0.25) 50%,rgba(255,0,200,0.12) 70%,transparent);}
@@ -174,18 +228,14 @@ const GRIPS=['#1a0008','#081828','#1a2a1a','#2a1808','#180818','#0a1e18','#2a384
 const GUARDS=['#d4a843','#c9a843','#4488ff','#cc00ff','#e88030','#00ffaa','#ffdd44','#ff0044','#88aaff','#ff6600','#00ccff','#ddcc66','#aaddff','#ffffff','#44ff88','#ff4444','#ff00ff','#00ffff','#ffaa00','#aa88ff','#ff8800','#00ff88','#ff2266','#44ffaa','#ffcc00','#0088ff','#ff66aa','#00ddcc'];
 const STYLES=['straight','katana','curved','wave','forked','leaf','short'];
 
-// ── STAT NAMES ──
 const STAT_NAMES=['Power','Speed','Reach','Curse','Rarity'];
 
 function genStats(rng){
-  // weighted toward interesting distributions — not just random
   const base=()=>Math.round(30+rng()*65);
   const high=()=>Math.round(70+rng()*30);
   const low=()=>Math.round(5+rng()*40);
   const v=[base(),base(),base(),base(),base()];
-  // one standout stat
   v[Math.floor(rng()*5)]=high();
-  // one weakness
   v[Math.floor(rng()*5)]=low();
   return v.map(n=>Math.min(99,Math.max(5,n)));
 }
@@ -323,7 +373,6 @@ function drawScabbardCanvas(sw){
 function buildStatsHTML(sw){
   const rows=STAT_NAMES.map((name,i)=>{
     const val=sw.stats[i];
-    const pct=val/99;
     const delay=(0.6+i*0.08).toFixed(2)+'s';
     return `<div class="stat-row">
       <span class="stat-label">${name}</span>
@@ -340,13 +389,18 @@ function buildStatsHTML(sw){
 }
 
 // ══════════════════════════════════════════════════════
+// DETECT MOBILE
+// ══════════════════════════════════════════════════════
+const IS_MOB = window.innerWidth <= 680;
+
+// ══════════════════════════════════════════════════════
 // SECTION CREATION
 // ══════════════════════════════════════════════════════
 const root=document.getElementById('root');
-const PH=Math.round(window.innerHeight*2.2);
+// Desktop sections are ~2.2vh tall; mobile are shorter since layout stacks
+const PH = IS_MOB ? Math.round(window.innerHeight*1.4) : Math.round(window.innerHeight*2.2);
 
-// Store live section references by index
-const liveSections=new Map();   // idx → {sec, swordEl, scabbardEl, stage, sw, lastP}
+const liveSections=new Map();
 
 function createSection(idx){
   if(liveSections.has(idx)) return;
@@ -362,7 +416,8 @@ function createSection(idx){
   // Stage
   const stage=document.createElement('div');
   stage.className='sword-stage';
-  stage.style.minHeight=PH+'px';
+  if(!IS_MOB) stage.style.minHeight=PH+'px';
+
   const sc=drawSwordCanvas(sw);
   sc.className='sword-canvas-wrap';
   const sb=drawScabbardCanvas(sw);
@@ -374,7 +429,7 @@ function createSection(idx){
   // Info panel
   const info=document.createElement('div');
   info.className='sword-info';
-  info.style.minHeight=PH+'px';
+  if(!IS_MOB) info.style.minHeight=PH+'px';
   info.innerHTML=`
     <div class="sword-num" style="color:${sw.c1}">${String(idx+1).padStart(4,'0')} / 1000 · ${sw.myth}</div>
     <div class="sword-name" style="color:${sw.c1};text-shadow:0 0 30px ${sw.c1}88,0 0 60px ${sw.c1}44">${sw.name}</div>
@@ -387,27 +442,17 @@ function createSection(idx){
   `;
   sec.appendChild(info);
 
-  // Replace placeholder
   ph.replaceWith(sec);
 
   const meta={sec,swordEl:sc,scabbardEl:sb,stage,sw,lastP:-1};
   liveSections.set(idx,meta);
 
-  // Visibility observer for text fade-in
   visObs.observe(sec);
-
-  // Initial position (off-screen left)
   applyTransform(meta,0);
 }
 
 // ══════════════════════════════════════════════════════
 // SCROLL ANIMATION
-// New sequence (p = 0→1 across section scroll):
-//   0.00–0.10  sword+scabbard fade in, both horizontal (0°)
-//   0.10–0.55  sword rotates 0° → 90° (tip pointing down), scabbard stays aligned
-//   0.40–0.70  scabbard drops away downward (TY offset grows)
-//   0.55–0.75  sword fully vertical, holds, glows peak
-//   0.75–0.90  sword fades out upward slightly
 // ══════════════════════════════════════════════════════
 function eio(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
 function eout(t){return 1-(1-t)*(1-t);}
@@ -417,115 +462,127 @@ function lerp(a,b,t){return a+(b-a)*t;}
 function applyTransform(d,p){
   const{swordEl,scabbardEl,sw}=d;
 
-  // ── SWORD ──
-  // Rotation: horizontal (0°) → vertical tip-down (90°)
+  if(IS_MOB){
+    // ── MOBILE: sword slides in horizontally from left, then rotates vertical and fades ──
+    let rot=0,swordOp=0,swordTY=0,swordTX=0;
+    let scabOp=0,scabTX=0,scabTY=0;
+
+    if(p<0.04){
+      swordOp=0;scabOp=0;
+      swordTX=-160;scabTX=-160;
+    } else if(p<0.12){
+      // Both slide in from left
+      const t=eio((p-0.04)/0.08);
+      swordOp=t;scabOp=t;
+      swordTX=lerp(-160,0,t);scabTX=lerp(-160,0,t);
+      rot=0;
+    } else if(p<0.20){
+      // Hold horizontal, fully visible
+      swordOp=1;scabOp=1;
+      swordTX=0;scabTX=0;rot=0;
+    } else if(p<0.50){
+      // Sword rotates 0→90°; scabbard holds then drops
+      swordOp=1;swordTX=0;
+      rot=lerp(0,90,eio((p-0.20)/0.30));
+      if(p<0.32){
+        scabOp=1;scabTX=0;scabTY=0;
+      } else {
+        const t2=eio((p-0.32)/0.18);
+        scabOp=lerp(1,0,t2);
+        scabTY=lerp(0,200,t2);
+        scabTX=0;
+      }
+    } else if(p<0.68){
+      // Sword fully vertical, glowing
+      swordOp=1;rot=90;swordTX=0;
+      scabOp=0;scabTY=200;
+    } else if(p<0.82){
+      // Sword fades out upward
+      const t=(p-0.68)/0.14;
+      swordOp=lerp(1,0,eout(t));
+      rot=90;swordTX=0;
+      swordTY=lerp(0,-40,eout(t));
+      scabOp=0;
+    } else {
+      swordOp=0;rot=90;scabOp=0;
+    }
+
+    // Glow
+    let g=0;
+    if(p>=0.44&&p<0.54) g=lerp(0,1,eio((p-0.44)/0.10));
+    else if(p>=0.54&&p<0.66) g=1;
+    else if(p>=0.66&&p<0.78) g=lerp(1,0,eio((p-0.66)/0.12));
+    const g1=Math.round(8+g*30),g2=Math.round(12+g*40),g3=Math.round(g*22);
+    const gh=Math.round(g*200).toString(16).padStart(2,'0');
+    const gk=Math.round(g*140).toString(16).padStart(2,'0');
+    const fs=g>0.03?`drop-shadow(0 0 ${g1}px ${sw.c1}) drop-shadow(0 0 ${g2}px ${sw.c1}${gh}) drop-shadow(0 0 ${g3}px ${sw.c2}${gk})`:'none';
+
+    swordEl.style.transform=`translate(calc(-50% + ${swordTX}px), calc(-50% + ${swordTY}px)) rotate(${rot}deg)`;
+    swordEl.style.opacity=swordOp;
+    swordEl.style.filter=fs;
+    scabbardEl.style.transform=`translate(calc(-50% + ${scabTX}px), calc(-50% + ${scabTY}px)) rotate(0deg)`;
+    scabbardEl.style.opacity=scabOp;
+    return;
+  }
+
+  // ── DESKTOP (original animation) ──
   let rot=0,swordOp=0,swordTY=0;
+  if(p<0.06){swordOp=0;rot=0;}
+  else if(p<0.12){swordOp=lerp(0,1,eio((p-0.06)/0.06));rot=0;}
+  else if(p<0.60){swordOp=1;rot=lerp(0,90,eio((p-0.12)/0.48));}
+  else if(p<0.78){swordOp=1;rot=90;}
+  else if(p<0.92){const t=(p-0.78)/0.14;swordOp=lerp(1,0,eout(t));rot=90;swordTY=lerp(0,-30,eout(t));}
+  else{swordOp=0;rot=90;}
 
-  if(p<0.06){
-    swordOp=0;rot=0;
-  } else if(p<0.12){
-    // fade in while still horizontal
-    swordOp=lerp(0,1,eio((p-0.06)/0.06));
-    rot=0;
-  } else if(p<0.60){
-    // rotate from 0° to 90°
-    swordOp=1;
-    rot=lerp(0,90,eio((p-0.12)/0.48));
-  } else if(p<0.78){
-    // hold vertical
-    swordOp=1;rot=90;
-  } else if(p<0.92){
-    // fade out, drifts up a little
-    const t=(p-0.78)/0.14;
-    swordOp=lerp(1,0,eout(t));
-    rot=90;
-    swordTY=lerp(0,-30,eout(t));
-  } else {
-    swordOp=0;rot=90;
-  }
+  let scabOp=0,scabTY=0;
+  if(p<0.06){scabOp=0;scabTY=0;}
+  else if(p<0.12){scabOp=lerp(0,1,eio((p-0.06)/0.06));scabTY=0;}
+  else if(p<0.38){scabOp=1;scabTY=0;}
+  else if(p<0.72){const t=eio((p-0.38)/0.34);scabOp=lerp(1,0,t);scabTY=lerp(0,340,t);}
+  else{scabOp=0;scabTY=340;}
 
-  // ── SCABBARD ──
-  // Stays horizontal and aligned while sword rotates 0→60°
-  // Then drops straight down as sword goes fully vertical
-  let scabOp=0,scabRot=0,scabTY=0;
-
-  if(p<0.06){
-    scabOp=0;scabRot=0;scabTY=0;
-  } else if(p<0.12){
-    scabOp=lerp(0,1,eio((p-0.06)/0.06));
-    scabRot=0;scabTY=0;
-  } else if(p<0.38){
-    // scabbard holds horizontal while sword starts rotating
-    scabOp=1;scabRot=0;scabTY=0;
-  } else if(p<0.72){
-    // scabbard drops downward — slides out the bottom
-    const t=eio((p-0.38)/0.34);
-    scabOp=lerp(1,0,t);
-    scabRot=0;
-    scabTY=lerp(0,340,t);
-  } else {
-    scabOp=0;scabTY=340;scabRot=0;
-  }
-
-  // ── GLOW peaks when sword is fully vertical ──
   let g=0;
   if(p>=0.50&&p<0.62) g=lerp(0,1,eio((p-0.50)/0.12));
   else if(p>=0.62&&p<0.76) g=1;
   else if(p>=0.76&&p<0.88) g=lerp(1,0,eio((p-0.76)/0.12));
-
   const g1=Math.round(8+g*30),g2=Math.round(12+g*40),g3=Math.round(g*22);
   const gh=Math.round(g*200).toString(16).padStart(2,'0');
   const gk=Math.round(g*140).toString(16).padStart(2,'0');
-  const fs=g>0.03
-    ?`drop-shadow(0 0 ${g1}px ${sw.c1}) drop-shadow(0 0 ${g2}px ${sw.c1}${gh}) drop-shadow(0 0 ${g3}px ${sw.c2}${gk})`
-    :'none';
+  const fs=g>0.03?`drop-shadow(0 0 ${g1}px ${sw.c1}) drop-shadow(0 0 ${g2}px ${sw.c1}${gh}) drop-shadow(0 0 ${g3}px ${sw.c2}${gk})`:'none';
 
   swordEl.style.transform=`translate(-50%, calc(-50% + ${swordTY}px)) rotate(${rot}deg)`;
   swordEl.style.opacity=swordOp;
   swordEl.style.filter=fs;
-
-  scabbardEl.style.transform=`translate(-50%, calc(-50% + ${scabTY}px)) rotate(${scabRot}deg)`;
+  scabbardEl.style.transform=`translate(-50%, calc(-50% + ${scabTY}px)) rotate(0deg)`;
   scabbardEl.style.opacity=scabOp;
 }
 
-// Visibility observer — triggers CSS class for text animations
+// Visibility observer
 const visObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    e.target.classList.toggle('vis',e.isIntersecting);
-  });
-},{threshold:0.12});
+  entries.forEach(e=>{e.target.classList.toggle('vis',e.isIntersecting);});
+},{threshold:0.08});
 
 // ══════════════════════════════════════════════════════
-// LAZY LOAD — use a sentinel div system instead of
-// observing placeholders that get replaced
+// LAZY LOAD
 // ══════════════════════════════════════════════════════
-// Pre-populate placeholders
 const frag=document.createDocumentFragment();
 for(let i=0;i<TOTAL;i++){
   const ph=document.createElement('div');
   ph.id=`ph_${i}`;
   ph.style.cssText=`min-height:${PH}px;position:relative;z-index:2;`;
   frag.appendChild(ph);
-  if(i<TOTAL-1){
-    const sep=document.createElement('div');
-    sep.className='sep';
-    frag.appendChild(sep);
-  }
+  if(i<TOTAL-1){const sep=document.createElement('div');sep.className='sep';frag.appendChild(sep);}
 }
 root.appendChild(frag);
 
-// Render first batch immediately
 for(let i=0;i<8;i++) createSection(i);
 
-// Use scroll position to determine which to render
 let lastScrollY=-1;
 function lazyRender(){
   const sy=window.scrollY;
   if(Math.abs(sy-lastScrollY)<50) return;
   lastScrollY=sy;
   const vh=window.innerHeight;
-  // Find approximate range of visible sections
-  // Each PH is PH px tall (plus separators ~1px each, negligible)
   const sectionH=PH+1;
   const heroH=document.getElementById('hero').offsetHeight||vh;
   const relY=sy-heroH;
@@ -540,13 +597,10 @@ function lazyRender(){
 function onScroll(){
   lazyRender();
   const vh=window.innerHeight;
-  liveSections.forEach((d,idx)=>{
+  liveSections.forEach((d)=>{
     const r=d.sec.getBoundingClientRect();
-    // Skip if far off screen
     if(r.bottom<-vh*0.5||r.top>vh*2) return;
     const h=d.sec.offsetHeight;
-    // p goes 0→1 as the section scrolls through viewport
-    // 0 = section top at bottom of screen, 1 = section bottom at top of screen
     const p=clamp((vh-r.top)/(h+vh),0,1);
     if(Math.abs(p-d.lastP)>0.0004){
       d.lastP=p;
@@ -556,9 +610,7 @@ function onScroll(){
 }
 
 window.addEventListener('scroll',onScroll,{passive:true});
-window.addEventListener('resize',()=>{setTimeout(onScroll,80);},{ passive:true});
-
-// Initial call
+window.addEventListener('resize',()=>{setTimeout(onScroll,80);},{passive:true});
 setTimeout(()=>{lazyRender();onScroll();},50);
 
 // ══════════════════════════════════════════════════════

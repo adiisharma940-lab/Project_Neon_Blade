@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEON BLADES — Legendary Swords</title>
+<title>PROJECT NEON BLADE — by adiie.bat</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Noto+Serif+JP:wght@300;400&display=swap');
 
@@ -216,8 +216,8 @@ footer{
 
 <section id="hero">
   <div style="position:relative;text-align:center;padding:0 20px">
-    <div class="hero-title">NEON<br>BLADES</div>
-    <div style="font-family:'Orbitron',monospace;font-size:clamp(9px,1.3vw,13px);letter-spacing:5px;color:rgba(255,0,204,0.55);margin-top:10px;font-weight:400">by Adiie</div>
+    <div class="hero-title">PROJECT<br>NEON BLADE</div>
+    <div style="font-family:'Orbitron',monospace;font-size:clamp(9px,1.3vw,13px);letter-spacing:5px;color:rgba(255,0,204,0.55);margin-top:10px;font-weight:400">by adiie.bat</div>
     <div class="hero-line"></div>
     <div class="hero-sub">20 Legendary Swords of Myth &amp; Power</div>
   </div>
@@ -234,7 +234,7 @@ footer{
 <div id="root"></div>
 <footer>
   <div style="opacity:.2;margin-bottom:10px">— ⚔ —</div>
-  NEON BLADES · LEGENDARY SWORDS OF MYTH & POWER
+  PROJECT NEON BLADE · LEGENDARY SWORDS OF MYTH & POWER
 </footer>
 
 <script>
@@ -897,16 +897,6 @@ const sectionData=SWORDS.map((sw,idx)=>{
 
 // ═══════════════════════════════════════════════════════════
 // SCROLL ANIMATION — REVERSED DIRECTION + FASTER SPEED
-//
-// CHANGES vs original:
-//   • Sword + scabbard now enter from the LEFT (negative OFF)
-//   • Scabbard peels away to the RIGHT (+OFF) — opposite of before
-//   • Sword exits to the RIGHT (+OFF) after unsheathing
-//   • All phase windows compressed for faster transitions:
-//       slide-in:      0.05 → 0.22  (was 0.08 → 0.32)
-//       scabbard-peel: 0.22 → 0.42  (was 0.32 → 0.58)
-//       rotation:      0.42 → 0.58  (was 0.58 → 0.76)
-//       exit:          0.58 → 0.82  (was 0.76 → 0.97)
 // ═══════════════════════════════════════════════════════════
 
 function eio(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
@@ -921,7 +911,6 @@ function updateSection(d,p){
   const {swordEl,scabbardEl,sw,stage}=d;
   const OFF = getOFF(stage);
 
-  // ── SWORD translateX — enters from LEFT (-OFF), exits to RIGHT (+OFF) ──
   let sTX = -OFF;
   if(p < 0.05){
     sTX = -OFF;
@@ -935,7 +924,6 @@ function updateSection(d,p){
     sTX = OFF;
   }
 
-  // ── SWORD rotation ──
   let sRot = 0;
   if(p >= 0.42 && p < 0.58){
     sRot = lerp(0, -90, eio((p-0.42)/0.16));
@@ -943,7 +931,6 @@ function updateSection(d,p){
     sRot = -90;
   }
 
-  // ── SCABBARD — enters from LEFT (-OFF), peels away to RIGHT (+OFF) ──
   let cTX = -OFF;
   let cOp = 1;
   if(p < 0.05){
@@ -959,7 +946,6 @@ function updateSection(d,p){
     cTX = OFF; cOp = 0;
   }
 
-  // ── GLOW ──
   let glowMag = 0;
   if(p >= 0.22 && p < 0.42){
     glowMag = lerp(0, 1, eio((p-0.22)/0.20));
@@ -987,7 +973,6 @@ function updateSection(d,p){
   scabbardEl.style.opacity   = cOp;
 }
 
-// Text reveal observer
 const tobs=new IntersectionObserver(es=>{
   es.forEach(e=>e.target.classList.toggle('vis',e.isIntersecting));
 },{threshold:0.2});

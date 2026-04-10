@@ -448,8 +448,8 @@
   var currentCamZ = 7,  targetCamZ = 7;
   var currentCamX = 0,  targetCamX = 0;
   // Camera sits lower (y=1.1 instead of 1.8) and looks at y=0.1 to keep tyres in frame
-  var CAM_Y      = 1.1;
-  var CAM_LOOK_Y = 0.1;
+  var CAM_Y      = 1.4;
+  var CAM_LOOK_Y = -0.1;
 
   var camera = new THREE.PerspectiveCamera(45, W()/H(), 0.1, 200);
   camera.position.set(0, CAM_Y, 7);
@@ -577,20 +577,46 @@
   var targetRotY = 0, currentRotY = 0;
   var targetPosX = 0, currentPosX = 0;
 
+  // ── SAFE FRAMING ────────────────────────────────────────────────────────────
+  // Computed after model loads — ensures no tyre cropping at any zoom level.
+  // safeZ = minimum camera Z that keeps the full car height in frame.
+  var safeZ   = 7.0;   // updated after load
+  var safeFOV = 45;    // updated after load
+
+  function computeSafeFrame(carBox, fov) {
+    // Full height of the car (wheels to roof) in world units
+    var h   = (carBox.max.y - carBox.min.y);
+    // Add 15% breathing room top and bottom
+    var pad = h * 1.15;
+    // Distance needed so pad/2 fits within half-FOV at current aspect
+    var aspect  = W() / H();
+    var vFovRad = (fov * Math.PI / 180);
+    // Vertical fit distance
+    var distV = (pad / 2) / Math.tan(vFovRad / 2);
+    // Horizontal fit distance (car width * 1.05 padding)
+    var w     = (carBox.max.x - carBox.min.x) * 1.05;
+    var hFovRad = 2 * Math.atan(Math.tan(vFovRad / 2) * aspect);
+    var distH = (w / 2) / Math.tan(hFovRad / 2);
+    return Math.max(distV, distH) + 0.5; // +0.5 extra margin
+  }
+
   // ── ZOOM KEYFRAMES ──────────────────────────────────────────────────────────
+  // [scrollPct, fov, zMultiplier]  — zMultiplier * safeZ gives actual camZ
+  // FOV floor raised to 38 (was 28) and z-multipliers kept ≥ 1.0 so we never
+  // get closer than the safe framing distance calculated from the bounding box.
   var ZK = [
-    [0.00, 45, 7.0],
-    [0.08, 36, 5.2],
-    [0.16, 52, 9.0],
-    [0.24, 34, 4.6],
-    [0.32, 50, 8.0],
-    [0.40, 32, 4.0],
-    [0.50, 54, 9.5],
-    [0.60, 36, 5.0],
-    [0.70, 46, 7.2],
-    [0.80, 31, 3.8],
-    [0.90, 50, 8.2],
-    [1.00, 28, 3.2],
+    [0.00, 48, 1.55],
+    [0.08, 40, 1.20],
+    [0.16, 54, 1.90],
+    [0.24, 38, 1.05],
+    [0.32, 52, 1.75],
+    [0.40, 38, 1.05],
+    [0.50, 55, 2.00],
+    [0.60, 40, 1.20],
+    [0.70, 48, 1.55],
+    [0.80, 38, 1.05],
+    [0.90, 52, 1.80],
+    [1.00, 38, 1.05],
   ];
 
   function smoothStep(t){ return t*t*(3-2*t); }
@@ -600,11 +626,13 @@
       if (pct >= ZK[i][0] && pct <= ZK[i+1][0]) {
         var t = (pct - ZK[i][0]) / (ZK[i+1][0] - ZK[i][0]);
         t = smoothStep(t);
-        return { fov: ZK[i][1] + (ZK[i+1][1]-ZK[i][1])*t,
-                 z:   ZK[i][2] + (ZK[i+1][2]-ZK[i][2])*t };
+        var fov  = ZK[i][1] + (ZK[i+1][1] - ZK[i][1]) * t;
+        var zMul = ZK[i][2] + (ZK[i+1][2] - ZK[i][2]) * t;
+        return { fov: fov, z: safeZ * zMul };
       }
     }
-    return { fov: ZK[ZK.length-1][1], z: ZK[ZK.length-1][2] };
+    var last = ZK[ZK.length - 1];
+    return { fov: last[1], z: safeZ * last[2] };
   }
 
   // ── LOAD GLB ────────────────────────────────────────────────────────────────
@@ -625,6 +653,15 @@
       // Position car so its lowest point sits exactly on the floor
       var minY = box.min.y * sc;
       car.position.set(-ctr.x * sc, -minY, -ctr.z * sc);
+
+      // Compute safe framing distance from actual world-space bounding box
+      var worldBox = new THREE.Box3().setFromObject(car);
+      safeZ = computeSafeFrame(worldBox, safeFOV);
+      // Sync initial camera and scroll targets
+      currentCamZ = safeZ * ZK[0][2];
+      targetCamZ  = currentCamZ;
+      currentFOV  = ZK[0][1];
+      targetFOV   = currentFOV;
 
       scene.add(car);
       setLoad(100, 'READY');

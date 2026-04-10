@@ -4,14 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Nissan GT-R Black Edition 2013</title>
-<script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-      "three/examples/jsm/loaders/GLTFLoader": "https://unpkg.com/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"
-    }
-  }
-</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -643,9 +636,10 @@
 
 </div>
 
-<script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function() {
 
 // ─── SCENE SETUP ─────────────────────────────────────────────────────────────
 const wrap = document.getElementById('canvas-wrap');
@@ -653,7 +647,7 @@ const W = () => wrap.clientWidth;
 const H = () => wrap.clientHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(W(), H());
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -671,8 +665,7 @@ camera.position.set(5, 1.6, 6);
 camera.lookAt(0, 0.3, 0);
 
 // ─── LIGHTS ──────────────────────────────────────────────────────────────────
-const ambient = new THREE.AmbientLight(0xffffff, 0.3);
-scene.add(ambient);
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
 const key = new THREE.DirectionalLight(0xffffff, 2.5);
 key.position.set(6, 8, 6);
@@ -706,7 +699,6 @@ ground.position.y = -0.78;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// Reflection strip
 const strip = new THREE.Mesh(
   new THREE.PlaneGeometry(3, 14),
   new THREE.MeshStandardMaterial({ color: 0xc8102e, emissive: 0xc8102e, emissiveIntensity: 0.06, roughness: 1 })
@@ -715,120 +707,115 @@ strip.rotation.x = -Math.PI / 2;
 strip.position.y = -0.779;
 scene.add(strip);
 
-// ─── LOADER ──────────────────────────────────────────────────────────────────
-const lbar = document.getElementById('lbar');
+// ─── LOADER UI ───────────────────────────────────────────────────────────────
+const lbar    = document.getElementById('lbar');
 const lstatus = document.getElementById('lstatus');
-const loader = document.getElementById('loader');
+const loaderEl = document.getElementById('loader');
 
 function setLoad(pct, txt) {
   lbar.style.width = pct + '%';
   if (txt) lstatus.textContent = txt;
 }
 
-setLoad(10, 'LOADING GLB...');
+setLoad(10, 'LOADING MODEL...');
 
-let car, mixer;
+let car;
 const clock = new THREE.Clock();
+let targetRotY = 0, currentRotY = 0;
+let targetPosX = 0, currentPosX = 0;
 
-// Scroll state
-let scrollY = 0;
-let targetRotY = 0;
-let currentRotY = 0;
-let targetPosX = 0;
-let currentPosX = 0;
-
-// ─── LOAD MODEL ──────────────────────────────────────────────────────────────
-setLoad(20, 'PARSING MODEL...');
-const gltfLoader = new GLTFLoader();
+// ─── LOAD GLB ────────────────────────────────────────────────────────────────
+const gltfLoader = new THREE.GLTFLoader();
 gltfLoader.load(
   'gtr.glb',
-  (gltf) => {
-    setLoad(90, 'BUILDING SCENE...');
+  function(gltf) {
+    setLoad(95, 'BUILDING SCENE...');
     car = gltf.scene;
-    car.traverse(child => {
+
+    car.traverse(function(child) {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
       }
     });
 
-    // Auto-centre
+    // Auto-centre & scale
     const box = new THREE.Box3().setFromObject(car);
     const centre = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
+    const size   = box.getSize(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 3.6 / maxDim;
+    const scale  = 3.6 / maxDim;
     car.scale.setScalar(scale);
-    car.position.set(-centre.x * scale, -centre.y * scale - box.min.y * scale * 0.5, -centre.z * scale);
+    car.position.set(
+      -centre.x * scale,
+      -box.min.y * scale,
+      -centre.z * scale
+    );
 
     scene.add(car);
     setLoad(100, 'READY');
 
-    setTimeout(() => {
-      loader.classList.add('hide');
-      setTimeout(() => loader.remove(), 700);
-    }, 400);
+    setTimeout(function() {
+      loaderEl.classList.add('hide');
+      setTimeout(function() { loaderEl.style.display = 'none'; }, 700);
+    }, 300);
 
     animate();
   },
-  (xhr) => {
-    const pct = 20 + (xhr.loaded / (xhr.total || 1)) * 65;
-    setLoad(pct, `LOADING MODEL... ${Math.round(pct)}%`);
+  function(xhr) {
+    if (xhr.total) {
+      const pct = 10 + (xhr.loaded / xhr.total) * 80;
+      setLoad(pct, 'LOADING MODEL... ' + Math.round(pct) + '%');
+    }
   },
-  (err) => {
-    console.error(err);
-    lstatus.textContent = 'ERROR — CHECK CONSOLE';
+  function(err) {
+    console.error('GLB load error:', err);
+    lstatus.textContent = 'ERROR LOADING MODEL';
   }
 );
 
-// ─── SCROLL LOGIC ────────────────────────────────────────────────────────────
-const progress = document.getElementById('progress');
-const hudScroll = document.getElementById('hud-scroll');
-const totalSections = 10;
+// ─── SCROLL ──────────────────────────────────────────────────────────────────
+const progressBar = document.getElementById('progress');
+const hudScroll   = document.getElementById('hud-scroll');
 
-window.addEventListener('scroll', () => {
-  scrollY = window.scrollY;
+window.addEventListener('scroll', function() {
   const docH = document.body.scrollHeight - window.innerHeight;
-  const pct = docH > 0 ? scrollY / docH : 0;
+  const pct  = docH > 0 ? window.scrollY / docH : 0;
 
-  progress.style.width = (pct * 100) + '%';
-  hudScroll.textContent = String(Math.round(pct * 100)).padStart(2, '0') + '%';
+  progressBar.style.width = (pct * 100) + '%';
+  hudScroll.textContent   = String(Math.round(pct * 100)).padStart(2, '0') + '%';
 
-  // Map scroll to rotation
-  targetRotY = pct * Math.PI * 4; // two full rotations over full scroll
+  targetRotY = pct * Math.PI * 3.5;
 
-  // Offset model side based on section
-  const sec = pct * 8;
-  const secInt = Math.floor(sec);
-  targetPosX = (secInt % 2 === 0) ? -0.5 : 0.5;
+  const sec = Math.floor(pct * 9);
+  targetPosX = (sec % 2 === 0) ? -0.4 : 0.4;
 
-  intersectPanels();
-  intersectBars(pct);
-  intersectOutro(pct);
+  checkBars();
+  checkOutro();
 }, { passive: true });
 
-// ─── PANEL INTERSECTION (simple) ─────────────────────────────────────────────
+// ─── PANEL INTERSECTION ──────────────────────────────────────────────────────
 const panels = document.querySelectorAll('.panel');
-const io = new IntersectionObserver(entries => {
-  entries.forEach(e => {
+const io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
     if (e.isIntersecting) e.target.classList.add('visible');
   });
 }, { threshold: 0.15 });
-panels.forEach(p => io.observe(p));
+panels.forEach(function(p) { io.observe(p); });
 
-function intersectBars(pct) {
+function checkBars() {
   const el = document.getElementById('stat-bars');
-  if (!el) return;
+  if (!el || el.classList.contains('visible')) return;
   const rect = el.getBoundingClientRect();
-  if (rect.top < window.innerHeight * 0.85 && !el.classList.contains('visible')) {
+  if (rect.top < window.innerHeight * 0.85) {
     el.classList.add('visible');
-    el.querySelectorAll('.bar-fill').forEach((f, i) => {
-      setTimeout(() => f.classList.add('go'), i * 120);
+    el.querySelectorAll('.bar-fill').forEach(function(f, i) {
+      setTimeout(function() { f.classList.add('go'); }, i * 130);
     });
   }
 }
 
-function intersectOutro(pct) {
+function checkOutro() {
   const el = document.getElementById('outro-title');
   if (!el) return;
   const rect = el.getBoundingClientRect();
@@ -838,22 +825,16 @@ function intersectOutro(pct) {
 // ─── ANIMATE ─────────────────────────────────────────────────────────────────
 function animate() {
   requestAnimationFrame(animate);
-  const dt = clock.getDelta();
+  const t = clock.getElapsedTime();
 
   if (car) {
-    // Smooth rotation & position
-    currentRotY += (targetRotY - currentRotY) * 0.04;
+    currentRotY += (targetRotY - currentRotY) * 0.05;
     currentPosX += (targetPosX - currentPosX) * 0.05;
     car.rotation.y = currentRotY;
     car.position.x = currentPosX;
-
-    // Gentle idle bob
-    const t = clock.getElapsedTime();
-    car.position.y = Math.sin(t * 0.7) * 0.03;
+    car.position.y = Math.sin(t * 0.7) * 0.025;
   }
 
-  // Camera subtle drift
-  const t = clock.getElapsedTime();
   camera.position.x = 5 + Math.sin(t * 0.15) * 0.3;
   camera.position.y = 1.6 + Math.sin(t * 0.2) * 0.1;
   camera.lookAt(0, 0.3, 0);
@@ -862,11 +843,13 @@ function animate() {
 }
 
 // ─── RESIZE ──────────────────────────────────────────────────────────────────
-window.addEventListener('resize', () => {
+window.addEventListener('resize', function() {
   camera.aspect = W() / H();
   camera.updateProjectionMatrix();
   renderer.setSize(W(), H());
 });
+
+})();
 </script>
 </body>
 </html>

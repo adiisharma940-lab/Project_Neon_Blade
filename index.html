@@ -443,16 +443,21 @@
   scene.background = new THREE.Color(0x050507);
   scene.fog = new THREE.FogExp2(0x050507, 0.016);
 
+  // ── CAMERA ── lower angle to frame tyres better
   var currentFOV = 45, targetFOV = 45;
   var currentCamZ = 7,  targetCamZ = 7;
   var currentCamX = 0,  targetCamX = 0;
+  // Camera sits lower (y=1.1 instead of 1.8) and looks at y=0.1 to keep tyres in frame
+  var CAM_Y      = 1.1;
+  var CAM_LOOK_Y = 0.1;
 
   var camera = new THREE.PerspectiveCamera(45, W()/H(), 0.1, 200);
-  camera.position.set(0, 1.8, 7);
-  camera.lookAt(0, 0.4, 0);
+  camera.position.set(0, CAM_Y, 7);
+  camera.lookAt(0, CAM_LOOK_Y, 0);
 
   // Lights
-  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
   var key = new THREE.DirectionalLight(0xffffff, 2.5);
   key.position.set(6, 8, 6); key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
@@ -460,19 +465,107 @@
   key.shadow.camera.left = key.shadow.camera.bottom = -6;
   key.shadow.camera.right = key.shadow.camera.top = 6;
   scene.add(key);
+
   var fill = new THREE.DirectionalLight(0x4488ff, 0.5); fill.position.set(-5, 3, -4); scene.add(fill);
   var rim  = new THREE.DirectionalLight(0xff2244, 0.7); rim.position.set(-3, 2, -6);  scene.add(rim);
-  var under = new THREE.PointLight(0xc8102e, 0.5, 10);  under.position.set(0, -0.8, 0); scene.add(under);
 
-  // Ground
-  var ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(60, 60),
-    new THREE.MeshStandardMaterial({ color:0x080810, roughness:0.95, metalness:0.05 })
-  );
-  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.01; ground.receiveShadow = true;
-  scene.add(ground);
+  // Low-angle tyre-wash light — skims along the ground to pick out tyre detail
+  var tyreLight = new THREE.DirectionalLight(0xff3355, 1.2);
+  tyreLight.position.set(0, 0.3, 5);
+  scene.add(tyreLight);
 
-  // Loader UI refs
+  // Underbody red glow (kept from original)
+  var under = new THREE.PointLight(0xc8102e, 0.6, 10);
+  under.position.set(0, -0.5, 0);
+  scene.add(under);
+
+  // ── GARAGE FLOOR (replaces plain dark ground) ──────────────────────────────
+  // Base slab — dark polished concrete
+  var floorMat = new THREE.MeshStandardMaterial({
+    color: 0x0a0a10,
+    roughness: 0.25,
+    metalness: 0.55,
+  });
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -0.002;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // Red grid lines on the floor via a canvas texture
+  (function buildFloorGrid() {
+    var size  = 1024;
+    var cells = 32;        // grid divisions
+    var c     = document.createElement('canvas');
+    c.width = c.height = size;
+    var ctx = c.getContext('2d');
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, size, size);
+
+    var step = size / cells;
+
+    // Outer glow pass (thicker, dimmer)
+    ctx.strokeStyle = 'rgba(200,16,46,0.18)';
+    ctx.lineWidth = 4;
+    for (var i = 0; i <= cells; i++) {
+      var p = i * step;
+      ctx.beginPath(); ctx.moveTo(p, 0);   ctx.lineTo(p, size); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, p);   ctx.lineTo(size, p); ctx.stroke();
+    }
+
+    // Core bright lines
+    ctx.strokeStyle = 'rgba(200,16,46,0.55)';
+    ctx.lineWidth = 1.5;
+    for (var j = 0; j <= cells; j++) {
+      var q = j * step;
+      ctx.beginPath(); ctx.moveTo(q, 0);   ctx.lineTo(q, size); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, q);   ctx.lineTo(size, q); ctx.stroke();
+    }
+
+    // Centre crosshair accent
+    var cx = size / 2;
+    ctx.strokeStyle = 'rgba(255,30,60,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx, 0);    ctx.lineTo(cx, size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, cx);    ctx.lineTo(size, cx); ctx.stroke();
+
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 3);
+
+    var gridMat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false,
+    });
+    var grid = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), gridMat);
+    grid.rotation.x = -Math.PI / 2;
+    grid.position.y = 0.001;
+    scene.add(grid);
+  })();
+
+  // Red neon strip lights along floor edges (two glowing bars)
+  function makeNeonBar(x, z, len, axis) {
+    var geo = axis === 'x'
+      ? new THREE.BoxGeometry(len, 0.02, 0.04)
+      : new THREE.BoxGeometry(0.04, 0.02, len);
+    var mat = new THREE.MeshBasicMaterial({ color: 0xff1a3c });
+    var bar = new THREE.Mesh(geo, mat);
+    bar.position.set(x, 0.01, z);
+    scene.add(bar);
+    // Point light above bar
+    var pl = new THREE.PointLight(0xff1a3c, 0.8, 8);
+    pl.position.set(x, 0.25, z);
+    scene.add(pl);
+  }
+  makeNeonBar(0,  -5, 14, 'x');
+  makeNeonBar(0,   5, 14, 'x');
+  makeNeonBar(-7,  0, 10, 'z');
+  makeNeonBar( 7,  0, 10, 'z');
+
+  // Loader UI
   var lbar     = document.getElementById('lbar');
   var lstatus  = document.getElementById('lstatus');
   var loaderEl = document.getElementById('loader');
@@ -484,8 +577,7 @@
   var targetRotY = 0, currentRotY = 0;
   var targetPosX = 0, currentPosX = 0;
 
-  // ── ZOOM KEYFRAMES ─────────────────────────────────────────────────────────
-  // [scrollPct, fov, camZ]  — lower fov + lower Z = zoomed in
+  // ── ZOOM KEYFRAMES ──────────────────────────────────────────────────────────
   var ZK = [
     [0.00, 45, 7.0],
     [0.08, 36, 5.2],
@@ -515,7 +607,7 @@
     return { fov: ZK[ZK.length-1][1], z: ZK[ZK.length-1][2] };
   }
 
-  // ── LOAD GLB ───────────────────────────────────────────────────────────────
+  // ── LOAD GLB ────────────────────────────────────────────────────────────────
   var gltfLoader = new THREE.GLTFLoader();
   gltfLoader.load(
     '2013_nissan_gt-r_black_edition_coupe.glb',
@@ -523,12 +615,17 @@
       setLoad(95, 'BUILDING SCENE...');
       car = gltf.scene;
       car.traverse(function(c){ if(c.isMesh){ c.castShadow=true; c.receiveShadow=true; } });
-      var box   = new THREE.Box3().setFromObject(car);
-      var ctr   = box.getCenter(new THREE.Vector3());
-      var size  = box.getSize(new THREE.Vector3());
-      var sc    = 3.8 / Math.max(size.x, size.y, size.z);
+
+      var box  = new THREE.Box3().setFromObject(car);
+      var ctr  = box.getCenter(new THREE.Vector3());
+      var size = box.getSize(new THREE.Vector3());
+      var sc   = 3.8 / Math.max(size.x, size.y, size.z);
       car.scale.setScalar(sc);
-      car.position.set(-ctr.x*sc, -box.min.y*sc, -ctr.z*sc);
+
+      // Position car so its lowest point sits exactly on the floor
+      var minY = box.min.y * sc;
+      car.position.set(-ctr.x * sc, -minY, -ctr.z * sc);
+
       scene.add(car);
       setLoad(100, 'READY');
       setTimeout(function(){
@@ -541,7 +638,7 @@
     function(err){ console.error('GLB error:',err); lstatus.textContent='ERROR: '+(err.message||'Load failed'); }
   );
 
-  // ── SCROLL ─────────────────────────────────────────────────────────────────
+  // ── SCROLL ──────────────────────────────────────────────────────────────────
   var progressBar = document.getElementById('progress');
   var hudScroll   = document.getElementById('hud-scroll');
   var zoomLabel   = document.getElementById('zoom-label');
@@ -563,7 +660,6 @@
     targetFOV  = zm.fov;
     targetCamZ = zm.z;
 
-    // zoom HUD
     var zv = (7 / zm.z).toFixed(1);
     zoomLabel.textContent = 'ZOOM ' + zv + '\u00D7';
     zoomBarEl.style.width = Math.min(100, Math.max(10, (1-(zm.fov-28)/30)*100)) + '%';
@@ -595,7 +691,7 @@
     });
   }
 
-  // ── ANIMATE ────────────────────────────────────────────────────────────────
+  // ── ANIMATE ─────────────────────────────────────────────────────────────────
   var LERP = 0.055;
   function animate() {
     requestAnimationFrame(animate);
@@ -609,15 +705,18 @@
 
     camera.fov = currentFOV;
     camera.updateProjectionMatrix();
+
+    // Camera stays lower (CAM_Y) with gentle float to keep wheels visible
     camera.position.x = currentCamX + Math.sin(t*0.14)*0.18;
-    camera.position.y = 1.8 + Math.sin(t*0.18)*0.07;
+    camera.position.y = CAM_Y + Math.sin(t*0.18)*0.05;
     camera.position.z = currentCamZ;
-    camera.lookAt(0, 0.4, 0);
+    camera.lookAt(0, CAM_LOOK_Y, 0);
 
     if (car) {
       car.rotation.y = currentRotY;
       car.position.x = currentPosX;
-      car.position.y = Math.sin(t*0.7)*0.022;
+      // Subtle breathing — smaller amplitude so bottom of tyres stay near floor
+      car.position.y = Math.sin(t*0.7)*0.012;
     }
 
     renderer.render(scene, camera);

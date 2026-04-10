@@ -4,388 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Nissan GT-R Black Edition 2013</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --red: #c8102e;
-    --red-glow: #ff1a3c;
-    --dark: #050507;
-    --darker: #020203;
-    --panel: rgba(8,8,12,0.92);
-    --text: #e8e8e8;
-    --muted: #888;
-    --accent: #c8102e;
-    --border: rgba(200,16,46,0.3);
+    --red:#c8102e; --red-glow:#ff1a3c; --dark:#050507; --darker:#020203;
+    --panel:rgba(8,8,12,0.92); --text:#e8e8e8; --muted:#888; --border:rgba(200,16,46,0.3);
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--dark);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
 
-  html { scroll-behavior: smooth; }
+  #canvas-wrap{position:fixed;inset:0;z-index:0;background:var(--darker);}
+  #canvas-wrap canvas{width:100%!important;height:100%!important;display:block;}
+  #canvas-wrap::after{content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(rgba(200,16,46,0.04)1px,transparent 1px),
+               linear-gradient(90deg,rgba(200,16,46,0.04)1px,transparent 1px);
+    background-size:60px 60px;}
 
-  body {
-    background: var(--dark);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    overflow-x: hidden;
-  }
+  #scroll-container{position:relative;z-index:10;pointer-events:none;}
 
-  /* ── STICKY 3D CANVAS ── */
-  #canvas-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background: var(--darker);
-  }
-  #canvas-wrap canvas { width: 100% !important; height: 100% !important; display: block; }
+  /* HERO */
+  #hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 8vh;}
+  .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.4vw,14px);letter-spacing:.4em;color:var(--red);margin-bottom:10px;opacity:0;transform:translateY(20px);animation:fadeUp .8s .3s forwards;}
+  .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,11vw,160px);line-height:.88;opacity:0;transform:translateY(40px);animation:fadeUp .9s .5s forwards;}
+  .hero-title span{color:var(--red);}
+  .hero-sub{margin-top:20px;font-size:clamp(14px,2vw,20px);font-weight:300;color:var(--muted);letter-spacing:.15em;opacity:0;transform:translateY(20px);animation:fadeUp .8s .8s forwards;}
+  .scroll-hint{margin-top:40px;display:flex;align-items:center;gap:14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--muted);opacity:0;animation:fadeUp .8s 1.2s forwards;}
+  .scroll-hint-line{width:40px;height:1px;background:var(--red);overflow:hidden;position:relative;}
+  .scroll-hint-line::after{content:'';position:absolute;left:-100%;top:0;width:100%;height:100%;background:#fff;animation:scanLine 1.5s 1.8s infinite;}
+  @keyframes scanLine{0%{left:-100%}100%{left:200%}}
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
 
-  /* grid overlay */
-  #canvas-wrap::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(rgba(200,16,46,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(200,16,46,0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
+  /* SECTIONS */
+  .section{min-height:100vh;display:flex;align-items:center;padding:6vh 6vw;}
+  .section.right{justify-content:flex-end;}
 
-  /* ── SCROLL CONTAINER ── */
-  #scroll-container {
-    position: relative;
-    z-index: 10;
-    pointer-events: none;
-  }
+  .panel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);
+    padding:clamp(24px,4vw,48px);max-width:min(520px,90vw);backdrop-filter:blur(12px);
+    position:relative;opacity:0;transform:translateX(-40px);transition:opacity .7s,transform .7s;}
+  .panel.right-panel{border-left:1px solid var(--border);border-right:3px solid var(--red);transform:translateX(40px);}
+  .panel.visible{opacity:1;transform:translateX(0);}
+  .panel::before{content:attr(data-index);position:absolute;top:-18px;left:16px;
+    font-family:'Bebas Neue',sans-serif;font-size:72px;color:rgba(200,16,46,0.07);line-height:1;pointer-events:none;user-select:none;}
+  .panel-tag{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.4em;color:var(--red);margin-bottom:10px;text-transform:uppercase;}
+  .panel-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,52px);line-height:1;margin-bottom:16px;letter-spacing:.03em;}
+  .panel-body{font-size:clamp(13px,1.6vw,16px);line-height:1.75;color:#bbb;font-weight:300;}
 
-  /* ── HERO ── */
-  #hero {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 0 6vw 8vh;
-    pointer-events: none;
-  }
-  .hero-eyebrow {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: clamp(10px, 1.4vw, 14px);
-    letter-spacing: 0.4em;
-    color: var(--red);
-    margin-bottom: 10px;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 0.8s 0.3s forwards;
-  }
-  .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(56px, 11vw, 160px);
-    line-height: 0.88;
-    letter-spacing: -0.02em;
-    opacity: 0;
-    transform: translateY(40px);
-    animation: fadeUp 0.9s 0.5s forwards;
-  }
-  .hero-title span { color: var(--red); }
-  .hero-sub {
-    margin-top: 20px;
-    font-size: clamp(14px, 2vw, 20px);
-    font-weight: 300;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 0.8s 0.8s forwards;
-  }
-  .scroll-hint {
-    margin-top: 40px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-    opacity: 0;
-    animation: fadeUp 0.8s 1.2s forwards;
-  }
-  .scroll-hint-line {
-    width: 40px; height: 1px;
-    background: var(--red);
-    position: relative;
-    overflow: hidden;
-  }
-  .scroll-hint-line::after {
-    content: '';
-    position: absolute;
-    left: -100%; top: 0;
-    width: 100%; height: 100%;
-    background: #fff;
-    animation: scanLine 1.5s 1.8s infinite;
-  }
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:24px;border:1px solid var(--border);}
+  .stat-cell{padding:14px 16px;background:rgba(200,16,46,0.04);border:1px solid rgba(200,16,46,0.08);}
+  .stat-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,40px);color:var(--red);line-height:1;}
+  .stat-unit{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-left:2px;}
+  .stat-label{font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
 
-  @keyframes scanLine { 0%{left:-100%} 100%{left:200%} }
-  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .spec-table{width:100%;margin-top:20px;border-collapse:collapse;}
+  .spec-table tr{border-bottom:1px solid rgba(200,16,46,0.1);}
+  .spec-table tr:last-child{border-bottom:none;}
+  .spec-table td{padding:8px 0;font-size:clamp(12px,1.5vw,14px);}
+  .spec-table td:first-child{color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.1em;width:45%;padding-right:12px;}
+  .spec-table td:last-child{color:var(--text);font-weight:600;}
 
-  /* ── SECTION PANELS ── */
-  .section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    padding: 6vh 6vw;
-    pointer-events: none;
-  }
-  .section.right { justify-content: flex-end; }
-  .section.center { justify-content: center; }
+  .stat-bar-section{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:6vh 6vw;}
+  .stat-bars{width:min(700px,90vw);background:var(--panel);border:1px solid var(--border);
+    padding:clamp(24px,4vw,48px);backdrop-filter:blur(12px);opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s;}
+  .stat-bars.visible{opacity:1;transform:translateY(0);}
+  .bar-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);margin-bottom:30px;letter-spacing:.05em;}
+  .bar-row{margin-bottom:20px;}
+  .bar-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;letter-spacing:.15em;}
+  .bar-name{color:var(--muted);text-transform:uppercase;}
+  .bar-val{color:var(--red);font-family:'Share Tech Mono',monospace;}
+  .bar-track{height:4px;background:rgba(255,255,255,0.06);overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-glow));width:0%;
+    transition:width 1.2s cubic-bezier(.16,1,.3,1);box-shadow:0 0 12px var(--red-glow);}
+  .bar-fill.go{width:var(--pct);}
 
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--red);
-    padding: clamp(24px, 4vw, 48px);
-    max-width: min(520px, 90vw);
-    backdrop-filter: blur(12px);
-    position: relative;
-    opacity: 0;
-    transform: translateX(-40px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  .panel.right-panel {
-    border-left: 1px solid var(--border);
-    border-right: 3px solid var(--red);
-    transform: translateX(40px);
-  }
-  .panel.visible { opacity: 1; transform: translateX(0); }
+  #outro{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6vh 6vw;gap:20px;}
+  .outro-label{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.5em;color:var(--red);}
+  .outro-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,160px);line-height:.88;opacity:0;transform:scale(0.9);transition:opacity .9s,transform .9s;}
+  .outro-title.visible{opacity:1;transform:scale(1);}
 
-  .panel::before {
-    content: attr(data-index);
-    position: absolute;
-    top: -18px; left: 16px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 72px;
-    color: rgba(200,16,46,0.07);
-    line-height: 1;
-    pointer-events: none;
-    user-select: none;
-  }
+  #progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--red),var(--red-glow));z-index:100;width:0%;box-shadow:0 0 8px var(--red-glow);}
+  #hud{position:fixed;top:24px;right:24px;z-index:100;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.2em;color:rgba(200,16,46,0.7);text-align:right;line-height:1.8;pointer-events:none;}
 
-  .panel-tag {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.4em;
-    color: var(--red);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-  .panel-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(30px, 5vw, 52px);
-    line-height: 1;
-    margin-bottom: 16px;
-    letter-spacing: 0.03em;
-  }
-  .panel-body {
-    font-size: clamp(13px, 1.6vw, 16px);
-    line-height: 1.75;
-    color: #bbb;
-    font-weight: 300;
-  }
-
-  /* ── STATS GRID ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin-top: 24px;
-    border: 1px solid var(--border);
-  }
-  .stat-cell {
-    padding: 14px 16px;
-    background: rgba(200,16,46,0.04);
-    border: 1px solid rgba(200,16,46,0.08);
-  }
-  .stat-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(28px, 4vw, 40px);
-    color: var(--red);
-    line-height: 1;
-  }
-  .stat-unit {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    margin-left: 2px;
-  }
-  .stat-label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  /* ── SPEC TABLE ── */
-  .spec-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-  .spec-table tr { border-bottom: 1px solid rgba(200,16,46,0.1); }
-  .spec-table tr:last-child { border-bottom: none; }
-  .spec-table td {
-    padding: 8px 0;
-    font-size: clamp(12px, 1.5vw, 14px);
-  }
-  .spec-table td:first-child {
-    color: var(--muted);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    width: 45%;
-    padding-right: 12px;
-  }
-  .spec-table td:last-child { color: var(--text); font-weight: 600; }
-
-  /* ── FULL-WIDTH STAT BAR ── */
-  .stat-bar-section {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6vh 6vw;
-    pointer-events: none;
-  }
-  .stat-bars {
-    width: min(700px, 90vw);
-    background: var(--panel);
-    border: 1px solid var(--border);
-    padding: clamp(24px, 4vw, 48px);
-    backdrop-filter: blur(12px);
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.7s, transform 0.7s;
-  }
-  .stat-bars.visible { opacity: 1; transform: translateY(0); }
-  .bar-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(28px, 4vw, 44px);
-    margin-bottom: 30px;
-    letter-spacing: 0.05em;
-  }
-  .bar-row { margin-bottom: 20px; }
-  .bar-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 6px;
-    font-size: 12px;
-    letter-spacing: 0.15em;
-  }
-  .bar-name { color: var(--muted); text-transform: uppercase; }
-  .bar-val { color: var(--red); font-family: 'Share Tech Mono', monospace; }
-  .bar-track {
-    height: 4px;
-    background: rgba(255,255,255,0.06);
-    position: relative;
-    overflow: hidden;
-  }
-  .bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--red), var(--red-glow));
-    width: 0%;
-    transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
-    box-shadow: 0 0 12px var(--red-glow);
-  }
-  .bar-fill.go { width: var(--pct); }
-
-  /* ── OUTRO ── */
-  #outro {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 6vh 6vw;
-    pointer-events: none;
-    gap: 20px;
-  }
-  .outro-label {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.5em;
-    color: var(--red);
-  }
-  .outro-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(52px, 12vw, 160px);
-    line-height: 0.88;
-    opacity: 0;
-    transform: scale(0.9);
-    transition: opacity 0.9s, transform 0.9s;
-  }
-  .outro-title.visible { opacity: 1; transform: scale(1); }
-
-  /* ── PROGRESS BAR ── */
-  #progress {
-    position: fixed;
-    top: 0; left: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--red), var(--red-glow));
-    z-index: 100;
-    transition: width 0.1s linear;
-    box-shadow: 0 0 8px var(--red-glow);
-  }
-
-  /* ── CORNER HUD ── */
-  #hud {
-    position: fixed;
-    top: 24px; right: 24px;
-    z-index: 100;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: rgba(200,16,46,0.7);
-    text-align: right;
-    line-height: 1.8;
-    pointer-events: none;
-  }
-
-  /* ── LOADING SCREEN ── */
-  #loader {
-    position: fixed;
-    inset: 0;
-    background: var(--darker);
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    transition: opacity 0.6s;
-  }
-  #loader.hide { opacity: 0; pointer-events: none; }
-  .loader-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(36px, 6vw, 72px);
-    letter-spacing: 0.1em;
-    color: var(--red);
-  }
-  .loader-bar-wrap {
-    width: 240px;
-    height: 2px;
-    background: rgba(255,255,255,0.08);
-    position: relative;
-    overflow: hidden;
-  }
-  .loader-bar {
-    height: 100%;
-    background: var(--red);
-    width: 0%;
-    transition: width 0.3s linear;
-    box-shadow: 0 0 10px var(--red-glow);
-  }
-  .loader-status {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-  }
+  #loader{position:fixed;inset:0;background:var(--darker);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s;}
+  #loader.hide{opacity:0;pointer-events:none;}
+  .loader-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:.1em;color:var(--red);}
+  .loader-bar-wrap{width:240px;height:2px;background:rgba(255,255,255,0.08);overflow:hidden;}
+  .loader-bar{height:100%;background:var(--red);width:0%;transition:width .3s linear;box-shadow:0 0 10px var(--red-glow);}
+  .loader-status{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -393,33 +98,23 @@
 <div id="loader">
   <div class="loader-title">GT-R</div>
   <div class="loader-bar-wrap"><div class="loader-bar" id="lbar"></div></div>
-  <div class="loader-status" id="lstatus">INITIALIZING ENGINE...</div>
+  <div class="loader-status" id="lstatus">LOADING MODEL...</div>
 </div>
 
 <div id="progress"></div>
-
-<div id="hud">
-  NISSAN GT-R R35<br>
-  BLACK EDITION 2013<br>
-  <span id="hud-scroll">00%</span>
-</div>
+<div id="hud">NISSAN GT-R R35<br>BLACK EDITION 2013<br><span id="hud-scroll">00%</span></div>
 
 <div id="canvas-wrap"></div>
 
 <div id="scroll-container">
 
-  <!-- HERO -->
   <section id="hero">
     <div class="hero-eyebrow">2013 // BLACK EDITION // R35</div>
     <h1 class="hero-title">NISSAN<br><span>GT-R</span></h1>
     <p class="hero-sub">The Supercar Killer. Born from the Track.</p>
-    <div class="scroll-hint">
-      <div class="scroll-hint-line"></div>
-      SCROLL TO EXPLORE
-    </div>
+    <div class="scroll-hint"><div class="scroll-hint-line"></div>SCROLL TO EXPLORE</div>
   </section>
 
-  <!-- SECTION 1: LEGACY -->
   <section class="section">
     <div class="panel" data-index="01">
       <div class="panel-tag">Heritage // Legacy</div>
@@ -432,41 +127,27 @@
     </div>
   </section>
 
-  <!-- SECTION 2: PERFORMANCE STATS -->
   <section class="section right">
     <div class="panel right-panel" data-index="02">
       <div class="panel-tag">Performance // Numbers</div>
       <h2 class="panel-title">Raw Numbers</h2>
       <div class="stats-grid">
-        <div class="stat-cell">
-          <div class="stat-val">545<span class="stat-unit">HP</span></div>
-          <div class="stat-label">Peak Power</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-val">463<span class="stat-unit">LB·FT</span></div>
-          <div class="stat-label">Peak Torque</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-val">2.7<span class="stat-unit">SEC</span></div>
-          <div class="stat-label">0–60 MPH</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-val">196<span class="stat-unit">MPH</span></div>
-          <div class="stat-label">Top Speed</div>
-        </div>
+        <div class="stat-cell"><div class="stat-val">545<span class="stat-unit">HP</span></div><div class="stat-label">Peak Power</div></div>
+        <div class="stat-cell"><div class="stat-val">463<span class="stat-unit">LB·FT</span></div><div class="stat-label">Peak Torque</div></div>
+        <div class="stat-cell"><div class="stat-val">2.7<span class="stat-unit">SEC</span></div><div class="stat-label">0–60 MPH</div></div>
+        <div class="stat-cell"><div class="stat-val">196<span class="stat-unit">MPH</span></div><div class="stat-label">Top Speed</div></div>
       </div>
     </div>
   </section>
 
-  <!-- SECTION 3: ENGINE -->
   <section class="section">
     <div class="panel" data-index="03">
       <div class="panel-tag">Powertrain // VR38DETT</div>
       <h2 class="panel-title">The Heart of a God</h2>
       <p class="panel-body">
-        Beneath the long aluminum hood sits the VR38DETT — a hand-assembled, 3.8-litre twin-turbocharged V6 that Nissan's master engine builder Shoichi Miyatani signs by hand on every unit. Not a robot. Not an assembly line. A human being accountable for every tolerance, every torque spec, every seal.
+        Beneath the long aluminium hood sits the VR38DETT — a hand-assembled 3.8-litre twin-turbocharged V6 that Nissan's master engine builder Shoichi Miyatani signs by hand on every single unit. Not a robot. Not an assembly line. A human being accountable for every tolerance, every torque spec, every seal.
         <br><br>
-        For the 2013 Black Edition, this engine produces 545 horsepower and 463 lb-ft of torque. Twin Garrett turbochargers spool with ferocious urgency, delivering linear, relentless thrust from idle to redline. The dry-sump oil system means it corners without oil starvation. The engine block is aluminium. The cylinder liners are cast iron. Every component exists to serve one purpose: transfer energy to the road with zero compromise.
+        Twin Garrett turbochargers spool with ferocious urgency, delivering linear, relentless thrust from idle to redline. The dry-sump oil system means it corners without oil starvation. The engine block is aluminium. The cylinder liners are cast iron. Every component exists to serve one purpose: transfer energy to the road with zero compromise.
       </p>
       <table class="spec-table">
         <tr><td>Engine</td><td>VR38DETT V6 TT</td></tr>
@@ -474,127 +155,101 @@
         <tr><td>Compression</td><td>9.0:1</td></tr>
         <tr><td>Redline</td><td>7,100 RPM</td></tr>
         <tr><td>Fuel System</td><td>Direct Injection</td></tr>
-        <tr><td>Boost</td><td>10.2 PSI (stock)</td></tr>
+        <tr><td>Boost Pressure</td><td>10.2 PSI stock</td></tr>
       </table>
     </div>
   </section>
 
-  <!-- SECTION 4: GEARBOX -->
   <section class="section right">
     <div class="panel right-panel" data-index="04">
       <div class="panel-tag">Transmission // ATTESA E-TS</div>
       <h2 class="panel-title">Lightning-Fast Shifts</h2>
       <p class="panel-body">
-        The GT-R's 6-speed dual-clutch transaxle (GR6) is mounted at the rear axle in a transaxle layout, creating near 50/50 weight distribution. The result: shifts that happen in 0.15 seconds — faster than a human nerve impulse. Three driving modes — Normal, Sport, and R — adjust shift speed, aggression, and clutch engagement to match the moment.
+        The GT-R's 6-speed dual-clutch transaxle (GR6) is mounted at the rear axle, creating near-perfect 53/47 weight distribution. Shifts happen in 0.15 seconds — faster than a human nerve impulse. Three driving modes — Normal, Sport, and R — adjust shift speed, aggression, and clutch engagement to match the moment.
         <br><br>
-        But the real magic is ATTESA E-TS AWD. This intelligent torque-vectoring all-wheel drive system monitors g-forces, steering angle, and wheel slip hundreds of times per second. Under hard acceleration, it can push up to 100% of torque to the rear wheels. In a corner gone wrong, it redistributes instantly. It doesn't just prevent mistakes — it makes the impossible routine.
+        The ATTESA E-TS AWD system monitors g-forces, steering angle, and wheel slip hundreds of times per second. Under hard acceleration, it can push up to 100% of torque to the rear. In a corner gone wrong, it redistributes instantly. It doesn't just prevent mistakes — it makes the impossible routine.
       </p>
       <table class="spec-table">
         <tr><td>Type</td><td>6-Speed Dual-Clutch</td></tr>
         <tr><td>Layout</td><td>Rear Transaxle</td></tr>
         <tr><td>Shift Time</td><td>0.15 seconds</td></tr>
         <tr><td>Drive System</td><td>ATTESA E-TS AWD</td></tr>
-        <tr><td>Rear Torque</td><td>Up to 100%</td></tr>
-        <tr><td>Modes</td><td>Normal / Sport / R</td></tr>
+        <tr><td>Rear Torque Max</td><td>100%</td></tr>
+        <tr><td>Drive Modes</td><td>Normal / Sport / R</td></tr>
       </table>
     </div>
   </section>
 
-  <!-- SECTION 5: AERO + CHASSIS -->
   <section class="section">
     <div class="panel" data-index="05">
       <div class="panel-tag">Aerodynamics // Chassis</div>
       <h2 class="panel-title">Sculpted by Wind</h2>
       <p class="panel-body">
-        Every line on the GT-R's body is purposeful. The front fascia channels 30% of its air beneath the car to the underbody diffuser, generating downforce at speed without drag-inducing wings above. The rear ducktail spoiler is sized to press the rear axle into the road precisely as grip is needed. The wide rear haunches house larger tyres — 285mm rubber that claw into tarmac.
+        Every line on the GT-R's body is purposeful. The front fascia channels air beneath the car to the underbody diffuser, generating downforce at speed without drag-inducing wings. The rear ducktail spoiler presses the rear axle into the road precisely as grip is needed. Wide rear haunches house 285mm tyres that claw into tarmac.
         <br><br>
-        The chassis is a rigid steel monocoque with front and rear multi-link suspension tuned by Bilstein. The suspension setup is computer-tuned to millisecond precision, adjustable via the DampTronic system across three modes. Brembo brakes with six-piston calipers up front and four-piston rear can haul the GT-R from 100 to 0 in just 31 metres. That's trust. That's engineering. That's GT-R.
+        The chassis is a rigid steel monocoque with front and rear multi-link suspension tuned by Bilstein, adjustable via the DampTronic system across three modes. Brembo brakes with six-piston front calipers haul the GT-R from 100 to 0 in just 31 metres.
       </p>
     </div>
   </section>
 
-  <!-- STAT BARS -->
   <section class="stat-bar-section">
     <div class="stat-bars" id="stat-bars">
       <div class="bar-title">Performance Benchmarks</div>
-
-      <div class="bar-row">
-        <div class="bar-meta"><span class="bar-name">Horsepower</span><span class="bar-val">545 HP</span></div>
-        <div class="bar-track"><div class="bar-fill" style="--pct:88%"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-meta"><span class="bar-name">0–60 mph Speed</span><span class="bar-val">2.7s</span></div>
-        <div class="bar-track"><div class="bar-fill" style="--pct:95%"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-meta"><span class="bar-name">Lateral G-Force</span><span class="bar-val">1.01g</span></div>
-        <div class="bar-track"><div class="bar-fill" style="--pct:82%"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-meta"><span class="bar-name">Nürburgring Lap</span><span class="bar-val">7:18.6</span></div>
-        <div class="bar-track"><div class="bar-fill" style="--pct:91%"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-meta"><span class="bar-name">Braking (60–0 mph)</span><span class="bar-val">99 ft</span></div>
-        <div class="bar-track"><div class="bar-fill" style="--pct:86%"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-meta"><span class="bar-name">Weight Balance (F/R)</span><span class="bar-val">53/47</span></div>
-        <div class="bar-track"><div class="bar-fill" style="--pct:75%"></div></div>
-      </div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Horsepower</span><span class="bar-val">545 HP</span></div><div class="bar-track"><div class="bar-fill" style="--pct:88%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">0–60 mph Speed</span><span class="bar-val">2.7s</span></div><div class="bar-track"><div class="bar-fill" style="--pct:95%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Lateral G-Force</span><span class="bar-val">1.01g</span></div><div class="bar-track"><div class="bar-fill" style="--pct:82%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Nürburgring Lap</span><span class="bar-val">7:18.6</span></div><div class="bar-track"><div class="bar-fill" style="--pct:91%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Braking 60–0 mph</span><span class="bar-val">99 ft</span></div><div class="bar-track"><div class="bar-fill" style="--pct:86%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Weight Balance F/R</span><span class="bar-val">53/47</span></div><div class="bar-track"><div class="bar-fill" style="--pct:75%"></div></div></div>
     </div>
   </section>
 
-  <!-- SECTION 6: BLACK EDITION DETAILS -->
   <section class="section right">
     <div class="panel right-panel" data-index="06">
       <div class="panel-tag">Black Edition // Exclusives</div>
       <h2 class="panel-title">Beyond Standard</h2>
       <p class="panel-body">
-        The Black Edition isn't a trim package. It's a statement. Exclusive to the 2013 model year, it adds an array of darkened visual treatments and performance-tuned components that distinguish it from the base Premium. It exists for those who find the standard GT-R insufficiently aggressive — a difficult complaint to make, but one Nissan answered regardless.
+        The Black Edition isn't a trim package. It's a statement. Exclusive 20-inch Rays forged aluminium wheels in Midnight Opal finish are lighter than cast wheels by 2 kg per corner, directly reducing unsprung mass for faster steering response. Carbon fibre interior trim extends to door inserts and centre console.
         <br><br>
-        Exclusive features include 20-inch Rays forged aluminium wheels in Midnight Opal finish — lighter than cast wheels by 2 kg per corner, directly reducing unsprung mass for faster steering response. The carbon fibre interior trim extends to door inserts and centre console. Red stitching on Recaro-style leather seats contrasts against the dark cabin. A dedicated lap timer integrated into the multi-function display turns every drive into a trackday.
+        Red stitching on Recaro-style leather seats contrasts against the dark cabin. A dedicated lap timer integrated into the multi-function display turns every drive into a trackday. Pearl Black paint absorbs light like obsidian. Everything is intentional.
       </p>
       <table class="spec-table">
-        <tr><td>Wheels</td><td>20" Rays Forged / Midnight Opal</td></tr>
-        <tr><td>Brake Calipers</td><td>Brembo / Bright Red</td></tr>
+        <tr><td>Wheels</td><td>20" Rays Forged Midnight Opal</td></tr>
+        <tr><td>Brake Calipers</td><td>Brembo Bright Red</td></tr>
         <tr><td>Exterior</td><td>Exclusive Pearl Black</td></tr>
         <tr><td>Interior Trim</td><td>Carbon Fibre + Red Stitch</td></tr>
-        <tr><td>Seats</td><td>Recaro Sport / Suede</td></tr>
+        <tr><td>Seats</td><td>Recaro Sport Suede</td></tr>
         <tr><td>Lap Timer</td><td>Multi-Function Display</td></tr>
       </table>
     </div>
   </section>
 
-  <!-- SECTION 7: INTERIOR TECH -->
   <section class="section">
     <div class="panel" data-index="07">
       <div class="panel-tag">Interior // Technology</div>
       <h2 class="panel-title">The Cockpit Mentality</h2>
       <p class="panel-body">
-        Step inside the GT-R and the world outside ceases to exist. The driver-focused cockpit wraps around you with purpose and intent. Every control is within reach. Every display feeds critical information without distraction. The multi-function 7-inch display can be configured to show turbo boost, g-forces, lap times, tyre pressures, and exhaust sound profiles simultaneously.
+        Step inside and the world outside ceases to exist. The driver-focused cockpit wraps around you with purpose and intent. Every control is within reach. The multi-function 7-inch display can be configured to show turbo boost, g-forces, lap times, tyre pressures, and exhaust sound profiles simultaneously.
         <br><br>
-        The 11-speaker Bose Premium Audio system delivers 710 watts of concert-hall clarity — because a car this precise deserves music reproduced with equal fidelity. Nissan ConnectNav 3 provides real-time traffic, Bluetooth connectivity, and satellite navigation. Dual-zone climate control maintains perfect conditions. And despite its fearsome performance credentials, the GT-R offers legitimate rear seats and a 244-litre boot — a machine with principles and practicality in equal measure.
+        The 11-speaker Bose Premium Audio delivers 710 watts of concert-hall clarity. Dual-zone climate control maintains perfect conditions. And despite its fearsome performance credentials, the GT-R offers legitimate rear seats and a 244-litre boot — a machine with principles and practicality in equal measure.
       </p>
     </div>
   </section>
 
-  <!-- SECTION 8: LEGACY/CULTURE -->
   <section class="section right">
     <div class="panel right-panel" data-index="08">
       <div class="panel-tag">Culture // Godzilla</div>
       <h2 class="panel-title">Godzilla Lives</h2>
       <p class="panel-body">
-        The press nicknamed it Godzilla — a monster from Japan capable of crushing anything in its path. The name stuck. In Gran Turismo, the GT-R was the car every player wanted. On the Nürburgring, it held production car lap records. In magazines and forums, it sparked arguments that lasted years. It made supercar ownership seem irresponsible, when a two-tonne GT-R could match a $200,000 Italian exotic for $80,000.
+        The press nicknamed it Godzilla — a monster from Japan capable of crushing anything in its path. The name stuck. In Gran Turismo, it was the car every player wanted. On the Nürburgring, it held production car lap records. It made supercar ownership seem irresponsible, when a GT-R could match a $200,000 Italian exotic for $80,000.
         <br><br>
-        The 2013 Black Edition is one of the most celebrated variants of this legend. Produced in limited numbers, it represents an era before stricter emissions regulations reshaped what performance cars could be. These cars are already appreciating. In two decades, they will be icons parked alongside NSXs and RX-7s as artefacts of a golden era when engineers prioritised the purity of driving above all else.
+        The 2013 Black Edition is one of the most celebrated variants of this legend. These cars are already appreciating. In two decades, they will be icons — artefacts of a golden era when engineers prioritised the purity of driving above all else.
       </p>
     </div>
   </section>
 
-  <!-- SECTION 9: FULL SPECS -->
   <section class="section">
-    <div class="panel" data-index="09" style="max-width: min(580px, 90vw);">
+    <div class="panel" data-index="09" style="max-width:min(580px,90vw);">
       <div class="panel-tag">Technical Specifications // Complete</div>
       <h2 class="panel-title">Complete Spec Sheet</h2>
       <table class="spec-table">
@@ -608,7 +263,7 @@
         <tr><td>0–60 mph</td><td>2.7 seconds</td></tr>
         <tr><td>0–100 mph</td><td>5.9 seconds</td></tr>
         <tr><td>Top Speed</td><td>196 mph (limited)</td></tr>
-        <tr><td>Curb Weight</td><td>3,836 lbs (1,740 kg)</td></tr>
+        <tr><td>Curb Weight</td><td>3,836 lbs / 1,740 kg</td></tr>
         <tr><td>Length × Width</td><td>4,650 × 1,895 mm</td></tr>
         <tr><td>Wheelbase</td><td>2,780 mm</td></tr>
         <tr><td>Front Suspension</td><td>Multi-Link / Bilstein</td></tr>
@@ -618,236 +273,196 @@
         <tr><td>Front Tyres</td><td>255/40 R20 Dunlop SP</td></tr>
         <tr><td>Rear Tyres</td><td>285/35 R20 Dunlop SP</td></tr>
         <tr><td>Fuel Tank</td><td>74 litres</td></tr>
-        <tr><td>Fuel Economy</td><td>16 mpg city / 23 mpg hwy</td></tr>
-        <tr><td>Emissions</td><td>Euro 5 Compliant</td></tr>
         <tr><td>MSRP (2013)</td><td>$99,590 USD</td></tr>
       </table>
     </div>
   </section>
 
-  <!-- OUTRO -->
   <section id="outro">
     <div class="outro-label">THE END OF THE LINE</div>
     <h2 class="outro-title" id="outro-title">LEGEND<br>NEVER<br><span style="color:var(--red)">DIES.</span></h2>
-    <p style="color:var(--muted); font-size:clamp(13px,1.5vw,16px); letter-spacing:0.15em; font-weight:300; max-width:400px; text-align:center; font-family:'Share Tech Mono',monospace; line-height:2;">
+    <p style="color:var(--muted);font-size:clamp(13px,1.5vw,16px);letter-spacing:.15em;font-weight:300;max-width:400px;text-align:center;font-family:'Share Tech Mono',monospace;line-height:2;">
       NISSAN GT-R R35 BLACK EDITION<br>2013 // VR38DETT // AWD
     </p>
   </section>
 
 </div>
 
+<!-- THREE.JS UMD — no importmap needed -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
-(function() {
+(function () {
+  var wrap = document.getElementById('canvas-wrap');
+  var W = function(){ return wrap.clientWidth; };
+  var H = function(){ return wrap.clientHeight; };
 
-// ─── SCENE SETUP ─────────────────────────────────────────────────────────────
-const wrap = document.getElementById('canvas-wrap');
-const W = () => wrap.clientWidth;
-const H = () => wrap.clientHeight;
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-renderer.setSize(W(), H());
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-wrap.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050507);
-scene.fog = new THREE.FogExp2(0x050507, 0.018);
-
-const camera = new THREE.PerspectiveCamera(45, W() / H(), 0.1, 200);
-camera.position.set(5, 1.6, 6);
-camera.lookAt(0, 0.3, 0);
-
-// ─── LIGHTS ──────────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-
-const key = new THREE.DirectionalLight(0xffffff, 2.5);
-key.position.set(6, 8, 6);
-key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024);
-key.shadow.camera.near = 0.5;
-key.shadow.camera.far = 30;
-key.shadow.camera.left = key.shadow.camera.bottom = -6;
-key.shadow.camera.right = key.shadow.camera.top = 6;
-scene.add(key);
-
-const fill = new THREE.DirectionalLight(0x4488ff, 0.6);
-fill.position.set(-5, 3, -4);
-scene.add(fill);
-
-const rim = new THREE.DirectionalLight(0xff2244, 0.8);
-rim.position.set(-3, 2, -6);
-scene.add(rim);
-
-const under = new THREE.PointLight(0xc8102e, 0.4, 8);
-under.position.set(0, -1, 0);
-scene.add(under);
-
-// ─── GROUND ──────────────────────────────────────────────────────────────────
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(40, 40),
-  new THREE.MeshStandardMaterial({ color: 0x080810, roughness: 0.9, metalness: 0.1 })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.78;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const strip = new THREE.Mesh(
-  new THREE.PlaneGeometry(3, 14),
-  new THREE.MeshStandardMaterial({ color: 0xc8102e, emissive: 0xc8102e, emissiveIntensity: 0.06, roughness: 1 })
-);
-strip.rotation.x = -Math.PI / 2;
-strip.position.y = -0.779;
-scene.add(strip);
-
-// ─── LOADER UI ───────────────────────────────────────────────────────────────
-const lbar    = document.getElementById('lbar');
-const lstatus = document.getElementById('lstatus');
-const loaderEl = document.getElementById('loader');
-
-function setLoad(pct, txt) {
-  lbar.style.width = pct + '%';
-  if (txt) lstatus.textContent = txt;
-}
-
-setLoad(10, 'LOADING MODEL...');
-
-let car;
-const clock = new THREE.Clock();
-let targetRotY = 0, currentRotY = 0;
-let targetPosX = 0, currentPosX = 0;
-
-// ─── LOAD GLB ────────────────────────────────────────────────────────────────
-const gltfLoader = new THREE.GLTFLoader();
-gltfLoader.load(
-  'gtr.glb',
-  function(gltf) {
-    setLoad(95, 'BUILDING SCENE...');
-    car = gltf.scene;
-
-    car.traverse(function(child) {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-
-    // Auto-centre & scale
-    const box = new THREE.Box3().setFromObject(car);
-    const centre = box.getCenter(new THREE.Vector3());
-    const size   = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale  = 3.6 / maxDim;
-    car.scale.setScalar(scale);
-    car.position.set(
-      -centre.x * scale,
-      -box.min.y * scale,
-      -centre.z * scale
-    );
-
-    scene.add(car);
-    setLoad(100, 'READY');
-
-    setTimeout(function() {
-      loaderEl.classList.add('hide');
-      setTimeout(function() { loaderEl.style.display = 'none'; }, 700);
-    }, 300);
-
-    animate();
-  },
-  function(xhr) {
-    if (xhr.total) {
-      const pct = 10 + (xhr.loaded / xhr.total) * 80;
-      setLoad(pct, 'LOADING MODEL... ' + Math.round(pct) + '%');
-    }
-  },
-  function(err) {
-    console.error('GLB load error:', err);
-    lstatus.textContent = 'ERROR LOADING MODEL';
-  }
-);
-
-// ─── SCROLL ──────────────────────────────────────────────────────────────────
-const progressBar = document.getElementById('progress');
-const hudScroll   = document.getElementById('hud-scroll');
-
-window.addEventListener('scroll', function() {
-  const docH = document.body.scrollHeight - window.innerHeight;
-  const pct  = docH > 0 ? window.scrollY / docH : 0;
-
-  progressBar.style.width = (pct * 100) + '%';
-  hudScroll.textContent   = String(Math.round(pct * 100)).padStart(2, '0') + '%';
-
-  targetRotY = pct * Math.PI * 3.5;
-
-  const sec = Math.floor(pct * 9);
-  targetPosX = (sec % 2 === 0) ? -0.4 : 0.4;
-
-  checkBars();
-  checkOutro();
-}, { passive: true });
-
-// ─── PANEL INTERSECTION ──────────────────────────────────────────────────────
-const panels = document.querySelectorAll('.panel');
-const io = new IntersectionObserver(function(entries) {
-  entries.forEach(function(e) {
-    if (e.isIntersecting) e.target.classList.add('visible');
-  });
-}, { threshold: 0.15 });
-panels.forEach(function(p) { io.observe(p); });
-
-function checkBars() {
-  const el = document.getElementById('stat-bars');
-  if (!el || el.classList.contains('visible')) return;
-  const rect = el.getBoundingClientRect();
-  if (rect.top < window.innerHeight * 0.85) {
-    el.classList.add('visible');
-    el.querySelectorAll('.bar-fill').forEach(function(f, i) {
-      setTimeout(function() { f.classList.add('go'); }, i * 130);
-    });
-  }
-}
-
-function checkOutro() {
-  const el = document.getElementById('outro-title');
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  if (rect.top < window.innerHeight * 0.8) el.classList.add('visible');
-}
-
-// ─── ANIMATE ─────────────────────────────────────────────────────────────────
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-
-  if (car) {
-    currentRotY += (targetRotY - currentRotY) * 0.05;
-    currentPosX += (targetPosX - currentPosX) * 0.05;
-    car.rotation.y = currentRotY;
-    car.position.x = currentPosX;
-    car.position.y = Math.sin(t * 0.7) * 0.025;
-  }
-
-  camera.position.x = 5 + Math.sin(t * 0.15) * 0.3;
-  camera.position.y = 1.6 + Math.sin(t * 0.2) * 0.1;
-  camera.lookAt(0, 0.3, 0);
-
-  renderer.render(scene, camera);
-}
-
-// ─── RESIZE ──────────────────────────────────────────────────────────────────
-window.addEventListener('resize', function() {
-  camera.aspect = W() / H();
-  camera.updateProjectionMatrix();
+  var renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(W(), H());
-});
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  wrap.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x050507);
+  scene.fog = new THREE.FogExp2(0x050507, 0.016);
+
+  var camera = new THREE.PerspectiveCamera(45, W()/H(), 0.1, 200);
+  camera.position.set(5, 1.8, 7);
+  camera.lookAt(0, 0.4, 0);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  var key = new THREE.DirectionalLight(0xffffff, 2.5);
+  key.position.set(6, 8, 6);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 0.5; key.shadow.camera.far = 30;
+  key.shadow.camera.left = key.shadow.camera.bottom = -6;
+  key.shadow.camera.right = key.shadow.camera.top = 6;
+  scene.add(key);
+  var fill = new THREE.DirectionalLight(0x4488ff, 0.5);
+  fill.position.set(-5, 3, -4); scene.add(fill);
+  var rim = new THREE.DirectionalLight(0xff2244, 0.7);
+  rim.position.set(-3, 2, -6); scene.add(rim);
+  var under = new THREE.PointLight(0xc8102e, 0.5, 10);
+  under.position.set(0, -0.8, 0); scene.add(under);
+
+  // Ground
+  var ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(60, 60),
+    new THREE.MeshStandardMaterial({ color: 0x080810, roughness: 0.95, metalness: 0.05 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.01;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Loader UI
+  var lbar     = document.getElementById('lbar');
+  var lstatus  = document.getElementById('lstatus');
+  var loaderEl = document.getElementById('loader');
+  function setLoad(pct, txt) {
+    lbar.style.width = pct + '%';
+    if (txt) lstatus.textContent = txt;
+  }
+  setLoad(5, 'CONNECTING...');
+
+  var car = null;
+  var clock = new THREE.Clock();
+  var targetRotY = 0, currentRotY = 0;
+  var targetPosX = 0, currentPosX = 0;
+
+  // ── LOAD GLB ──────────────────────────────────────────────────────────────
+  // The GLB filename in the GitHub repo
+  var GLB_URL = '2013_nissan_gt-r_black_edition_coupe.glb';
+
+  var loader = new THREE.GLTFLoader();
+  loader.load(
+    GLB_URL,
+    function(gltf) {
+      setLoad(95, 'BUILDING SCENE...');
+      car = gltf.scene;
+      car.traverse(function(child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      var box    = new THREE.Box3().setFromObject(car);
+      var centre = box.getCenter(new THREE.Vector3());
+      var size   = box.getSize(new THREE.Vector3());
+      var scale  = 3.8 / Math.max(size.x, size.y, size.z);
+      car.scale.setScalar(scale);
+      car.position.set(-centre.x * scale, -box.min.y * scale, -centre.z * scale);
+      scene.add(car);
+
+      setLoad(100, 'READY');
+      setTimeout(function() {
+        loaderEl.classList.add('hide');
+        setTimeout(function(){ loaderEl.style.display='none'; }, 700);
+      }, 300);
+
+      animate();
+    },
+    function(xhr) {
+      if (xhr.total) {
+        var pct = 5 + (xhr.loaded / xhr.total) * 85;
+        setLoad(pct, 'LOADING... ' + Math.round(pct) + '%');
+      }
+    },
+    function(err) {
+      console.error('GLB error:', err);
+      lstatus.textContent = 'ERROR: ' + (err.message || 'Could not load model');
+    }
+  );
+
+  // ── SCROLL ────────────────────────────────────────────────────────────────
+  var progressBar = document.getElementById('progress');
+  var hudScroll   = document.getElementById('hud-scroll');
+
+  window.addEventListener('scroll', function() {
+    var docH = document.body.scrollHeight - window.innerHeight;
+    var pct  = docH > 0 ? window.scrollY / docH : 0;
+    progressBar.style.width = (pct * 100) + '%';
+    hudScroll.textContent   = ('0' + Math.round(pct * 100)).slice(-2) + '%';
+    targetRotY = pct * Math.PI * 3.5;
+    targetPosX = (Math.floor(pct * 9) % 2 === 0) ? -0.5 : 0.5;
+    checkBars();
+    checkOutro();
+  }, { passive: true });
+
+  // Panels via IntersectionObserver
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.panel').forEach(function(p) { io.observe(p); });
+
+  function checkBars() {
+    var el = document.getElementById('stat-bars');
+    if (!el || el.classList.contains('visible')) return;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.85) {
+      el.classList.add('visible');
+      el.querySelectorAll('.bar-fill').forEach(function(f, i) {
+        setTimeout(function(){ f.classList.add('go'); }, i * 130);
+      });
+    }
+  }
+  function checkOutro() {
+    var el = document.getElementById('outro-title');
+    if (el && el.getBoundingClientRect().top < window.innerHeight * 0.8) el.classList.add('visible');
+  }
+
+  // ── ANIMATE ───────────────────────────────────────────────────────────────
+  function animate() {
+    requestAnimationFrame(animate);
+    var t = clock.getElapsedTime();
+    if (car) {
+      currentRotY += (targetRotY - currentRotY) * 0.05;
+      currentPosX += (targetPosX - currentPosX) * 0.05;
+      car.rotation.y = currentRotY;
+      car.position.x = currentPosX;
+      car.position.y = Math.sin(t * 0.7) * 0.025;
+    }
+    camera.position.x = 5 + Math.sin(t * 0.15) * 0.4;
+    camera.position.y = 1.8 + Math.sin(t * 0.2)  * 0.1;
+    camera.lookAt(0, 0.4, 0);
+    renderer.render(scene, camera);
+  }
+
+  // ── RESIZE ────────────────────────────────────────────────────────────────
+  window.addEventListener('resize', function() {
+    camera.aspect = W() / H();
+    camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
+  });
+
+  // keep car Y base after load
 
 })();
 </script>

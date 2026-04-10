@@ -7,7 +7,8 @@
 <script type="importmap">
   {
     "imports": {
-      "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js"
+      "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+      "three/examples/jsm/loaders/GLTFLoader": "https://unpkg.com/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"
     }
   }
 </script>
@@ -644,24 +645,7 @@
 
 <script type="module">
 import * as THREE from 'three';
-
-// ─── Minimal GLTFLoader (no external dep) ────────────────────────────────────
-// We'll load the GLB via fetch + parse
-class GLTFLoader {
-  constructor(manager) { this.manager = manager; }
-  load(url, onLoad, onProgress, onError) {
-    fetch(url)
-      .then(r => r.arrayBuffer())
-      .then(buf => this._parse(buf, url, onLoad, onProgress, onError))
-      .catch(onError);
-  }
-  async _parse(buf, url, onLoad) {
-    // Dynamic import Three GLTFLoader from CDN
-    const { GLTFLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js');
-    const loader = new GLTFLoader();
-    loader.parse(buf, '', onLoad, console.error);
-  }
-}
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 // ─── SCENE SETUP ─────────────────────────────────────────────────────────────
 const wrap = document.getElementById('canvas-wrap');
@@ -753,51 +737,49 @@ let currentRotY = 0;
 let targetPosX = 0;
 let currentPosX = 0;
 
-// Import and load
-import('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-  setLoad(20, 'PARSING MODEL...');
-  const gltfLoader = new GLTFLoader();
-  gltfLoader.load(
-    'gtr.glb',
-    (gltf) => {
-      setLoad(90, 'BUILDING SCENE...');
-      car = gltf.scene;
-      car.traverse(child => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
+// ─── LOAD MODEL ──────────────────────────────────────────────────────────────
+setLoad(20, 'PARSING MODEL...');
+const gltfLoader = new GLTFLoader();
+gltfLoader.load(
+  'gtr.glb',
+  (gltf) => {
+    setLoad(90, 'BUILDING SCENE...');
+    car = gltf.scene;
+    car.traverse(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
 
-      // Auto-centre
-      const box = new THREE.Box3().setFromObject(car);
-      const centre = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 3.6 / maxDim;
-      car.scale.setScalar(scale);
-      car.position.set(-centre.x * scale, -centre.y * scale - box.min.y * scale * 0.5, -centre.z * scale);
+    // Auto-centre
+    const box = new THREE.Box3().setFromObject(car);
+    const centre = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 3.6 / maxDim;
+    car.scale.setScalar(scale);
+    car.position.set(-centre.x * scale, -centre.y * scale - box.min.y * scale * 0.5, -centre.z * scale);
 
-      scene.add(car);
-      setLoad(100, 'READY');
+    scene.add(car);
+    setLoad(100, 'READY');
 
-      setTimeout(() => {
-        loader.classList.add('hide');
-        setTimeout(() => loader.remove(), 700);
-      }, 400);
+    setTimeout(() => {
+      loader.classList.add('hide');
+      setTimeout(() => loader.remove(), 700);
+    }, 400);
 
-      animate();
-    },
-    (xhr) => {
-      const pct = 20 + (xhr.loaded / (xhr.total || 1)) * 65;
-      setLoad(pct, `LOADING MODEL... ${Math.round(pct)}%`);
-    },
-    (err) => {
-      console.error(err);
-      lstatus.textContent = 'ERROR — CHECK CONSOLE';
-    }
-  );
-});
+    animate();
+  },
+  (xhr) => {
+    const pct = 20 + (xhr.loaded / (xhr.total || 1)) * 65;
+    setLoad(pct, `LOADING MODEL... ${Math.round(pct)}%`);
+  },
+  (err) => {
+    console.error(err);
+    lstatus.textContent = 'ERROR — CHECK CONSOLE';
+  }
+);
 
 // ─── SCROLL LOGIC ────────────────────────────────────────────────────────────
 const progress = document.getElementById('progress');

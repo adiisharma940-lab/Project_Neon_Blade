@@ -64,9 +64,10 @@
 
   .panel{
     background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);
-    padding:clamp(24px,4vw,48px);max-width:min(520px,90vw);backdrop-filter:blur(12px);
+    padding:clamp(24px,4vw,48px);max-width:min(520px,90vw);
     position:relative;opacity:0;transform:translateX(-60px) scale(0.97);
     transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1);
+    will-change:transform,opacity;
   }
   .panel.right-panel{
     border-left:1px solid var(--border);border-right:3px solid var(--red);
@@ -142,7 +143,7 @@
   .stat-bar-section{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:6vh 6vw;}
   .stat-bars{
     width:min(700px,90vw);background:var(--panel);border:1px solid var(--border);
-    padding:clamp(24px,4vw,48px);backdrop-filter:blur(12px);
+    padding:clamp(24px,4vw,48px);
     opacity:0;transform:translateY(40px) scale(0.98);
     transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);
   }
@@ -429,10 +430,16 @@
   var W = function(){ return wrap.clientWidth; };
   var H = function(){ return wrap.clientHeight; };
 
-  var renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  // Detect mobile once — drives all quality decisions
+  var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: !isMobile,          // antialias off on mobile
+    powerPreference: 'high-performance'
+  });
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(W(), H());
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !isMobile;  // no shadows on mobile
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -441,7 +448,7 @@
 
   var scene = new THREE.Scene();
   scene.background = new THREE.Color(0x050507);
-  scene.fog = new THREE.FogExp2(0x050507, 0.016);
+  scene.fog = new THREE.FogExp2(0x050507, isMobile ? 0.008 : 0.016);
 
   // ── CAMERA ── lower angle to frame tyres better
   var currentFOV = 45, targetFOV = 45;
@@ -458,7 +465,7 @@
   scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
   var key = new THREE.DirectionalLight(0xffffff, 2.5);
-  key.position.set(6, 8, 6); key.castShadow = true;
+  key.position.set(6, 8, 6); key.castShadow = !isMobile;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.camera.near = 0.5; key.shadow.camera.far = 30;
   key.shadow.camera.left = key.shadow.camera.bottom = -6;
@@ -559,10 +566,12 @@
     pl.position.set(x, 0.25, z);
     scene.add(pl);
   }
-  makeNeonBar(0,  -5, 14, 'x');
-  makeNeonBar(0,   5, 14, 'x');
-  makeNeonBar(-7,  0, 10, 'z');
-  makeNeonBar( 7,  0, 10, 'z');
+  if (!isMobile) {
+    makeNeonBar(0,  -5, 14, 'x');
+    makeNeonBar(0,   5, 14, 'x');
+    makeNeonBar(-7,  0, 10, 'z');
+    makeNeonBar( 7,  0, 10, 'z');
+  }
 
   // Loader UI
   var lbar     = document.getElementById('lbar');
@@ -639,19 +648,28 @@
     function(gltf) {
       setLoad(95, 'BUILDING SCENE...');
       car = gltf.scene;
-      car.traverse(function(c){ if(c.isMesh){ c.castShadow=true; c.receiveShadow=true; } });
+      car.traverse(function(c){ if(c.isMesh){ c.castShadow=!isMobile; c.receiveShadow=!isMobile; } });
 
+      // Scale first, then measure world-space box so Y sits exactly on floor
       var box  = new THREE.Box3().setFromObject(car);
-      var ctr  = box.getCenter(new THREE.Vector3());
       var size = box.getSize(new THREE.Vector3());
       var sc   = 3.8 / Math.max(size.x, size.y, size.z);
       car.scale.setScalar(sc);
+      car.updateMatrixWorld(true);
 
-      // Position car so its lowest point sits exactly on the floor
-      var minY = box.min.y * sc;
-      car.position.set(-ctr.x * sc, -minY, -ctr.z * sc);
+      // World-space box after scale — this is what we use for everything
+      var worldBox = new THREE.Box3().setFromObject(car);
+      var ctrW = worldBox.getCenter(new THREE.Vector3());
 
-      // Compute safe framing distance from actual world-space bounding box
+      // Sit wheels exactly on y=0, centre X/Z
+      car.position.set(
+        -ctrW.x,
+        -worldBox.min.y,   // lift so bottom of tyres = 0
+        -ctrW.z
+      );
+      car.updateMatrixWorld(true);
+
+      // Recompute box now that car is in final position
       var worldBox = new THREE.Box3().setFromObject(car);
       safeZ = computeSafeFrame(worldBox, safeFOV);
       // Sync initial camera and scroll targets
@@ -736,11 +754,32 @@
     checkBars(); checkOutro();
   }, { passive: true });
 
-  // Panel IntersectionObserver
-  var io = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.panel').forEach(function(p){ io.observe(p); });
+  // Panel visibility — IntersectionObserver with scroll fallback for mobile
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+  var pendingPanels = panels.slice();
+
+  function revealPanels() {
+    pendingPanels = pendingPanels.filter(function(p) {
+      var r = p.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.88 && r.bottom > 0) {
+        p.classList.add('visible');
+        return false; // remove from pending
+      }
+      return true;
+    });
+  }
+
+  // Initial check (catches panels already in view on load)
+  setTimeout(revealPanels, 100);
+
+  // Attach to scroll — throttled with rAF
+  var rafPending = false;
+  window.addEventListener('scroll', function() {
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(function() { revealPanels(); rafPending = false; });
+    }
+  }, { passive: true });
 
   function checkBars() {
     var el = document.getElementById('stat-bars');

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#07070f">
-<title>Legendary Classics — 3D Showcase</title>
+<title>Legendary Cars — 3D Showcase</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
@@ -13,51 +13,850 @@ body{background:#07070f;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;o
 #canvas-container{position:fixed;top:0;left:0;width:100%;height:100vh;z-index:1;}
 canvas{display:block;width:100%!important;height:100%!important;touch-action:none;}
 
-/* Each car chapter is 700vh */
 .scroll-space{position:relative;z-index:2;pointer-events:none;}
 
 /* Progress bar */
-#progress{position:fixed;top:0;left:0;height:2px;z-index:20;width:0;transition:width 0.12s;
-  background:linear-gradient(90deg,var(--accent),var(--accent-bright));}
+#progress{
+  position:fixed;top:0;left:0;height:2px;z-index:20;width:0;transition:width 0.12s;
+  background:linear-gradient(90deg,var(--accent,#c8102e),var(--accent-b,#ff4060));
+}
 
-/* Car nav dots */
+/* ── Car nav dots (right side) ── */
 #car-nav{
-  position:fixed;right:max(18px,env(safe-area-inset-right,18px));top:50%;
+  position:fixed;right:max(16px,env(safe-area-inset-right,16px));top:50%;
   transform:translateY(-50%);z-index:15;
-  display:flex;flex-direction:column;gap:12px;
+  display:flex;flex-direction:column;gap:14px;align-items:center;
 }
 .nav-dot{
-  width:6px;height:6px;border-radius:50%;
-  border:1px solid rgba(255,255,255,0.3);
-  background:transparent;cursor:pointer;pointer-events:all;
-  transition:all 0.3s;
+  width:7px;height:7px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.25);background:transparent;
+  cursor:pointer;pointer-events:all;
+  transition:all 0.35s;position:relative;
 }
-.nav-dot.active{background:var(--accent);border-color:var(--accent);transform:scale(1.4);}
-@media(max-width:599px){#car-nav{right:10px;}}
+.nav-dot::after{
+  content:attr(data-label);
+  position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  font-size:8px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(255,255,255,0);white-space:nowrap;
+  transition:color 0.3s;pointer-events:none;
+}
+.nav-dot:hover::after{color:rgba(255,255,255,0.5);}
+.nav-dot.active{
+  background:var(--accent,#c8102e);
+  border-color:var(--accent,#c8102e);
+  transform:scale(1.5);
+  box-shadow:0 0 8px var(--accent,#c8102e);
+}
+@media(max-width:599px){
+  #car-nav{right:8px;}
+  .nav-dot{width:6px;height:6px;}
+  .nav-dot::after{display:none;}
+}
 
 /* Logo */
-.logo{position:fixed;top:max(20px,env(safe-area-inset-top,20px));left:max(20px,env(safe-area-inset-left,20px));z-index:10;}
-.logo-name{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.9);font-weight:300;transition:color 0.6s;}
-.logo-year{font-size:9px;letter-spacing:3px;color:var(--accent);margin-top:3px;transition:color 0.6s;}
+.logo{
+  position:fixed;top:max(22px,env(safe-area-inset-top,22px));
+  left:max(22px,env(safe-area-inset-left,22px));z-index:10;
+}
+.logo-make{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.85);font-weight:300;transition:all 0.6s;}
+.logo-model{font-size:9px;letter-spacing:3px;color:var(--accent,#c8102e);margin-top:3px;transition:all 0.6s;}
 
-/* Chapter label — top center */
-#chapter-label{
+/* Car counter — top center */
+#counter{
   position:fixed;top:max(22px,env(safe-area-inset-top,22px));left:50%;transform:translateX(-50%);
   z-index:10;text-align:center;pointer-events:none;
+  font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.2);
   transition:opacity 0.5s;
 }
-#chapter-label .cl-num{font-size:9px;letter-spacing:4px;color:rgba(255,255,255,0.25);text-transform:uppercase;}
-#chapter-label .cl-name{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-top:2px;}
-@media(max-width:599px){#chapter-label{display:none;}}
 
 /* Hero */
 .hero{
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  text-align:center;z-index:5;pointer-events:none;width:90%;
-  transition:opacity 0.6s ease,transform 0.6s ease;
+  text-align:center;z-index:5;pointer-events:none;width:92%;
+  transition:opacity 0.7s ease,transform 0.7s ease;
 }
-.hero.hidden{opacity:0;transform:translate(-50%,-56%);pointer-events:none;}
-.hero-eyebrow{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;transition:color 0.6s;}
-.hero-title{font-size:clamp(2.6rem,12vw,6rem);font-weight:900;line-height:1;letter-spacing:-2px;}
-.hero-title em{font-style:normal;color:var(--accent);transition:color 0.6s;}
-.hero-sub{font
+.hero.hidden{opacity:0;transform:translate(-50%,-55%);}
+.hero-eyebrow{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:var(--accent,#c8102e);margin-bottom:16px;transition:color 0.6s;}
+.hero-title{font-size:clamp(2.6rem,13vw,6.5rem);font-weight:900;line-height:1;letter-spacing:-2px;}
+.hero-title em{font-style:normal;color:var(--accent,#c8102e);transition:color 0.6s;}
+.hero-sub{font-size:0.75rem;color:rgba(255,255,255,0.3);letter-spacing:4px;margin-top:14px;text-transform:uppercase;}
+
+/* Scroll cue */
+.scroll-cue{
+  position:fixed;bottom:max(32px,env(safe-area-inset-bottom,32px));left:50%;
+  transform:translateX(-50%);z-index:5;
+  display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity 0.6s;
+}
+.scroll-cue.hidden{opacity:0;pointer-events:none;}
+.scroll-cue span{font-size:8px;letter-spacing:4px;color:rgba(255,255,255,0.2);text-transform:uppercase;}
+.scroll-line{width:1px;height:38px;background:linear-gradient(to bottom,var(--accent,#c8102e),transparent);animation:sp 2s ease-in-out infinite;}
+@keyframes sp{0%,100%{opacity:0.2;}50%{opacity:1;}}
+
+/* ── Info Panels ── */
+.panel{position:fixed;z-index:10;pointer-events:none;opacity:0;transition:opacity 0.65s ease,transform 0.65s ease;}
+
+@media(min-width:600px){
+  .panel{top:50%;right:6%;max-width:340px;transform:translateY(-50%) translateX(90px);}
+  .panel.visible{opacity:1;transform:translateY(-50%) translateX(0);}
+  .panel.exit{opacity:0;transform:translateY(-50%) translateX(-50px);}
+  .p-stats{justify-content:flex-end;}
+}
+@media(max-width:599px){
+  .panel{
+    bottom:max(68px,env(safe-area-inset-bottom,68px));left:4%;right:4%;
+    transform:translateY(20px);
+    background:rgba(7,7,15,0.9);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;
+  }
+  .panel.visible{opacity:1;transform:translateY(0);}
+  .panel.exit{opacity:0;transform:translateY(14px);}
+  .p-stats{justify-content:flex-start;}
+  .p-body{display:none;}
+}
+
+.p-eyebrow{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--accent,#c8102e);margin-bottom:10px;transition:color 0.6s;}
+.p-title{font-size:clamp(1.3rem,4.5vw,2.6rem);font-weight:800;line-height:1.12;margin-bottom:10px;color:#fff;}
+.p-title span{color:var(--accent,#c8102e);transition:color 0.6s;}
+.p-body{font-size:0.82rem;line-height:1.65;color:rgba(255,255,255,0.45);margin-bottom:16px;}
+.p-stats{display:flex;gap:14px;flex-wrap:wrap;}
+.stat{text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:10px;min-width:58px;}
+.stat-val{font-size:1.25rem;font-weight:800;color:var(--accent,#c8102e);line-height:1;transition:color 0.6s;}
+.stat-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-top:3px;}
+
+/* Side strip */
+.side-label{
+  position:fixed;left:34px;top:50%;transform:translateY(-50%) rotate(-90deg);
+  transform-origin:center;font-size:8px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.1);z-index:5;white-space:nowrap;transition:opacity 0.5s;
+}
+@media(max-width:599px){.side-label{display:none;}}
+
+/* ── Car transition overlay ── */
+#car-transition{
+  position:fixed;inset:0;z-index:50;pointer-events:none;
+  background:#07070f;opacity:0;transition:opacity 0.35s;
+}
+#car-transition.flash{opacity:1;}
+
+/* Loading screen */
+#loader{
+  position:fixed;inset:0;background:#07070f;z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity 0.9s;
+}
+#loader.done{opacity:0;pointer-events:none;}
+.loader-brand{font-size:1rem;font-weight:700;letter-spacing:4px;color:rgba(255,255,255,0.65);}
+.loader-model-name{font-size:0.75rem;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-top:-10px;}
+.loader-txt{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+.loader-bar-wrap{width:180px;height:1px;background:rgba(255,255,255,0.08);}
+.loader-bar{height:1px;background:#c8102e;width:0;transition:width 0.25s;}
+.loader-count{font-size:8px;letter-spacing:3px;color:rgba(255,255,255,0.2);}
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+<div id="car-transition"></div>
+
+<div id="loader">
+  <div class="loader-brand" id="l-brand">ALFA ROMEO</div>
+  <div class="loader-model-name" id="l-model">33 Stradale · 1967</div>
+  <div class="loader-txt" id="l-txt">Loading model</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="lbar"></div></div>
+  <div class="loader-count" id="l-count">1 / 5</div>
+</div>
+
+<div id="progress"></div>
+
+<div class="logo">
+  <div class="logo-make" id="logo-make">Alfa Romeo</div>
+  <div class="logo-model" id="logo-model">33 Stradale · 1967</div>
+</div>
+
+<div id="counter">01 / 05</div>
+<div class="side-label" id="sidelabel">Tipo 33 · Milano</div>
+
+<!-- Hero -->
+<div class="hero" id="hero">
+  <div class="hero-eyebrow" id="hero-eyebrow">The most beautiful car ever made</div>
+  <h1 class="hero-title" id="hero-title">33<br><em>Stradale</em></h1>
+  <p class="hero-sub">Scroll to explore</p>
+</div>
+
+<!-- Panels — 4 per car, car index baked into id -->
+<!-- CAR 0: Alfa Romeo 33 Stradale -->
+<div class="panel" id="c0p0" data-car="0">
+  <div class="p-eyebrow">// Design</div>
+  <h2 class="p-title">Sculpted by <span>Franco</span> Scaglione</h2>
+  <p class="p-body">Every curve penned by Franco Scaglione — widely considered the most beautiful production car body ever designed. Only 18 were ever built.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">18</div><div class="stat-label">Built</div></div>
+    <div class="stat"><div class="stat-val">1967</div><div class="stat-label">Year</div></div>
+  </div>
+</div>
+<div class="panel" id="c0p1" data-car="0">
+  <div class="p-eyebrow">// Engine</div>
+  <h2 class="p-title">V8 at <span>10,000</span> RPM</h2>
+  <p class="p-body">A 2.0L naturally aspirated V8 from the Tipo 33 racer. 230hp screaming to a 10,000 RPM redline — in 1967.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">230</div><div class="stat-label">HP</div></div>
+    <div class="stat"><div class="stat-val">2.0L</div><div class="stat-label">V8</div></div>
+    <div class="stat"><div class="stat-val">10k</div><div class="stat-label">RPM</div></div>
+  </div>
+</div>
+<div class="panel" id="c0p2" data-car="0">
+  <div class="p-eyebrow">// Performance</div>
+  <h2 class="p-title">Born on the <span>track</span></h2>
+  <p class="p-body">0–100 km/h in 5.5 seconds, top speed 260 km/h. A road-legal racing car that redefined what a street machine could be.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">5.5s</div><div class="stat-label">0–100</div></div>
+    <div class="stat"><div class="stat-val">260</div><div class="stat-label">km/h</div></div>
+  </div>
+</div>
+<div class="panel" id="c0p3" data-car="0">
+  <div class="p-eyebrow">// Legacy</div>
+  <h2 class="p-title">A <span>legend</span> forever</h2>
+  <p class="p-body">The 33 Stradale inspires Alfa Romeo to this day. Its DNA flows through every car bearing the Quadrifoglio badge.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">€15M</div><div class="stat-label">Value</div></div>
+    <div class="stat"><div class="stat-val">#1</div><div class="stat-label">Iconic</div></div>
+  </div>
+</div>
+
+<!-- CAR 1: Mazzanti Evantra -->
+<div class="panel" id="c1p0" data-car="1">
+  <div class="p-eyebrow">// Design</div>
+  <h2 class="p-title">Italian <span>Hypercar</span> Fury</h2>
+  <p class="p-body">The Mazzanti Evantra is a hand-built Italian hypercar from Florence. Every panel is crafted from carbon fibre, making each one a rolling work of art.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">5</div><div class="stat-label">Built/yr</div></div>
+    <div class="stat"><div class="stat-val">2013</div><div class="stat-label">Year</div></div>
+  </div>
+</div>
+<div class="panel" id="c1p1" data-car="1">
+  <div class="p-eyebrow">// Engine</div>
+  <h2 class="p-title">V8 <span>700</span> HP Beast</h2>
+  <p class="p-body">A hand-assembled 7.0L V8 pushing 700 horsepower. Mid-mounted, rear-wheel drive, with a soundtrack that shakes the ground.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">700</div><div class="stat-label">HP</div></div>
+    <div class="stat"><div class="stat-val">7.0L</div><div class="stat-label">V8</div></div>
+  </div>
+</div>
+<div class="panel" id="c1p2" data-car="1">
+  <div class="p-eyebrow">// Performance</div>
+  <h2 class="p-title">0–100 in <span>3.2s</span></h2>
+  <p class="p-body">Top speed of 320 km/h. A bespoke suspension and carbon fibre tub keep it planted at any velocity.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">3.2s</div><div class="stat-label">0–100</div></div>
+    <div class="stat"><div class="stat-val">320</div><div class="stat-label">km/h</div></div>
+  </div>
+</div>
+<div class="panel" id="c1p3" data-car="1">
+  <div class="p-eyebrow">// Exclusivity</div>
+  <h2 class="p-title">The <span>rarest</span> Italian</h2>
+  <p class="p-body">Fewer Evantra units exist than almost any production hypercar on earth. A true collector's unicorn from a small Florentine atelier.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">€1M+</div><div class="stat-label">Price</div></div>
+    <div class="stat"><div class="stat-val">RWD</div><div class="stat-label">Drive</div></div>
+  </div>
+</div>
+
+<!-- CAR 2: Nissan R390 GT1 -->
+<div class="panel" id="c2p0" data-car="2">
+  <div class="p-eyebrow">// Origin</div>
+  <h2 class="p-title">Born for <span>Le Mans</span></h2>
+  <p class="p-body">The Nissan R390 GT1 was built solely to compete at Le Mans 1997–98. Road-legal homologation units were produced — barely.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">1</div><div class="stat-label">Road car</div></div>
+    <div class="stat"><div class="stat-val">1997</div><div class="stat-label">Year</div></div>
+  </div>
+</div>
+<div class="panel" id="c2p1" data-car="2">
+  <div class="p-eyebrow">// Engine</div>
+  <h2 class="p-title">Twin-Turbo <span>V8</span> GT1</h2>
+  <p class="p-body">A 3.5L twin-turbo V8 producing 641 hp in race trim. Developed in partnership with Tom Walkinshaw Racing — pure motorsport DNA.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">641</div><div class="stat-label">HP</div></div>
+    <div class="stat"><div class="stat-val">3.5L</div><div class="stat-label">TT V8</div></div>
+  </div>
+</div>
+<div class="panel" id="c2p2" data-car="2">
+  <div class="p-eyebrow">// Performance</div>
+  <h2 class="p-title">Raced at <span>350</span> km/h</h2>
+  <p class="p-body">On the Mulsanne straight, the R390 reached over 350 km/h. One of the fastest Nissan factory race cars ever built.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">350+</div><div class="stat-label">km/h</div></div>
+    <div class="stat"><div class="stat-val">GT1</div><div class="stat-label">Class</div></div>
+  </div>
+</div>
+<div class="panel" id="c2p3" data-car="2">
+  <div class="p-eyebrow">// Legacy</div>
+  <h2 class="p-title">Nissan's <span>finest</span> hour</h2>
+  <p class="p-body">The R390 remains the most exotic racing car Nissan ever produced. Its Le Mans appearance cemented Nissan's place in supercar history.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">#3</div><div class="stat-label">Le Mans '98</div></div>
+    <div class="stat"><div class="stat-val">GT1</div><div class="stat-label">Legend</div></div>
+  </div>
+</div>
+
+<!-- CAR 3: Nissan GT-R Black Edition -->
+<div class="panel" id="c3p0" data-car="3">
+  <div class="p-eyebrow">// The Legend</div>
+  <h2 class="p-title">Godzilla <span>reborn</span></h2>
+  <p class="p-body">The 2013 GT-R Black Edition is the pinnacle of the R35 generation — a hand-assembled supercar killer dressed in stealth black.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">2013</div><div class="stat-label">Year</div></div>
+    <div class="stat"><div class="stat-val">AWD</div><div class="stat-label">Drive</div></div>
+  </div>
+</div>
+<div class="panel" id="c3p1" data-car="3">
+  <div class="p-eyebrow">// Engine</div>
+  <h2 class="p-title">VR38 <span>545</span> HP Twin-Turbo</h2>
+  <p class="p-body">Each VR38DETT engine is hand-assembled by a single technician in Yokohama. 545 hp, 632 Nm, built in 90 minutes of pure precision.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">545</div><div class="stat-label">HP</div></div>
+    <div class="stat"><div class="stat-val">3.8L</div><div class="stat-label">TT V6</div></div>
+  </div>
+</div>
+<div class="panel" id="c3p2" data-car="3">
+  <div class="p-eyebrow">// Performance</div>
+  <h2 class="p-title">0–100 in <span>2.7s</span></h2>
+  <p class="p-body">Sub-3-second 0–100 using all-wheel drive launch control. The GT-R could embarrass Ferraris and Lamborghinis at a fraction of the price.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">2.7s</div><div class="stat-label">0–100</div></div>
+    <div class="stat"><div class="stat-val">315</div><div class="stat-label">km/h</div></div>
+  </div>
+</div>
+<div class="panel" id="c3p3" data-car="3">
+  <div class="p-eyebrow">// Black Edition</div>
+  <h2 class="p-title">Dark <span>warrior</span> spec</h2>
+  <p class="p-body">Recaro seats, Brembo brakes, carbon fibre trim, and an exclusive stealth exterior. The Black Edition is the GT-R for drivers who mean business.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">Recaro</div><div class="stat-label">Seats</div></div>
+    <div class="stat"><div class="stat-val">Brembo</div><div class="stat-label">Brakes</div></div>
+  </div>
+</div>
+
+<!-- CAR 4: Nissan 350Z Rocket Bunny -->
+<div class="panel" id="c4p0" data-car="4">
+  <div class="p-eyebrow">// Culture</div>
+  <h2 class="p-title">Rocket Bunny <span>350Z</span></h2>
+  <p class="p-body">The Rocket Bunny wide-body kit by Pandem transforms the iconic 350Z into a stance-culture icon with aggressive over-fenders and Japanese street cred.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">V1</div><div class="stat-label">Kit</div></div>
+    <div class="stat"><div class="stat-val">JDM</div><div class="stat-label">Culture</div></div>
+  </div>
+</div>
+<div class="panel" id="c4p1" data-car="4">
+  <div class="p-eyebrow">// Engine</div>
+  <h2 class="p-title">VQ35 <span>306</span> HP NA</h2>
+  <p class="p-body">The 3.5L VQ35DE V6 is one of the most celebrated naturally aspirated engines ever built — smooth, tuneable, and endlessly rewarding.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">306</div><div class="stat-label">HP</div></div>
+    <div class="stat"><div class="stat-val">3.5L</div><div class="stat-label">V6</div></div>
+  </div>
+</div>
+<div class="panel" id="c4p2" data-car="4">
+  <div class="p-eyebrow">// Stance</div>
+  <h2 class="p-title">Wide body <span>aggression</span></h2>
+  <p class="p-body">+70mm wider per side. Flush fitment, stretched tyres, and a front splitter that scrapes ambition off the tarmac. Built for shows and spirited roads.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">+70mm</div><div class="stat-label">Width</div></div>
+    <div class="stat"><div class="stat-val">RWD</div><div class="stat-label">Drive</div></div>
+  </div>
+</div>
+<div class="panel" id="c4p3" data-car="4">
+  <div class="p-eyebrow">// Icon</div>
+  <h2 class="p-title">The <span>street</span> samurai</h2>
+  <p class="p-body">From Tokyo car parks to global Instagram feeds — the Rocket Bunny 350Z is the most recognisable tuner build of the modern era.</p>
+  <div class="p-stats">
+    <div class="stat"><div class="stat-val">Pandem</div><div class="stat-label">Kit by</div></div>
+    <div class="stat"><div class="stat-val">Z33</div><div class="stat-label">Platform</div></div>
+  </div>
+</div>
+
+<!-- 5 × 700vh scroll chapters -->
+<div class="scroll-space" style="height:700vh;" id="chapter-0"></div>
+<div class="scroll-space" style="height:700vh;" id="chapter-1"></div>
+<div class="scroll-space" style="height:700vh;" id="chapter-2"></div>
+<div class="scroll-space" style="height:700vh;" id="chapter-3"></div>
+<div class="scroll-space" style="height:700vh;" id="chapter-4"></div>
+
+<div class="scroll-cue" id="scrollcue">
+  <span>Scroll</span>
+  <div class="scroll-line"></div>
+</div>
+
+<!-- Car nav dots -->
+<div id="car-nav"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// CAR DATA
+// ─────────────────────────────────────────────
+const BASE = 'https://raw.githubusercontent.com/adiisharma940-lab/Project_Neon_Blade/main/';
+
+const CARS = [
+  {
+    make:'Alfa Romeo', model:'33 Stradale · 1967',
+    eyebrow:'The most beautiful car ever made',
+    titleHTML:'33<br><em>Stradale</em>',
+    side:'Tipo 33 · Milano',
+    accent:'#c8102e', accentB:'#ff4060',
+    glb: BASE + 'alfa_romeo_stradale_1967.glb',
+    counter:'01 / 05',
+  },
+  {
+    make:'Mazzanti', model:'Evantra · 2013',
+    eyebrow:'Florence\'s finest hypercar',
+    titleHTML:'Mazzanti<br><em>Evantra</em>',
+    side:'Evantra · Florence',
+    accent:'#d4820a', accentB:'#ffb347',
+    glb: BASE + 'mazzanti_evantra__www_vecarz_com.glb',
+    counter:'02 / 05',
+  },
+  {
+    make:'Nissan', model:'R390 GT1 · 1997',
+    eyebrow:'Le Mans born, road legal',
+    titleHTML:'R390<br><em>GT1</em>',
+    side:'R390 · Le Mans',
+    accent:'#c0392b', accentB:'#e74c3c',
+    glb: BASE + 'nissan_r390_gt1__www_vecarz_com.glb',
+    counter:'03 / 05',
+  },
+  {
+    make:'Nissan', model:'GT-R Black Edition · 2013',
+    eyebrow:'The supercar killer',
+    titleHTML:'GT-R<br><em>Black</em>',
+    side:'R35 · Yokohama',
+    accent:'#2980b9', accentB:'#5dade2',
+    glb: BASE + '2013_nissan_gt-r_black_edition_coupe.glb',
+    counter:'04 / 05',
+  },
+  {
+    make:'Nissan', model:'350Z Rocket Bunny',
+    eyebrow:'Japanese street legend',
+    titleHTML:'350Z<br><em>Rocket Bunny</em>',
+    side:'Z33 · Pandem',
+    accent:'#27ae60', accentB:'#58d68d',
+    glb: BASE + 'nissan_350z_rocket_bunny.glb',
+    counter:'05 / 05',
+  },
+];
+
+const NUM_CARS = CARS.length;
+
+// ─────────────────────────────────────────────
+// DEVICE
+// ─────────────────────────────────────────────
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 600;
+
+// ─────────────────────────────────────────────
+// RENDERER
+// ─────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({
+  antialias:!isMobile, alpha:true,
+  powerPreference: isMobile ? 'low-power' : 'high-performance',
+});
+renderer.setPixelRatio(isMobile ? Math.min(devicePixelRatio,1.2) : Math.min(devicePixelRatio,2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+if(!isMobile){ renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; }
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(isMobile?52:40, innerWidth/innerHeight, 0.01, 200);
+camera.position.set(0,1.5,isMobile?7:6);
+camera.lookAt(0,0.4,0);
+
+function resize(){
+  renderer.setSize(innerWidth,innerHeight);
+  camera.aspect = innerWidth/innerHeight;
+  camera.fov = camera.aspect < 0.65 ? 60 : (isMobile?52:40);
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize',resize);
+
+// ─────────────────────────────────────────────
+// LIGHTS
+// ─────────────────────────────────────────────
+const ambientLight = new THREE.AmbientLight(0xffffff, isMobile?1.0:0.5);
+scene.add(ambientLight);
+
+const keyLight = new THREE.DirectionalLight(0xfff5ee, isMobile?2.8:2.0);
+keyLight.position.set(4,6,4);
+if(!isMobile){
+  keyLight.castShadow=true;
+  keyLight.shadow.mapSize.set(1024,1024);
+  keyLight.shadow.camera.near=0.1; keyLight.shadow.camera.far=30;
+  keyLight.shadow.camera.left=-6; keyLight.shadow.camera.right=6;
+  keyLight.shadow.camera.top=6;   keyLight.shadow.camera.bottom=-6;
+}
+scene.add(keyLight);
+
+const accentLight = new THREE.DirectionalLight(0xc8102e, 0.6);
+accentLight.position.set(-4,2,-3);
+scene.add(accentLight);
+
+const topLight = new THREE.DirectionalLight(0xffffff,0.4);
+topLight.position.set(0,8,0);
+scene.add(topLight);
+
+if(!isMobile){
+  const backLight = new THREE.DirectionalLight(0x4488ff,0.3);
+  backLight.position.set(0,3,-6);
+  scene.add(backLight);
+}
+
+// ─────────────────────────────────────────────
+// GROUND + GRID
+// ─────────────────────────────────────────────
+if(!isMobile){
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(30,30),
+    new THREE.MeshStandardMaterial({color:0x0a0a16,metalness:0.9,roughness:0.15,transparent:true,opacity:0.8})
+  );
+  ground.rotation.x=-Math.PI/2; ground.position.y=-0.01; ground.receiveShadow=true;
+  scene.add(ground);
+  const grid = new THREE.GridHelper(20,40,0x1a1a30,0x1a1a30);
+  grid.position.y=0.001; grid.material.opacity=0.35; grid.material.transparent=true;
+  scene.add(grid);
+} else {
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(20,20),
+    new THREE.MeshBasicMaterial({color:0x0d0d1a})
+  );
+  ground.rotation.x=-Math.PI/2; ground.position.y=-0.01;
+  scene.add(ground);
+}
+
+// ─────────────────────────────────────────────
+// CAR MODEL CACHE & LOADING
+// ─────────────────────────────────────────────
+const carModels = new Array(NUM_CARS).fill(null);
+let activeCarIdx = 0;
+let modelLoaded = false;
+
+// Build nav dots
+const navEl = document.getElementById('car-nav');
+CARS.forEach((c,i)=>{
+  const dot = document.createElement('div');
+  dot.className='nav-dot'+(i===0?' active':'');
+  dot.setAttribute('data-label',c.model);
+  dot.addEventListener('click',()=>jumpToCar(i));
+  navEl.appendChild(dot);
+});
+
+function updateNavDots(idx){
+  document.querySelectorAll('.nav-dot').forEach((d,i)=>{
+    d.classList.toggle('active',i===idx);
+  });
+}
+
+// Loader script once
+let gltfReady = false;
+let gltfQueue = [];
+function withGLTF(cb){ gltfReady ? cb() : gltfQueue.push(cb); }
+
+const gltfScript = document.createElement('script');
+gltfScript.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+gltfScript.onload=()=>{
+  gltfReady=true;
+  gltfQueue.forEach(fn=>fn());
+  gltfQueue=[];
+};
+document.head.appendChild(gltfScript);
+
+function loadCar(idx, onDone, onProgress){
+  if(carModels[idx]){ onDone && onDone(); return; }
+  withGLTF(()=>{
+    const loader = new THREE.GLTFLoader();
+    fetch(CARS[idx].glb)
+      .then(r=>r.blob())
+      .then(blob=>{
+        const url = URL.createObjectURL(blob);
+        loader.load(url,
+          gltf=>{
+            const model = gltf.scene;
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x,size.y,size.z);
+            const scale = (isMobile?3.0:3.5)/maxDim;
+            model.scale.setScalar(scale);
+            model.position.sub(center.multiplyScalar(scale));
+            const box2 = new THREE.Box3().setFromObject(model);
+            model.position.y -= box2.min.y;
+            model.traverse(child=>{
+              if(child.isMesh){
+                if(!isMobile){ child.castShadow=true; child.receiveShadow=true; }
+                if(child.material){
+                  const mats=Array.isArray(child.material)?child.material:[child.material];
+                  mats.forEach(m=>{
+                    if(!isMobile) m.envMapIntensity=1.2;
+                    if(m.name&&(m.name.toLowerCase().includes('glass')||m.name.toLowerCase().includes('wind'))){
+                      m.transparent=true; m.opacity=isMobile?0.5:0.3;
+                      m.roughness=0.05; m.metalness=0.1;
+                    }
+                  });
+                }
+              }
+            });
+            model.visible = false;
+            scene.add(model);
+            carModels[idx] = model;
+            URL.revokeObjectURL(url);
+            onDone && onDone();
+          },
+          xhr=>{ onProgress && onProgress(xhr); },
+          err=>{ console.error('GLB error car '+idx,err); onDone && onDone(true); }
+        );
+      })
+      .catch(err=>{ console.error('Fetch error car '+idx,err); onDone && onDone(true); });
+  });
+}
+
+// Fallback car builder
+function buildFallback(idx){
+  const g=new THREE.Group();
+  const c = new THREE.Color(CARS[idx].accent);
+  const bMat=new THREE.MeshStandardMaterial({color:c,metalness:0.8,roughness:0.2});
+  const dMat=new THREE.MeshStandardMaterial({color:0x111118,metalness:0.5,roughness:0.5});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.4,3.8),bMat); body.position.y=0.35; g.add(body);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.1,0.38,1.4),bMat); cabin.position.set(0,0.73,-0.1); g.add(cabin);
+  [[-0.82,0,1.1],[0.82,0,1.1],[-0.82,0,-1.1],[0.82,0,-1.1]].forEach(([x,y,z])=>{
+    const w=new THREE.Mesh(new THREE.TorusGeometry(0.32,0.12,8,16),dMat);
+    w.rotation.y=Math.PI/2; w.position.set(x,y,z); g.add(w);
+  });
+  g.visible=false;
+  scene.add(g);
+  carModels[idx]=g;
+}
+
+// ─────────────────────────────────────────────
+// INITIAL LOAD — car 0
+// ─────────────────────────────────────────────
+const lbar = document.getElementById('lbar');
+const lCount = document.getElementById('l-count');
+
+loadCar(0,
+  (err)=>{
+    if(err) buildFallback(0);
+    applyCarTheme(0);
+    if(carModels[0]) carModels[0].visible=true;
+    modelLoaded=true;
+    activeCarIdx=0;
+    const loaderEl=document.getElementById('loader');
+    loaderEl.classList.add('done');
+    setTimeout(()=>loaderEl.style.display='none',900);
+    // Preload remaining cars in background
+    let next=1;
+    function loadNext(){
+      if(next>=NUM_CARS) return;
+      const i=next++;
+      document.getElementById('l-brand').textContent=CARS[i].make;
+      document.getElementById('l-model').textContent=CARS[i].model;
+      lCount.textContent=(i+1)+' / '+NUM_CARS;
+      lbar.style.width='0%';
+      loadCar(i,()=>loadNext(), xhr=>{ if(xhr.total) lbar.style.width=(xhr.loaded/xhr.total*100)+'%'; });
+    }
+    // loadNext(); // silent background preload
+  },
+  (xhr)=>{ if(xhr.total) lbar.style.width=(xhr.loaded/xhr.total*100)+'%'; }
+);
+
+// ─────────────────────────────────────────────
+// THEME (CSS vars + UI text)
+// ─────────────────────────────────────────────
+function applyCarTheme(idx){
+  const car=CARS[idx];
+  document.documentElement.style.setProperty('--accent',car.accent);
+  document.documentElement.style.setProperty('--accent-b',car.accentB);
+  // update accent light color
+  accentLight.color.set(car.accent);
+  // update UI text
+  document.getElementById('logo-make').textContent=car.make;
+  document.getElementById('logo-model').textContent=car.model;
+  document.getElementById('counter').textContent=car.counter;
+  document.getElementById('sidelabel').textContent=car.side;
+  document.getElementById('hero-eyebrow').textContent=car.eyebrow;
+  document.getElementById('hero-title').innerHTML=car.titleHTML;
+  updateNavDots(idx);
+}
+
+// ─────────────────────────────────────────────
+// SCROLL LOGIC — 5 chapters of 700vh each
+// ─────────────────────────────────────────────
+const CHAPTER_H = 700; // vh per car
+const progress  = document.getElementById('progress');
+const hero      = document.getElementById('hero');
+const scrollcue = document.getElementById('scrollcue');
+
+let targetScroll = 0; // 0–1 global
+let smoothScroll = 0;
+let lastCarIdx   = 0;
+
+// Panels per car: [[c0p0,c0p1,c0p2,c0p3],[c1p0,...],...]
+const allPanels = CARS.map((_,ci)=>[
+  {el:document.getElementById('c'+ci+'p0'), start:0.05, end:0.26},
+  {el:document.getElementById('c'+ci+'p1'), start:0.30, end:0.50},
+  {el:document.getElementById('c'+ci+'p2'), start:0.54, end:0.74},
+  {el:document.getElementById('c'+ci+'p3'), start:0.78, end:0.97},
+]);
+
+window.addEventListener('scroll',()=>{
+  const max=document.body.scrollHeight-innerHeight;
+  targetScroll=max>0?window.scrollY/max:0;
+  progress.style.width=(targetScroll*100)+'%';
+},{passive:true});
+
+// Jump to car via nav dot
+function jumpToCar(idx){
+  const chapterStart = idx/NUM_CARS;
+  const totalH = document.body.scrollHeight - innerHeight;
+  window.scrollTo({top: chapterStart*totalH, behavior:'smooth'});
+}
+
+// ─────────────────────────────────────────────
+// CAMERA WAYPOINTS (local 0–1 within chapter)
+// ─────────────────────────────────────────────
+function lerp(a,b,t){return a+(b-a)*t;}
+function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function easeOut3(t){return 1-Math.pow(1-t,3);}
+
+const CAM_D1=isMobile?6.5:5.5;
+const CAM_D2=isMobile?6.0:5.0;
+
+function getCameraState(t){
+  if(t<0.12){
+    const p=easeOut3(t/0.12);
+    return{px:lerp(isMobile?1.0:1.4,0.5,p),py:lerp(0.3,0.7,p),pz:lerp(isMobile?3.5:2.8,isMobile?5.5:4.5,p),lx:lerp(0.5,0,p),ly:lerp(0,0.3,p),lz:lerp(1,0,p)};
+  }else if(t<0.35){
+    const p=easeInOut((t-0.12)/0.23),a=lerp(0.3,-0.9,p);
+    return{px:Math.sin(a)*CAM_D1,py:lerp(0.7,1.4,p),pz:Math.cos(a)*CAM_D1,lx:0,ly:0.35,lz:0};
+  }else if(t<0.58){
+    const p=easeInOut((t-0.35)/0.23),a=lerp(-0.9,0.6,p);
+    return{px:Math.sin(a)*CAM_D2,py:lerp(1.4,1.8,p),pz:Math.cos(a)*CAM_D2,lx:0,ly:0.35,lz:0};
+  }else if(t<0.82){
+    const p=easeInOut((t-0.58)/0.24),a=lerp(0.6,Math.PI-0.3,p);
+    return{px:Math.sin(a)*CAM_D1,py:lerp(1.8,1.4,p),pz:Math.cos(a)*CAM_D1,lx:0,ly:0.35,lz:0};
+  }else{
+    const p=easeInOut((t-0.82)/0.18),a=lerp(Math.PI-0.3,Math.PI+0.4,p);
+    return{px:Math.sin(a)*4.5,py:lerp(1.4,2.5,p),pz:Math.cos(a)*4.5,lx:0,ly:0.2,lz:0};
+  }
+}
+
+const camTarget=new THREE.Vector3();
+const camSm={px:0,py:1.5,pz:isMobile?7:6,lx:0,ly:0.35,lz:0};
+
+// ─────────────────────────────────────────────
+// TRANSITION between cars
+// ─────────────────────────────────────────────
+const transOverlay=document.getElementById('car-transition');
+let transitioning=false;
+
+function switchCar(from, to){
+  if(transitioning||from===to) return;
+  if(!carModels[to]){
+    // load on demand if not cached
+    loadCar(to,()=>{ doSwitch(from,to); });
+    return;
+  }
+  doSwitch(from,to);
+}
+
+function doSwitch(from,to){
+  transitioning=true;
+  transOverlay.classList.add('flash');
+  setTimeout(()=>{
+    if(carModels[from]) carModels[from].visible=false;
+    if(carModels[to])   carModels[to].visible=true;
+    applyCarTheme(to);
+    activeCarIdx=to;
+    // reset camera
+    camSm.px=0; camSm.py=1.5; camSm.pz=isMobile?7:6;
+    transOverlay.classList.remove('flash');
+    setTimeout(()=>{ transitioning=false; },350);
+  },350);
+}
+
+// ─────────────────────────────────────────────
+// RENDER LOOP
+// ─────────────────────────────────────────────
+let lt=0, frameCount=0;
+
+function animate(ts){
+  requestAnimationFrame(animate);
+  frameCount++;
+  if(isMobile&&frameCount%2!==0) return;
+
+  const dt=Math.min((ts-lt)/1000,0.05);
+  lt=ts;
+
+  const sLerp=isMobile?Math.min(1,dt*9):Math.min(1,dt*5);
+  smoothScroll+=(targetScroll-smoothScroll)*sLerp;
+
+  // Which car chapter are we in?
+  const globalT = smoothScroll; // 0–1 across ALL chapters
+  const carFloat = globalT * NUM_CARS;
+  const carIdx   = Math.min(Math.floor(carFloat), NUM_CARS-1);
+  const localT   = carFloat - carIdx; // 0–1 within this chapter
+
+  // Switch car if needed
+  if(carIdx!==lastCarIdx&&modelLoaded){
+    switchCar(lastCarIdx,carIdx);
+    lastCarIdx=carIdx;
+  }
+
+  // Camera
+  const cs=getCameraState(localT);
+  const cL=isMobile?Math.min(1,dt*7):Math.min(1,dt*4);
+  camSm.px+=(cs.px-camSm.px)*cL;
+  camSm.py+=(cs.py-camSm.py)*cL;
+  camSm.pz+=(cs.pz-camSm.pz)*cL;
+  camSm.lx+=(cs.lx-camSm.lx)*cL;
+  camSm.ly+=(cs.ly-camSm.ly)*cL;
+  camSm.lz+=(cs.lz-camSm.lz)*cL;
+  camera.position.set(camSm.px,camSm.py,camSm.pz);
+  camTarget.set(camSm.lx,camSm.ly,camSm.lz);
+  camera.lookAt(camTarget);
+
+  // Idle rotation desktop only
+  if(!isMobile&&carModels[activeCarIdx]&&carModels[activeCarIdx].visible){
+    carModels[activeCarIdx].rotation.y=Math.sin(ts*0.0004)*0.04;
+  }
+
+  // Panels — only show panels for active car
+  allPanels.forEach((panels,ci)=>{
+    panels.forEach(p=>{
+      if(ci!==carIdx){
+        p.el.classList.remove('visible','exit');
+        return;
+      }
+      const mid=(p.start+p.end)/2;
+      const hw=(p.end-p.start)/2;
+      const d=Math.abs(localT-mid)/hw;
+      if(d<1.1){ p.el.classList.add('visible'); p.el.classList.remove('exit'); }
+      else      { p.el.classList.remove('visible');
+                  if(localT>p.end) p.el.classList.add('exit');
+                  else p.el.classList.remove('exit'); }
+    });
+  });
+
+  // Hero — show at start of each chapter
+  if(localT<0.04){ hero.classList.remove('hidden'); scrollcue.classList.remove('hidden'); }
+  else           { hero.classList.add('hidden');    scrollcue.classList.add('hidden');    }
+
+  // Fog colour match
+  scene.fog = new THREE.FogExp2(0x07070f, isMobile?0.055:0.04);
+
+  renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

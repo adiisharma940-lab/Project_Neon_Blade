@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -265,7 +264,7 @@ gltfScript.onload = () => {
   const lbar = document.getElementById('lbar');
 
   // Convert the file to a blob URL so we can load it from disk
-  fetch('alfa_romeo_stradale_1967.glb')
+  fetch('https://raw.githubusercontent.com/adiisharma940-lab/Project_Neon_Blade/main/alfa_romeo_stradale_1967.glb')
     .then(r => r.blob())
     .then(blob => {
       const url = URL.createObjectURL(blob);

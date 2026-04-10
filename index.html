@@ -23,68 +23,192 @@
 
   #scroll-container{position:relative;z-index:10;pointer-events:none;}
 
-  /* HERO */
+  /* ── HERO ── */
   #hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 8vh;}
-  .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.4vw,14px);letter-spacing:.4em;color:var(--red);margin-bottom:10px;opacity:0;transform:translateY(20px);animation:fadeUp .8s .3s forwards;}
-  .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,11vw,160px);line-height:.88;opacity:0;transform:translateY(40px);animation:fadeUp .9s .5s forwards;}
-  .hero-title span{color:var(--red);}
-  .hero-sub{margin-top:20px;font-size:clamp(14px,2vw,20px);font-weight:300;color:var(--muted);letter-spacing:.15em;opacity:0;transform:translateY(20px);animation:fadeUp .8s .8s forwards;}
-  .scroll-hint{margin-top:40px;display:flex;align-items:center;gap:14px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--muted);opacity:0;animation:fadeUp .8s 1.2s forwards;}
+
+  .hero-eyebrow{
+    font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.4vw,14px);
+    letter-spacing:.4em;color:var(--red);margin-bottom:10px;
+    opacity:0;transform:translateX(-60px);
+    animation:slideRight .8s cubic-bezier(.16,1,.3,1) .3s forwards;
+  }
+  .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,11vw,160px);line-height:.88;overflow:hidden;}
+  .hero-title .line{
+    display:block;opacity:0;transform:translateY(110%);
+    animation:slideUp .9s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .hero-title .line:nth-child(1){animation-delay:.4s;}
+  .hero-title .line:nth-child(2){animation-delay:.55s;color:var(--red);}
+  .hero-sub{
+    margin-top:20px;font-size:clamp(14px,2vw,20px);font-weight:300;
+    color:var(--muted);letter-spacing:.15em;
+    opacity:0;transform:translateX(-40px);
+    animation:slideRight .8s cubic-bezier(.16,1,.3,1) .85s forwards;
+  }
+  .scroll-hint{
+    margin-top:40px;display:flex;align-items:center;gap:14px;
+    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--muted);
+    opacity:0;transform:translateY(16px);animation:fadeUp .8s ease 1.2s forwards;
+  }
   .scroll-hint-line{width:40px;height:1px;background:var(--red);overflow:hidden;position:relative;}
   .scroll-hint-line::after{content:'';position:absolute;left:-100%;top:0;width:100%;height:100%;background:#fff;animation:scanLine 1.5s 1.8s infinite;}
-  @keyframes scanLine{0%{left:-100%}100%{left:200%}}
-  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
 
-  /* SECTIONS */
+  @keyframes scanLine  {0%{left:-100%}100%{left:200%}}
+  @keyframes fadeUp    {to{opacity:1;transform:translateY(0);}}
+  @keyframes slideUp   {to{opacity:1;transform:translateY(0);}}
+  @keyframes slideRight{to{opacity:1;transform:translateX(0);}}
+
+  /* ── SECTIONS ── */
   .section{min-height:100vh;display:flex;align-items:center;padding:6vh 6vw;}
   .section.right{justify-content:flex-end;}
 
-  .panel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);
     padding:clamp(24px,4vw,48px);max-width:min(520px,90vw);backdrop-filter:blur(12px);
-    position:relative;opacity:0;transform:translateX(-40px);transition:opacity .7s,transform .7s;}
-  .panel.right-panel{border-left:1px solid var(--border);border-right:3px solid var(--red);transform:translateX(40px);}
-  .panel.visible{opacity:1;transform:translateX(0);}
+    position:relative;opacity:0;transform:translateX(-60px) scale(0.97);
+    transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1);
+  }
+  .panel.right-panel{
+    border-left:1px solid var(--border);border-right:3px solid var(--red);
+    transform:translateX(60px) scale(0.97);
+  }
+  .panel.visible{opacity:1;transform:translateX(0) scale(1);}
   .panel::before{content:attr(data-index);position:absolute;top:-18px;left:16px;
-    font-family:'Bebas Neue',sans-serif;font-size:72px;color:rgba(200,16,46,0.07);line-height:1;pointer-events:none;user-select:none;}
-  .panel-tag{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.4em;color:var(--red);margin-bottom:10px;text-transform:uppercase;}
-  .panel-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,52px);line-height:1;margin-bottom:16px;letter-spacing:.03em;}
-  .panel-body{font-size:clamp(13px,1.6vw,16px);line-height:1.75;color:#bbb;font-weight:300;}
+    font-family:'Bebas Neue',sans-serif;font-size:72px;color:rgba(200,16,46,0.07);
+    line-height:1;pointer-events:none;user-select:none;}
+
+  .panel-tag{
+    font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.4em;
+    color:var(--red);margin-bottom:10px;text-transform:uppercase;
+    opacity:0;transform:translateX(-20px);
+    transition:opacity .5s .15s,transform .5s .15s cubic-bezier(.16,1,.3,1);
+  }
+  .panel.visible .panel-tag{opacity:1;transform:translateX(0);}
+
+  .panel-title{
+    font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,52px);
+    line-height:1.05;margin-bottom:16px;letter-spacing:.03em;overflow:hidden;
+  }
+  .panel-title .word{
+    display:inline-block;opacity:0;transform:translateY(110%);
+    transition:opacity .5s,transform .5s cubic-bezier(.16,1,.3,1);
+    margin-right:.12em;
+  }
+  .panel.visible .panel-title .word:nth-child(1){opacity:1;transform:translateY(0);transition-delay:.2s;}
+  .panel.visible .panel-title .word:nth-child(2){opacity:1;transform:translateY(0);transition-delay:.32s;}
+  .panel.visible .panel-title .word:nth-child(3){opacity:1;transform:translateY(0);transition-delay:.44s;}
+  .panel.visible .panel-title .word:nth-child(4){opacity:1;transform:translateY(0);transition-delay:.56s;}
+  .panel.visible .panel-title .word:nth-child(5){opacity:1;transform:translateY(0);transition-delay:.68s;}
+
+  .panel-body{
+    font-size:clamp(13px,1.6vw,16px);line-height:1.75;color:#bbb;font-weight:300;
+    opacity:0;transform:translateY(18px);
+    transition:opacity .6s .4s,transform .6s .4s cubic-bezier(.16,1,.3,1);
+  }
+  .panel.visible .panel-body{opacity:1;transform:translateY(0);}
 
   .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:24px;border:1px solid var(--border);}
-  .stat-cell{padding:14px 16px;background:rgba(200,16,46,0.04);border:1px solid rgba(200,16,46,0.08);}
+  .stat-cell{
+    padding:14px 16px;background:rgba(200,16,46,0.04);border:1px solid rgba(200,16,46,0.08);
+    opacity:0;transform:translateY(20px) scale(0.95);
+    transition:opacity .45s,transform .45s cubic-bezier(.16,1,.3,1);
+  }
+  .panel.visible .stat-cell:nth-child(1){opacity:1;transform:none;transition-delay:.3s;}
+  .panel.visible .stat-cell:nth-child(2){opacity:1;transform:none;transition-delay:.42s;}
+  .panel.visible .stat-cell:nth-child(3){opacity:1;transform:none;transition-delay:.54s;}
+  .panel.visible .stat-cell:nth-child(4){opacity:1;transform:none;transition-delay:.66s;}
   .stat-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,40px);color:var(--red);line-height:1;}
   .stat-unit{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-left:2px;}
   .stat-label{font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
 
   .spec-table{width:100%;margin-top:20px;border-collapse:collapse;}
-  .spec-table tr{border-bottom:1px solid rgba(200,16,46,0.1);}
+  .spec-table tr{border-bottom:1px solid rgba(200,16,46,0.1);opacity:0;transform:translateX(-14px);transition:opacity .35s,transform .35s ease;}
   .spec-table tr:last-child{border-bottom:none;}
+  .panel.visible .spec-table tr:nth-child(1) {opacity:1;transform:none;transition-delay:.30s;}
+  .panel.visible .spec-table tr:nth-child(2) {opacity:1;transform:none;transition-delay:.38s;}
+  .panel.visible .spec-table tr:nth-child(3) {opacity:1;transform:none;transition-delay:.46s;}
+  .panel.visible .spec-table tr:nth-child(4) {opacity:1;transform:none;transition-delay:.54s;}
+  .panel.visible .spec-table tr:nth-child(5) {opacity:1;transform:none;transition-delay:.62s;}
+  .panel.visible .spec-table tr:nth-child(6) {opacity:1;transform:none;transition-delay:.70s;}
+  .panel.visible .spec-table tr:nth-child(7) {opacity:1;transform:none;transition-delay:.78s;}
+  .panel.visible .spec-table tr:nth-child(8) {opacity:1;transform:none;transition-delay:.86s;}
+  .panel.visible .spec-table tr:nth-child(9) {opacity:1;transform:none;transition-delay:.94s;}
+  .panel.visible .spec-table tr:nth-child(n+10){opacity:1;transform:none;transition-delay:1.02s;}
   .spec-table td{padding:8px 0;font-size:clamp(12px,1.5vw,14px);}
   .spec-table td:first-child{color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.1em;width:45%;padding-right:12px;}
   .spec-table td:last-child{color:var(--text);font-weight:600;}
 
+  /* ── STAT BARS ── */
   .stat-bar-section{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:6vh 6vw;}
-  .stat-bars{width:min(700px,90vw);background:var(--panel);border:1px solid var(--border);
-    padding:clamp(24px,4vw,48px);backdrop-filter:blur(12px);opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s;}
-  .stat-bars.visible{opacity:1;transform:translateY(0);}
-  .bar-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);margin-bottom:30px;letter-spacing:.05em;}
-  .bar-row{margin-bottom:20px;}
+  .stat-bars{
+    width:min(700px,90vw);background:var(--panel);border:1px solid var(--border);
+    padding:clamp(24px,4vw,48px);backdrop-filter:blur(12px);
+    opacity:0;transform:translateY(40px) scale(0.98);
+    transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);
+  }
+  .stat-bars.visible{opacity:1;transform:translateY(0) scale(1);}
+  .bar-title{
+    font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);margin-bottom:30px;letter-spacing:.05em;
+    opacity:0;transform:translateX(-30px);
+    transition:opacity .6s .1s,transform .6s .1s cubic-bezier(.16,1,.3,1);
+  }
+  .stat-bars.visible .bar-title{opacity:1;transform:translateX(0);}
+  .bar-row{
+    margin-bottom:20px;opacity:0;transform:translateX(-20px);
+    transition:opacity .5s,transform .5s cubic-bezier(.16,1,.3,1);
+  }
+  .stat-bars.visible .bar-row:nth-child(2){opacity:1;transform:none;transition-delay:.20s;}
+  .stat-bars.visible .bar-row:nth-child(3){opacity:1;transform:none;transition-delay:.33s;}
+  .stat-bars.visible .bar-row:nth-child(4){opacity:1;transform:none;transition-delay:.46s;}
+  .stat-bars.visible .bar-row:nth-child(5){opacity:1;transform:none;transition-delay:.59s;}
+  .stat-bars.visible .bar-row:nth-child(6){opacity:1;transform:none;transition-delay:.72s;}
+  .stat-bars.visible .bar-row:nth-child(7){opacity:1;transform:none;transition-delay:.85s;}
   .bar-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;letter-spacing:.15em;}
   .bar-name{color:var(--muted);text-transform:uppercase;}
   .bar-val{color:var(--red);font-family:'Share Tech Mono',monospace;}
   .bar-track{height:4px;background:rgba(255,255,255,0.06);overflow:hidden;}
   .bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-glow));width:0%;
-    transition:width 1.2s cubic-bezier(.16,1,.3,1);box-shadow:0 0 12px var(--red-glow);}
+    transition:width 1.3s cubic-bezier(.16,1,.3,1);box-shadow:0 0 12px var(--red-glow);}
   .bar-fill.go{width:var(--pct);}
 
+  /* ── OUTRO ── */
   #outro{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6vh 6vw;gap:20px;}
-  .outro-label{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.5em;color:var(--red);}
-  .outro-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,160px);line-height:.88;opacity:0;transform:scale(0.9);transition:opacity .9s,transform .9s;}
-  .outro-title.visible{opacity:1;transform:scale(1);}
+  .outro-label{
+    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.5em;color:var(--red);
+    opacity:0;transform:translateY(-16px);transition:opacity .6s,transform .6s ease;
+  }
+  .outro-label.visible{opacity:1;transform:translateY(0);}
+  .outro-title{
+    font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,160px);line-height:.9;overflow:hidden;
+  }
+  .outro-title .line{
+    display:block;opacity:0;transform:translateY(100%) skewY(3deg);
+    transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);
+  }
+  .outro-title .line:nth-child(1){transition-delay:.05s;}
+  .outro-title .line:nth-child(2){transition-delay:.2s;}
+  .outro-title .line:nth-child(3){transition-delay:.35s;}
+  .outro-title.visible .line{opacity:1;transform:translateY(0) skewY(0deg);}
+  .outro-sub{
+    color:var(--muted);font-size:clamp(13px,1.5vw,16px);letter-spacing:.15em;font-weight:300;
+    max-width:400px;text-align:center;font-family:'Share Tech Mono',monospace;line-height:2;
+    opacity:0;transform:translateY(16px);transition:opacity .7s .6s,transform .7s .6s ease;
+  }
+  .outro-sub.visible{opacity:1;transform:translateY(0);}
 
+  /* ── FIXED UI ── */
   #progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--red),var(--red-glow));z-index:100;width:0%;box-shadow:0 0 8px var(--red-glow);}
   #hud{position:fixed;top:24px;right:24px;z-index:100;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.2em;color:rgba(200,16,46,0.7);text-align:right;line-height:1.8;pointer-events:none;}
+  #zoom-hud{
+    position:fixed;bottom:32px;right:24px;z-index:100;
+    font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.25em;
+    color:rgba(200,16,46,0.55);pointer-events:none;
+    display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+  }
+  #zoom-bar-wrap{width:60px;height:1px;background:rgba(255,255,255,0.08);}
+  #zoom-bar-inner{height:1px;background:var(--red);width:50%;transition:width .4s cubic-bezier(.16,1,.3,1);}
 
+  /* ── LOADER ── */
   #loader{position:fixed;inset:0;background:var(--darker);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s;}
   #loader.hide{opacity:0;pointer-events:none;}
   .loader-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:.1em;color:var(--red);}
@@ -103,6 +227,10 @@
 
 <div id="progress"></div>
 <div id="hud">NISSAN GT-R R35<br>BLACK EDITION 2013<br><span id="hud-scroll">00%</span></div>
+<div id="zoom-hud">
+  <span id="zoom-label">ZOOM 1.0&times;</span>
+  <div id="zoom-bar-wrap"><div id="zoom-bar-inner"></div></div>
+</div>
 
 <div id="canvas-wrap"></div>
 
@@ -110,7 +238,10 @@
 
   <section id="hero">
     <div class="hero-eyebrow">2013 // BLACK EDITION // R35</div>
-    <h1 class="hero-title">NISSAN<br><span>GT-R</span></h1>
+    <h1 class="hero-title">
+      <span class="line">NISSAN</span>
+      <span class="line">GT-R</span>
+    </h1>
     <p class="hero-sub">The Supercar Killer. Born from the Track.</p>
     <div class="scroll-hint"><div class="scroll-hint-line"></div>SCROLL TO EXPLORE</div>
   </section>
@@ -118,7 +249,7 @@
   <section class="section">
     <div class="panel" data-index="01">
       <div class="panel-tag">Heritage // Legacy</div>
-      <h2 class="panel-title">Born to Dominate</h2>
+      <h2 class="panel-title"><span class="word">Born</span> <span class="word">to</span> <span class="word">Dominate</span></h2>
       <p class="panel-body">
         The Nissan GT-R is not merely a car — it is a philosophy forged in steel, rubber, and relentless pursuit of perfection. Rooted in the legendary Skyline lineage that terrorized the 1990s racing circuits, the R35 generation arrived in 2007 and immediately redefined what a production car could achieve. It embarrassed Ferraris and Porsches at half their price. It was an act of defiance — Japanese engineering declaring war on European tradition.
         <br><br>
@@ -130,11 +261,11 @@
   <section class="section right">
     <div class="panel right-panel" data-index="02">
       <div class="panel-tag">Performance // Numbers</div>
-      <h2 class="panel-title">Raw Numbers</h2>
+      <h2 class="panel-title"><span class="word">Raw</span> <span class="word">Numbers</span></h2>
       <div class="stats-grid">
         <div class="stat-cell"><div class="stat-val">545<span class="stat-unit">HP</span></div><div class="stat-label">Peak Power</div></div>
-        <div class="stat-cell"><div class="stat-val">463<span class="stat-unit">LB·FT</span></div><div class="stat-label">Peak Torque</div></div>
-        <div class="stat-cell"><div class="stat-val">2.7<span class="stat-unit">SEC</span></div><div class="stat-label">0–60 MPH</div></div>
+        <div class="stat-cell"><div class="stat-val">463<span class="stat-unit">LB&middot;FT</span></div><div class="stat-label">Peak Torque</div></div>
+        <div class="stat-cell"><div class="stat-val">2.7<span class="stat-unit">SEC</span></div><div class="stat-label">0&ndash;60 MPH</div></div>
         <div class="stat-cell"><div class="stat-val">196<span class="stat-unit">MPH</span></div><div class="stat-label">Top Speed</div></div>
       </div>
     </div>
@@ -143,11 +274,11 @@
   <section class="section">
     <div class="panel" data-index="03">
       <div class="panel-tag">Powertrain // VR38DETT</div>
-      <h2 class="panel-title">The Heart of a God</h2>
+      <h2 class="panel-title"><span class="word">The</span> <span class="word">Heart</span> <span class="word">of</span> <span class="word">a</span> <span class="word">God</span></h2>
       <p class="panel-body">
         Beneath the long aluminium hood sits the VR38DETT — a hand-assembled 3.8-litre twin-turbocharged V6 that Nissan's master engine builder Shoichi Miyatani signs by hand on every single unit. Not a robot. Not an assembly line. A human being accountable for every tolerance, every torque spec, every seal.
         <br><br>
-        Twin Garrett turbochargers spool with ferocious urgency, delivering linear, relentless thrust from idle to redline. The dry-sump oil system means it corners without oil starvation. The engine block is aluminium. The cylinder liners are cast iron. Every component exists to serve one purpose: transfer energy to the road with zero compromise.
+        Twin Garrett turbochargers spool with ferocious urgency, delivering linear, relentless thrust from idle to redline. The dry-sump oil system means it corners without oil starvation. Every component exists to serve one purpose: transfer energy to the road with zero compromise.
       </p>
       <table class="spec-table">
         <tr><td>Engine</td><td>VR38DETT V6 TT</td></tr>
@@ -163,11 +294,11 @@
   <section class="section right">
     <div class="panel right-panel" data-index="04">
       <div class="panel-tag">Transmission // ATTESA E-TS</div>
-      <h2 class="panel-title">Lightning-Fast Shifts</h2>
+      <h2 class="panel-title"><span class="word">Lightning-Fast</span> <span class="word">Shifts</span></h2>
       <p class="panel-body">
-        The GT-R's 6-speed dual-clutch transaxle (GR6) is mounted at the rear axle, creating near-perfect 53/47 weight distribution. Shifts happen in 0.15 seconds — faster than a human nerve impulse. Three driving modes — Normal, Sport, and R — adjust shift speed, aggression, and clutch engagement to match the moment.
+        The GT-R's 6-speed dual-clutch transaxle (GR6) is mounted at the rear axle, creating near-perfect 53/47 weight distribution. Shifts happen in 0.15 seconds — faster than a human nerve impulse. Three driving modes — Normal, Sport, and R — adjust shift speed, aggression, and clutch engagement.
         <br><br>
-        The ATTESA E-TS AWD system monitors g-forces, steering angle, and wheel slip hundreds of times per second. Under hard acceleration, it can push up to 100% of torque to the rear. In a corner gone wrong, it redistributes instantly. It doesn't just prevent mistakes — it makes the impossible routine.
+        The ATTESA E-TS AWD system monitors g-forces, steering angle, and wheel slip hundreds of times per second. Under hard acceleration it can push up to 100% torque to the rear. It doesn't just prevent mistakes — it makes the impossible routine.
       </p>
       <table class="spec-table">
         <tr><td>Type</td><td>6-Speed Dual-Clutch</td></tr>
@@ -183,11 +314,11 @@
   <section class="section">
     <div class="panel" data-index="05">
       <div class="panel-tag">Aerodynamics // Chassis</div>
-      <h2 class="panel-title">Sculpted by Wind</h2>
+      <h2 class="panel-title"><span class="word">Sculpted</span> <span class="word">by</span> <span class="word">Wind</span></h2>
       <p class="panel-body">
-        Every line on the GT-R's body is purposeful. The front fascia channels air beneath the car to the underbody diffuser, generating downforce at speed without drag-inducing wings. The rear ducktail spoiler presses the rear axle into the road precisely as grip is needed. Wide rear haunches house 285mm tyres that claw into tarmac.
+        Every line on the GT-R's body is purposeful. The front fascia channels air beneath the car to the underbody diffuser, generating downforce without drag-inducing wings. Wide rear haunches house 285mm tyres that claw into tarmac.
         <br><br>
-        The chassis is a rigid steel monocoque with front and rear multi-link suspension tuned by Bilstein, adjustable via the DampTronic system across three modes. Brembo brakes with six-piston front calipers haul the GT-R from 100 to 0 in just 31 metres.
+        The chassis is a rigid steel monocoque with multi-link suspension tuned by Bilstein, adjustable via DampTronic across three modes. Brembo six-piston front calipers haul the GT-R from 100 to 0 in just 31 metres.
       </p>
     </div>
   </section>
@@ -196,10 +327,10 @@
     <div class="stat-bars" id="stat-bars">
       <div class="bar-title">Performance Benchmarks</div>
       <div class="bar-row"><div class="bar-meta"><span class="bar-name">Horsepower</span><span class="bar-val">545 HP</span></div><div class="bar-track"><div class="bar-fill" style="--pct:88%"></div></div></div>
-      <div class="bar-row"><div class="bar-meta"><span class="bar-name">0–60 mph Speed</span><span class="bar-val">2.7s</span></div><div class="bar-track"><div class="bar-fill" style="--pct:95%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">0&ndash;60 mph Speed</span><span class="bar-val">2.7s</span></div><div class="bar-track"><div class="bar-fill" style="--pct:95%"></div></div></div>
       <div class="bar-row"><div class="bar-meta"><span class="bar-name">Lateral G-Force</span><span class="bar-val">1.01g</span></div><div class="bar-track"><div class="bar-fill" style="--pct:82%"></div></div></div>
-      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Nürburgring Lap</span><span class="bar-val">7:18.6</span></div><div class="bar-track"><div class="bar-fill" style="--pct:91%"></div></div></div>
-      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Braking 60–0 mph</span><span class="bar-val">99 ft</span></div><div class="bar-track"><div class="bar-fill" style="--pct:86%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">N&uuml;rburgring Lap</span><span class="bar-val">7:18.6</span></div><div class="bar-track"><div class="bar-fill" style="--pct:91%"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span class="bar-name">Braking 60&ndash;0 mph</span><span class="bar-val">99 ft</span></div><div class="bar-track"><div class="bar-fill" style="--pct:86%"></div></div></div>
       <div class="bar-row"><div class="bar-meta"><span class="bar-name">Weight Balance F/R</span><span class="bar-val">53/47</span></div><div class="bar-track"><div class="bar-fill" style="--pct:75%"></div></div></div>
     </div>
   </section>
@@ -207,14 +338,14 @@
   <section class="section right">
     <div class="panel right-panel" data-index="06">
       <div class="panel-tag">Black Edition // Exclusives</div>
-      <h2 class="panel-title">Beyond Standard</h2>
+      <h2 class="panel-title"><span class="word">Beyond</span> <span class="word">Standard</span></h2>
       <p class="panel-body">
-        The Black Edition isn't a trim package. It's a statement. Exclusive 20-inch Rays forged aluminium wheels in Midnight Opal finish are lighter than cast wheels by 2 kg per corner, directly reducing unsprung mass for faster steering response. Carbon fibre interior trim extends to door inserts and centre console.
+        The Black Edition isn't a trim package. It's a statement. Exclusive 20-inch Rays forged aluminium wheels in Midnight Opal finish are lighter than cast wheels by 2 kg per corner, directly reducing unsprung mass for faster steering response.
         <br><br>
-        Red stitching on Recaro-style leather seats contrasts against the dark cabin. A dedicated lap timer integrated into the multi-function display turns every drive into a trackday. Pearl Black paint absorbs light like obsidian. Everything is intentional.
+        Carbon fibre interior trim, red stitching on Recaro-style leather seats, a dedicated lap timer, and Pearl Black paint that absorbs light like obsidian. Everything is intentional.
       </p>
       <table class="spec-table">
-        <tr><td>Wheels</td><td>20" Rays Forged Midnight Opal</td></tr>
+        <tr><td>Wheels</td><td>20&rdquo; Rays Forged Midnight Opal</td></tr>
         <tr><td>Brake Calipers</td><td>Brembo Bright Red</td></tr>
         <tr><td>Exterior</td><td>Exclusive Pearl Black</td></tr>
         <tr><td>Interior Trim</td><td>Carbon Fibre + Red Stitch</td></tr>
@@ -227,11 +358,11 @@
   <section class="section">
     <div class="panel" data-index="07">
       <div class="panel-tag">Interior // Technology</div>
-      <h2 class="panel-title">The Cockpit Mentality</h2>
+      <h2 class="panel-title"><span class="word">Cockpit</span> <span class="word">Mentality</span></h2>
       <p class="panel-body">
-        Step inside and the world outside ceases to exist. The driver-focused cockpit wraps around you with purpose and intent. Every control is within reach. The multi-function 7-inch display can be configured to show turbo boost, g-forces, lap times, tyre pressures, and exhaust sound profiles simultaneously.
+        Step inside and the world outside ceases to exist. The driver-focused cockpit wraps around you with purpose. The multi-function 7-inch display shows turbo boost, g-forces, lap times, tyre pressures, and exhaust sound profiles simultaneously.
         <br><br>
-        The 11-speaker Bose Premium Audio delivers 710 watts of concert-hall clarity. Dual-zone climate control maintains perfect conditions. And despite its fearsome performance credentials, the GT-R offers legitimate rear seats and a 244-litre boot — a machine with principles and practicality in equal measure.
+        The 11-speaker Bose Premium Audio delivers 710 watts. Dual-zone climate control maintains perfect conditions. And despite its fearsome performance, the GT-R offers legitimate rear seats and a 244-litre boot.
       </p>
     </div>
   </section>
@@ -239,11 +370,11 @@
   <section class="section right">
     <div class="panel right-panel" data-index="08">
       <div class="panel-tag">Culture // Godzilla</div>
-      <h2 class="panel-title">Godzilla Lives</h2>
+      <h2 class="panel-title"><span class="word">Godzilla</span> <span class="word">Lives</span></h2>
       <p class="panel-body">
-        The press nicknamed it Godzilla — a monster from Japan capable of crushing anything in its path. The name stuck. In Gran Turismo, it was the car every player wanted. On the Nürburgring, it held production car lap records. It made supercar ownership seem irresponsible, when a GT-R could match a $200,000 Italian exotic for $80,000.
+        The press nicknamed it Godzilla — a monster from Japan capable of crushing anything in its path. On the N&uuml;rburgring, it held production car lap records. It made supercar ownership seem irresponsible, matching a $200,000 Italian exotic for $80,000.
         <br><br>
-        The 2013 Black Edition is one of the most celebrated variants of this legend. These cars are already appreciating. In two decades, they will be icons — artefacts of a golden era when engineers prioritised the purity of driving above all else.
+        The 2013 Black Edition is one of the most celebrated variants of this legend. In two decades, these will be icons — artefacts of a golden era when engineers prioritised the purity of driving above all else.
       </p>
     </div>
   </section>
@@ -251,23 +382,21 @@
   <section class="section">
     <div class="panel" data-index="09" style="max-width:min(580px,90vw);">
       <div class="panel-tag">Technical Specifications // Complete</div>
-      <h2 class="panel-title">Complete Spec Sheet</h2>
+      <h2 class="panel-title"><span class="word">Complete</span> <span class="word">Spec</span> <span class="word">Sheet</span></h2>
       <table class="spec-table">
         <tr><td>Year</td><td>2013</td></tr>
         <tr><td>Model</td><td>GT-R Black Edition (R35)</td></tr>
         <tr><td>Engine</td><td>3.8L VR38DETT Twin-Turbo V6</td></tr>
         <tr><td>Power</td><td>545 hp @ 6,400 RPM</td></tr>
-        <tr><td>Torque</td><td>463 lb-ft @ 3,200–5,800 RPM</td></tr>
+        <tr><td>Torque</td><td>463 lb-ft @ 3,200&ndash;5,800 RPM</td></tr>
         <tr><td>Transmission</td><td>6-Speed GR6 Dual-Clutch</td></tr>
         <tr><td>Drive</td><td>ATTESA E-TS AWD</td></tr>
-        <tr><td>0–60 mph</td><td>2.7 seconds</td></tr>
-        <tr><td>0–100 mph</td><td>5.9 seconds</td></tr>
+        <tr><td>0&ndash;60 mph</td><td>2.7 seconds</td></tr>
+        <tr><td>0&ndash;100 mph</td><td>5.9 seconds</td></tr>
         <tr><td>Top Speed</td><td>196 mph (limited)</td></tr>
         <tr><td>Curb Weight</td><td>3,836 lbs / 1,740 kg</td></tr>
-        <tr><td>Length × Width</td><td>4,650 × 1,895 mm</td></tr>
+        <tr><td>Length &times; Width</td><td>4,650 &times; 1,895 mm</td></tr>
         <tr><td>Wheelbase</td><td>2,780 mm</td></tr>
-        <tr><td>Front Suspension</td><td>Multi-Link / Bilstein</td></tr>
-        <tr><td>Rear Suspension</td><td>Multi-Link / Bilstein</td></tr>
         <tr><td>Front Brakes</td><td>380mm Brembo 6-Piston</td></tr>
         <tr><td>Rear Brakes</td><td>380mm Brembo 4-Piston</td></tr>
         <tr><td>Front Tyres</td><td>255/40 R20 Dunlop SP</td></tr>
@@ -279,16 +408,19 @@
   </section>
 
   <section id="outro">
-    <div class="outro-label">THE END OF THE LINE</div>
-    <h2 class="outro-title" id="outro-title">LEGEND<br>NEVER<br><span style="color:var(--red)">DIES.</span></h2>
-    <p style="color:var(--muted);font-size:clamp(13px,1.5vw,16px);letter-spacing:.15em;font-weight:300;max-width:400px;text-align:center;font-family:'Share Tech Mono',monospace;line-height:2;">
+    <div class="outro-label" id="outro-label">THE END OF THE LINE</div>
+    <h2 class="outro-title" id="outro-title">
+      <span class="line">LEGEND</span>
+      <span class="line">NEVER</span>
+      <span class="line" style="color:var(--red)">DIES.</span>
+    </h2>
+    <p class="outro-sub" id="outro-sub">
       NISSAN GT-R R35 BLACK EDITION<br>2013 // VR38DETT // AWD
     </p>
   </section>
 
 </div>
 
-<!-- THREE.JS UMD — no importmap needed -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
@@ -311,45 +443,40 @@
   scene.background = new THREE.Color(0x050507);
   scene.fog = new THREE.FogExp2(0x050507, 0.016);
 
+  var currentFOV = 45, targetFOV = 45;
+  var currentCamZ = 7,  targetCamZ = 7;
+  var currentCamX = 0,  targetCamX = 0;
+
   var camera = new THREE.PerspectiveCamera(45, W()/H(), 0.1, 200);
-  camera.position.set(5, 1.8, 7);
+  camera.position.set(0, 1.8, 7);
   camera.lookAt(0, 0.4, 0);
 
   // Lights
   scene.add(new THREE.AmbientLight(0xffffff, 0.4));
   var key = new THREE.DirectionalLight(0xffffff, 2.5);
-  key.position.set(6, 8, 6);
-  key.castShadow = true;
+  key.position.set(6, 8, 6); key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.camera.near = 0.5; key.shadow.camera.far = 30;
   key.shadow.camera.left = key.shadow.camera.bottom = -6;
   key.shadow.camera.right = key.shadow.camera.top = 6;
   scene.add(key);
-  var fill = new THREE.DirectionalLight(0x4488ff, 0.5);
-  fill.position.set(-5, 3, -4); scene.add(fill);
-  var rim = new THREE.DirectionalLight(0xff2244, 0.7);
-  rim.position.set(-3, 2, -6); scene.add(rim);
-  var under = new THREE.PointLight(0xc8102e, 0.5, 10);
-  under.position.set(0, -0.8, 0); scene.add(under);
+  var fill = new THREE.DirectionalLight(0x4488ff, 0.5); fill.position.set(-5, 3, -4); scene.add(fill);
+  var rim  = new THREE.DirectionalLight(0xff2244, 0.7); rim.position.set(-3, 2, -6);  scene.add(rim);
+  var under = new THREE.PointLight(0xc8102e, 0.5, 10);  under.position.set(0, -0.8, 0); scene.add(under);
 
   // Ground
   var ground = new THREE.Mesh(
     new THREE.PlaneGeometry(60, 60),
-    new THREE.MeshStandardMaterial({ color: 0x080810, roughness: 0.95, metalness: 0.05 })
+    new THREE.MeshStandardMaterial({ color:0x080810, roughness:0.95, metalness:0.05 })
   );
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -0.01;
-  ground.receiveShadow = true;
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.01; ground.receiveShadow = true;
   scene.add(ground);
 
-  // Loader UI
+  // Loader UI refs
   var lbar     = document.getElementById('lbar');
   var lstatus  = document.getElementById('lstatus');
   var loaderEl = document.getElementById('loader');
-  function setLoad(pct, txt) {
-    lbar.style.width = pct + '%';
-    if (txt) lstatus.textContent = txt;
-  }
+  function setLoad(pct, txt) { lbar.style.width = pct+'%'; if(txt) lstatus.textContent = txt; }
   setLoad(5, 'CONNECTING...');
 
   var car = null;
@@ -357,112 +484,150 @@
   var targetRotY = 0, currentRotY = 0;
   var targetPosX = 0, currentPosX = 0;
 
-  // ── LOAD GLB ──────────────────────────────────────────────────────────────
-  // The GLB filename in the GitHub repo
-  var GLB_URL = '2013_nissan_gt-r_black_edition_coupe.glb';
+  // ── ZOOM KEYFRAMES ─────────────────────────────────────────────────────────
+  // [scrollPct, fov, camZ]  — lower fov + lower Z = zoomed in
+  var ZK = [
+    [0.00, 45, 7.0],
+    [0.08, 36, 5.2],
+    [0.16, 52, 9.0],
+    [0.24, 34, 4.6],
+    [0.32, 50, 8.0],
+    [0.40, 32, 4.0],
+    [0.50, 54, 9.5],
+    [0.60, 36, 5.0],
+    [0.70, 46, 7.2],
+    [0.80, 31, 3.8],
+    [0.90, 50, 8.2],
+    [1.00, 28, 3.2],
+  ];
 
-  var loader = new THREE.GLTFLoader();
-  loader.load(
-    GLB_URL,
+  function smoothStep(t){ return t*t*(3-2*t); }
+
+  function getZoom(pct) {
+    for (var i = 0; i < ZK.length - 1; i++) {
+      if (pct >= ZK[i][0] && pct <= ZK[i+1][0]) {
+        var t = (pct - ZK[i][0]) / (ZK[i+1][0] - ZK[i][0]);
+        t = smoothStep(t);
+        return { fov: ZK[i][1] + (ZK[i+1][1]-ZK[i][1])*t,
+                 z:   ZK[i][2] + (ZK[i+1][2]-ZK[i][2])*t };
+      }
+    }
+    return { fov: ZK[ZK.length-1][1], z: ZK[ZK.length-1][2] };
+  }
+
+  // ── LOAD GLB ───────────────────────────────────────────────────────────────
+  var gltfLoader = new THREE.GLTFLoader();
+  gltfLoader.load(
+    '2013_nissan_gt-r_black_edition_coupe.glb',
     function(gltf) {
       setLoad(95, 'BUILDING SCENE...');
       car = gltf.scene;
-      car.traverse(function(child) {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-
-      var box    = new THREE.Box3().setFromObject(car);
-      var centre = box.getCenter(new THREE.Vector3());
-      var size   = box.getSize(new THREE.Vector3());
-      var scale  = 3.8 / Math.max(size.x, size.y, size.z);
-      car.scale.setScalar(scale);
-      car.position.set(-centre.x * scale, -box.min.y * scale, -centre.z * scale);
+      car.traverse(function(c){ if(c.isMesh){ c.castShadow=true; c.receiveShadow=true; } });
+      var box   = new THREE.Box3().setFromObject(car);
+      var ctr   = box.getCenter(new THREE.Vector3());
+      var size  = box.getSize(new THREE.Vector3());
+      var sc    = 3.8 / Math.max(size.x, size.y, size.z);
+      car.scale.setScalar(sc);
+      car.position.set(-ctr.x*sc, -box.min.y*sc, -ctr.z*sc);
       scene.add(car);
-
       setLoad(100, 'READY');
-      setTimeout(function() {
+      setTimeout(function(){
         loaderEl.classList.add('hide');
         setTimeout(function(){ loaderEl.style.display='none'; }, 700);
       }, 300);
-
       animate();
     },
-    function(xhr) {
-      if (xhr.total) {
-        var pct = 5 + (xhr.loaded / xhr.total) * 85;
-        setLoad(pct, 'LOADING... ' + Math.round(pct) + '%');
-      }
-    },
-    function(err) {
-      console.error('GLB error:', err);
-      lstatus.textContent = 'ERROR: ' + (err.message || 'Could not load model');
-    }
+    function(xhr){ if(xhr.total){ var p=5+(xhr.loaded/xhr.total)*85; setLoad(p,'LOADING... '+Math.round(p)+'%'); } },
+    function(err){ console.error('GLB error:',err); lstatus.textContent='ERROR: '+(err.message||'Load failed'); }
   );
 
-  // ── SCROLL ────────────────────────────────────────────────────────────────
+  // ── SCROLL ─────────────────────────────────────────────────────────────────
   var progressBar = document.getElementById('progress');
   var hudScroll   = document.getElementById('hud-scroll');
+  var zoomLabel   = document.getElementById('zoom-label');
+  var zoomBarEl   = document.getElementById('zoom-bar-inner');
 
   window.addEventListener('scroll', function() {
     var docH = document.body.scrollHeight - window.innerHeight;
     var pct  = docH > 0 ? window.scrollY / docH : 0;
-    progressBar.style.width = (pct * 100) + '%';
-    hudScroll.textContent   = ('0' + Math.round(pct * 100)).slice(-2) + '%';
+
+    progressBar.style.width = (pct*100)+'%';
+    hudScroll.textContent   = ('0'+Math.round(pct*100)).slice(-2)+'%';
+
     targetRotY = pct * Math.PI * 3.5;
-    targetPosX = (Math.floor(pct * 9) % 2 === 0) ? -0.5 : 0.5;
-    checkBars();
-    checkOutro();
+    var sec = Math.floor(pct * 9);
+    targetPosX = (sec%2===0) ? -0.4 : 0.4;
+    targetCamX = (sec%2===0) ?  0.5 : -0.5;
+
+    var zm = getZoom(pct);
+    targetFOV  = zm.fov;
+    targetCamZ = zm.z;
+
+    // zoom HUD
+    var zv = (7 / zm.z).toFixed(1);
+    zoomLabel.textContent = 'ZOOM ' + zv + '\u00D7';
+    zoomBarEl.style.width = Math.min(100, Math.max(10, (1-(zm.fov-28)/30)*100)) + '%';
+
+    checkBars(); checkOutro();
   }, { passive: true });
 
-  // Panels via IntersectionObserver
+  // Panel IntersectionObserver
   var io = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.panel').forEach(function(p) { io.observe(p); });
+    entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.panel').forEach(function(p){ io.observe(p); });
 
   function checkBars() {
     var el = document.getElementById('stat-bars');
     if (!el || el.classList.contains('visible')) return;
     if (el.getBoundingClientRect().top < window.innerHeight * 0.85) {
       el.classList.add('visible');
-      el.querySelectorAll('.bar-fill').forEach(function(f, i) {
-        setTimeout(function(){ f.classList.add('go'); }, i * 130);
+      el.querySelectorAll('.bar-fill').forEach(function(f,i){
+        setTimeout(function(){ f.classList.add('go'); }, i*150 + 400);
       });
     }
   }
+
   function checkOutro() {
-    var el = document.getElementById('outro-title');
-    if (el && el.getBoundingClientRect().top < window.innerHeight * 0.8) el.classList.add('visible');
+    ['outro-title','outro-label','outro-sub'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top < window.innerHeight * 0.82) el.classList.add('visible');
+    });
   }
 
-  // ── ANIMATE ───────────────────────────────────────────────────────────────
+  // ── ANIMATE ────────────────────────────────────────────────────────────────
+  var LERP = 0.055;
   function animate() {
     requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
+
+    currentFOV  += (targetFOV  - currentFOV)  * LERP;
+    currentCamZ += (targetCamZ - currentCamZ) * LERP;
+    currentCamX += (targetCamX - currentCamX) * LERP;
+    currentRotY += (targetRotY - currentRotY) * LERP;
+    currentPosX += (targetPosX - currentPosX) * LERP;
+
+    camera.fov = currentFOV;
+    camera.updateProjectionMatrix();
+    camera.position.x = currentCamX + Math.sin(t*0.14)*0.18;
+    camera.position.y = 1.8 + Math.sin(t*0.18)*0.07;
+    camera.position.z = currentCamZ;
+    camera.lookAt(0, 0.4, 0);
+
     if (car) {
-      currentRotY += (targetRotY - currentRotY) * 0.05;
-      currentPosX += (targetPosX - currentPosX) * 0.05;
       car.rotation.y = currentRotY;
       car.position.x = currentPosX;
-      car.position.y = Math.sin(t * 0.7) * 0.025;
+      car.position.y = Math.sin(t*0.7)*0.022;
     }
-    camera.position.x = 5 + Math.sin(t * 0.15) * 0.4;
-    camera.position.y = 1.8 + Math.sin(t * 0.2)  * 0.1;
-    camera.lookAt(0, 0.4, 0);
+
     renderer.render(scene, camera);
   }
 
-  // ── RESIZE ────────────────────────────────────────────────────────────────
-  window.addEventListener('resize', function() {
-    camera.aspect = W() / H();
+  window.addEventListener('resize', function(){
+    camera.aspect = W()/H();
     camera.updateProjectionMatrix();
     renderer.setSize(W(), H());
   });
-
-  // keep car Y base after load
 
 })();
 </script>

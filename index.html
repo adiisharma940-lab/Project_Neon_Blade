@@ -2,91 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07070f">
 <title>Alfa Romeo 33 Stradale — 1967</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
-body{background:#07070f;color:#fff;font-family:'Segoe UI',sans-serif;overflow-x:hidden;}
+body{background:#07070f;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 
 #canvas-container{position:fixed;top:0;left:0;width:100%;height:100vh;z-index:1;}
-canvas{display:block;width:100%;height:100%;}
+canvas{display:block;width:100% !important;height:100% !important;touch-action:none;}
 
 .scroll-space{height:700vh;position:relative;z-index:2;pointer-events:none;}
 
-/* Progress bar */
 #progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#c8102e,#ff4060);z-index:20;width:0;transition:width 0.1s;}
 
-/* Logo */
-.logo{
-  position:fixed;top:32px;left:40px;z-index:10;
-  opacity:1;transition:opacity 0.5s;
-}
-.logo-name{font-size:13px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.9);font-weight:300;}
-.logo-year{font-size:10px;letter-spacing:3px;color:#c8102e;margin-top:3px;}
+.logo{position:fixed;top:max(20px,env(safe-area-inset-top,20px));left:max(20px,env(safe-area-inset-left,20px));z-index:10;}
+.logo-name{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.9);font-weight:300;}
+.logo-year{font-size:9px;letter-spacing:3px;color:#c8102e;margin-top:3px;}
 
-/* Hero */
 .hero{
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  text-align:center;z-index:5;pointer-events:none;
-  transition:opacity 0.8s ease,transform 0.8s ease;
+  text-align:center;z-index:5;pointer-events:none;width:90%;
+  transition:opacity 0.6s ease,transform 0.6s ease;
 }
 .hero.hidden{opacity:0;transform:translate(-50%,-54%);}
-.hero-eyebrow{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:#c8102e;margin-bottom:20px;}
-.hero-title{font-size:clamp(2.5rem,8vw,6.5rem);font-weight:900;line-height:1;letter-spacing:-2px;}
+.hero-eyebrow{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:#c8102e;margin-bottom:16px;}
+.hero-title{font-size:clamp(2.8rem,14vw,6.5rem);font-weight:900;line-height:1;letter-spacing:-2px;}
 .hero-title em{font-style:normal;color:#c8102e;}
-.hero-sub{font-size:0.85rem;color:rgba(255,255,255,0.35);letter-spacing:4px;margin-top:16px;text-transform:uppercase;}
+.hero-sub{font-size:0.75rem;color:rgba(255,255,255,0.35);letter-spacing:4px;margin-top:14px;text-transform:uppercase;}
 
-/* Scroll cue */
 .scroll-cue{
-  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
-  z-index:5;display:flex;flex-direction:column;align-items:center;gap:10px;
-  transition:opacity 0.6s;
+  position:fixed;bottom:max(30px,env(safe-area-inset-bottom,30px));left:50%;transform:translateX(-50%);
+  z-index:5;display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity 0.6s;
 }
 .scroll-cue.hidden{opacity:0;pointer-events:none;}
-.scroll-cue span{font-size:9px;letter-spacing:4px;color:rgba(255,255,255,0.25);text-transform:uppercase;}
-.scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,#c8102e,transparent);animation:sp 2s ease-in-out infinite;}
+.scroll-cue span{font-size:8px;letter-spacing:4px;color:rgba(255,255,255,0.25);text-transform:uppercase;}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,#c8102e,transparent);animation:sp 2s ease-in-out infinite;}
 @keyframes sp{0%,100%{opacity:0.2;}50%{opacity:1;}}
 
-/* Info panels — slide in from right */
-.panel{
-  position:fixed;top:50%;right:6%;transform:translateY(-50%) translateX(80px);
-  z-index:10;pointer-events:none;
-  opacity:0;transition:opacity 0.7s ease,transform 0.7s ease;
-  max-width:360px;
+/* ── Panels ── */
+.panel{position:fixed;z-index:10;pointer-events:none;opacity:0;transition:opacity 0.6s ease,transform 0.6s ease;}
+
+@media(min-width:600px){
+  .panel{top:50%;right:6%;max-width:340px;transform:translateY(-50%) translateX(80px);}
+  .panel.visible{opacity:1;transform:translateY(-50%) translateX(0);}
+  .panel.exit{opacity:0;transform:translateY(-50%) translateX(-40px);}
+  .p-stats{justify-content:flex-end;}
 }
-.panel.visible{opacity:1;transform:translateY(-50%) translateX(0);}
-.panel.exit{opacity:0;transform:translateY(-50%) translateX(-60px);}
+@media(max-width:599px){
+  .panel{
+    bottom:max(70px,env(safe-area-inset-bottom,70px));
+    left:5%;right:5%;
+    transform:translateY(24px);
+    background:rgba(7,7,15,0.88);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(200,16,46,0.2);
+    border-radius:14px;
+    padding:16px 18px;
+  }
+  .panel.visible{opacity:1;transform:translateY(0);}
+  .panel.exit{opacity:0;transform:translateY(16px);}
+  .p-stats{justify-content:flex-start;}
+  .p-body{display:none;} /* hide body text on small screens to reduce clutter */
+}
 
-.p-eyebrow{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:#c8102e;margin-bottom:14px;}
-.p-title{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:14px;color:#fff;}
+.p-eyebrow{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:#c8102e;margin-bottom:10px;}
+.p-title{font-size:clamp(1.3rem,5vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:10px;color:#fff;}
 .p-title span{color:#c8102e;}
-.p-body{font-size:0.92rem;line-height:1.75;color:rgba(255,255,255,0.55);margin-bottom:22px;}
-.p-stats{display:flex;gap:20px;justify-content:flex-end;}
-.stat{text-align:center;border-top:1px solid rgba(200,16,46,0.3);padding-top:12px;min-width:70px;}
-.stat-val{font-size:1.6rem;font-weight:800;color:#c8102e;line-height:1;}
-.stat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:4px;}
+.p-body{font-size:0.82rem;line-height:1.65;color:rgba(255,255,255,0.5);margin-bottom:16px;}
+.p-stats{display:flex;gap:16px;flex-wrap:wrap;}
+.stat{text-align:center;border-top:1px solid rgba(200,16,46,0.3);padding-top:10px;min-width:60px;}
+.stat-val{font-size:1.3rem;font-weight:800;color:#c8102e;line-height:1;}
+.stat-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:3px;}
 
-/* Left label strip */
 .side-label{
   position:fixed;left:36px;top:50%;transform:translateY(-50%) rotate(-90deg);
-  transform-origin:center center;
-  font-size:9px;letter-spacing:5px;text-transform:uppercase;
-  color:rgba(255,255,255,0.15);z-index:5;
-  transition:opacity 0.5s;white-space:nowrap;
+  transform-origin:center center;font-size:8px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.12);z-index:5;white-space:nowrap;
 }
+@media(max-width:599px){.side-label{display:none;}}
 
-/* Loading screen */
 #loader{
   position:fixed;inset:0;background:#07070f;z-index:100;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
   transition:opacity 0.8s;
 }
 #loader.done{opacity:0;pointer-events:none;}
-.loader-text{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
-.loader-bar-wrap{width:200px;height:1px;background:rgba(255,255,255,0.1);}
+.loader-text{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+.loader-bar-wrap{width:160px;height:1px;background:rgba(255,255,255,0.1);}
 .loader-bar{height:1px;background:#c8102e;width:0;transition:width 0.3s;}
-.loader-name{font-size:1.2rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.7);}
+.loader-name{font-size:1.1rem;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.7);}
 </style>
 </head>
 <body>
@@ -106,20 +113,18 @@ canvas{display:block;width:100%;height:100%;}
   <div class="logo-year">33 Stradale · 1967</div>
 </div>
 
-<div class="side-label" id="sidelabel">Tipo 33 · Milano</div>
+<div class="side-label">Tipo 33 · Milano</div>
 
-<!-- Hero -->
 <div class="hero" id="hero">
   <div class="hero-eyebrow">The most beautiful car ever made</div>
   <h1 class="hero-title">33<br><em>Stradale</em></h1>
   <p class="hero-sub">Scroll to explore</p>
 </div>
 
-<!-- Panels -->
 <div class="panel" id="p1">
   <div class="p-eyebrow">// Design</div>
-  <h2 class="p-title">Sculpted<br>by <span>Franco</span><br>Scaglione</h2>
-  <p class="p-body">Every curve of the 33 Stradale was penned by Franco Scaglione — widely considered the most beautiful production car body ever designed. Only 18 were ever built.</p>
+  <h2 class="p-title">Sculpted by <span>Franco</span> Scaglione</h2>
+  <p class="p-body">Every curve penned by Franco Scaglione — widely considered the most beautiful production car body ever designed. Only 18 were ever built.</p>
   <div class="p-stats">
     <div class="stat"><div class="stat-val">18</div><div class="stat-label">Built</div></div>
     <div class="stat"><div class="stat-val">1967</div><div class="stat-label">Year</div></div>
@@ -128,8 +133,8 @@ canvas{display:block;width:100%;height:100%;}
 
 <div class="panel" id="p2">
   <div class="p-eyebrow">// Engine</div>
-  <h2 class="p-title">V8 at<br><span>10,000</span> RPM</h2>
-  <p class="p-body">A 2.0L naturally aspirated V8 derived directly from the Tipo 33 racing car. 230 horsepower screaming to a 10,000 RPM redline — in 1967.</p>
+  <h2 class="p-title">V8 at <span>10,000</span> RPM</h2>
+  <p class="p-body">A 2.0L naturally aspirated V8 from the Tipo 33 racer. 230hp screaming to a 10,000 RPM redline — in 1967.</p>
   <div class="p-stats">
     <div class="stat"><div class="stat-val">230</div><div class="stat-label">HP</div></div>
     <div class="stat"><div class="stat-val">2.0L</div><div class="stat-label">V8</div></div>
@@ -139,8 +144,8 @@ canvas{display:block;width:100%;height:100%;}
 
 <div class="panel" id="p3">
   <div class="p-eyebrow">// Performance</div>
-  <h2 class="p-title">Born on<br>the <span>track</span></h2>
-  <p class="p-body">0–100 km/h in just 5.5 seconds with a top speed of 260 km/h. A road-legal racing car that redefined what a street machine could be.</p>
+  <h2 class="p-title">Born on the <span>track</span></h2>
+  <p class="p-body">0–100 km/h in 5.5 seconds, top speed 260 km/h. A road-legal racing car that redefined what a street machine could be.</p>
   <div class="p-stats">
     <div class="stat"><div class="stat-val">5.5s</div><div class="stat-label">0–100</div></div>
     <div class="stat"><div class="stat-val">260</div><div class="stat-label">km/h</div></div>
@@ -149,8 +154,8 @@ canvas{display:block;width:100%;height:100%;}
 
 <div class="panel" id="p4">
   <div class="p-eyebrow">// Legacy</div>
-  <h2 class="p-title">A <span>legend</span><br>forever</h2>
-  <p class="p-body">The 33 Stradale inspires Alfa Romeo to this day. Its DNA flows through every car bearing the Quadrifoglio badge. The original supercar.</p>
+  <h2 class="p-title">A <span>legend</span> forever</h2>
+  <p class="p-body">The 33 Stradale inspires Alfa Romeo to this day. Its DNA flows through every car bearing the Quadrifoglio badge.</p>
   <div class="p-stats">
     <div class="stat"><div class="stat-val">€15M</div><div class="stat-label">Value</div></div>
     <div class="stat"><div class="stat-val">#1</div><div class="stat-label">Iconic</div></div>
@@ -166,80 +171,99 @@ canvas{display:block;width:100%;height:100%;}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+// ── Device detection ──
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 600;
+
 // ── Renderer ──
-const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const renderer = new THREE.WebGLRenderer({
+  antialias: !isMobile,
+  alpha: true,
+  powerPreference: isMobile ? 'low-power' : 'high-performance',
+});
+// Lower pixel ratio on mobile = huge perf win
+renderer.setPixelRatio(isMobile ? Math.min(window.devicePixelRatio, 1.2) : Math.min(window.devicePixelRatio, 2));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
+
+// Shadows only on desktop
+if(!isMobile){
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+}
+
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x07070f, 0.04);
+scene.fog = new THREE.FogExp2(0x07070f, isMobile ? 0.055 : 0.04);
 
-const camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, 0.01, 100);
-camera.position.set(0, 1.5, 6);
+const camera = new THREE.PerspectiveCamera(isMobile ? 52 : 40, innerWidth/innerHeight, 0.01, 100);
+camera.position.set(0, 1.5, isMobile ? 7 : 6);
 camera.lookAt(0, 0.4, 0);
 
 function resize(){
   renderer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth/innerHeight;
+  // Wider FOV on portrait mobile
+  camera.fov = camera.aspect < 0.65 ? 60 : (isMobile ? 52 : 40);
   camera.updateProjectionMatrix();
 }
 resize();
 window.addEventListener('resize', resize);
 
-// ── Lighting ──
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+// ── Lighting — fewer lights on mobile ──
+scene.add(new THREE.AmbientLight(0xffffff, isMobile ? 1.0 : 0.5));
 
-const key = new THREE.DirectionalLight(0xfff5ee, 2.0);
+const key = new THREE.DirectionalLight(0xfff5ee, isMobile ? 2.8 : 2.0);
 key.position.set(4, 6, 4);
-key.castShadow = true;
-key.shadow.mapSize.set(2048,2048);
-key.shadow.camera.near = 0.1;
-key.shadow.camera.far = 30;
-key.shadow.camera.left = -5;
-key.shadow.camera.right = 5;
-key.shadow.camera.top = 5;
-key.shadow.camera.bottom = -5;
+if(!isMobile){
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 0.1;
+  key.shadow.camera.far = 30;
+  key.shadow.camera.left = -5; key.shadow.camera.right = 5;
+  key.shadow.camera.top = 5;   key.shadow.camera.bottom = -5;
+}
 scene.add(key);
 
 const fill = new THREE.DirectionalLight(0xc8102e, 0.5);
 fill.position.set(-4, 2, -3);
 scene.add(fill);
 
-const back = new THREE.DirectionalLight(0x4488ff, 0.3);
-back.position.set(0, 3, -6);
-scene.add(back);
+if(!isMobile){
+  const back = new THREE.DirectionalLight(0x4488ff, 0.3);
+  back.position.set(0, 3, -6);
+  scene.add(back);
+}
 
-// ── FIX: renamed 'top' → 'topLight' to avoid conflict with window.top ──
 const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
 topLight.position.set(0, 8, 0);
 scene.add(topLight);
 
 // ── Ground ──
-const gGeo = new THREE.PlaneGeometry(30, 30);
-const gMat = new THREE.MeshStandardMaterial({color:0x0a0a16, metalness:0.9, roughness:0.15, transparent:true, opacity:0.8});
-const ground = new THREE.Mesh(gGeo, gMat);
-ground.rotation.x = -Math.PI/2;
-ground.position.y = -0.01;
-ground.receiveShadow = true;
-scene.add(ground);
-
-// Grid lines
-const gridHelper = new THREE.GridHelper(20, 40, 0x1a1a30, 0x1a1a30);
-gridHelper.position.y = 0.001;
-gridHelper.material.opacity = 0.4;
-gridHelper.material.transparent = true;
-scene.add(gridHelper);
+if(!isMobile){
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(30,30),
+    new THREE.MeshStandardMaterial({color:0x0a0a16, metalness:0.9, roughness:0.15, transparent:true, opacity:0.8})
+  );
+  ground.rotation.x = -Math.PI/2; ground.position.y = -0.01; ground.receiveShadow = true;
+  scene.add(ground);
+  const grid = new THREE.GridHelper(20, 40, 0x1a1a30, 0x1a1a30);
+  grid.position.y = 0.001; grid.material.opacity = 0.4; grid.material.transparent = true;
+  scene.add(grid);
+} else {
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(20,20),
+    new THREE.MeshBasicMaterial({color:0x0d0d1a})
+  );
+  ground.rotation.x = -Math.PI/2; ground.position.y = -0.01;
+  scene.add(ground);
+}
 
 // ── Load GLB ──
 let carModel = null;
 let modelLoaded = false;
 
-// Load via CDN GLTFLoader
 const gltfScript = document.createElement('script');
 gltfScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 gltfScript.onload = () => {
@@ -254,33 +278,28 @@ gltfScript.onload = () => {
         (gltf) => {
           carModel = gltf.scene;
 
-          // Auto-scale and center
           const box = new THREE.Box3().setFromObject(carModel);
           const size = box.getSize(new THREE.Vector3());
           const center = box.getCenter(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 3.5 / maxDim;
+          const scale = (isMobile ? 3.0 : 3.5) / maxDim;
           carModel.scale.setScalar(scale);
           carModel.position.sub(center.multiplyScalar(scale));
 
-          // Sit on ground
           const box2 = new THREE.Box3().setFromObject(carModel);
           carModel.position.y -= box2.min.y;
 
-          // Enable shadows on all meshes + improve materials
           carModel.traverse(child => {
             if(child.isMesh){
-              child.castShadow = true;
-              child.receiveShadow = true;
+              if(!isMobile){ child.castShadow = true; child.receiveShadow = true; }
               if(child.material){
                 const mats = Array.isArray(child.material) ? child.material : [child.material];
                 mats.forEach(m => {
-                  m.envMapIntensity = 1.2;
+                  if(!isMobile) m.envMapIntensity = 1.2;
                   if(m.name && (m.name.toLowerCase().includes('glass') || m.name.toLowerCase().includes('wind'))){
                     m.transparent = true;
-                    m.opacity = 0.3;
-                    m.roughness = 0.05;
-                    m.metalness = 0.1;
+                    m.opacity = isMobile ? 0.5 : 0.3;
+                    m.roughness = 0.05; m.metalness = 0.1;
                   }
                 });
               }
@@ -291,24 +310,15 @@ gltfScript.onload = () => {
           modelLoaded = true;
           URL.revokeObjectURL(url);
 
-          // Hide loader
           const loaderEl = document.getElementById('loader');
           loaderEl.classList.add('done');
           setTimeout(() => loaderEl.style.display='none', 900);
         },
-        (xhr) => {
-          if(xhr.total) lbar.style.width = (xhr.loaded/xhr.total*100)+'%';
-        },
-        (err) => {
-          console.error('GLB load error:', err);
-          showFallback();
-        }
+        (xhr) => { if(xhr.total) lbar.style.width = (xhr.loaded/xhr.total*100)+'%'; },
+        (err)  => { console.error('GLB error:', err); showFallback(); }
       );
     })
-    .catch(err => {
-      console.error('Fetch error:', err);
-      showFallback();
-    });
+    .catch(err => { console.error('Fetch error:', err); showFallback(); });
 };
 document.head.appendChild(gltfScript);
 
@@ -322,20 +332,14 @@ function buildFallbackCar(){
   const bMat = new THREE.MeshStandardMaterial({color:0xcc1a1a, metalness:0.8, roughness:0.2});
   const dMat = new THREE.MeshStandardMaterial({color:0x111118, metalness:0.5, roughness:0.5});
   const body = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.4,3.8), bMat);
-  body.position.y = 0.35;
-  g.add(body);
+  body.position.y = 0.35; g.add(body);
   const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.38,1.4), bMat);
-  cabin.position.set(0,0.73,-0.1);
-  g.add(cabin);
+  cabin.position.set(0,0.73,-0.1); g.add(cabin);
   [[-0.82,0,1.1],[0.82,0,1.1],[-0.82,0,-1.1],[0.82,0,-1.1]].forEach(([x,y,z]) => {
-    const w = new THREE.Mesh(new THREE.TorusGeometry(0.32,0.12,12,24), dMat);
-    w.rotation.y = Math.PI/2;
-    w.position.set(x,y,z);
-    g.add(w);
+    const w = new THREE.Mesh(new THREE.TorusGeometry(0.32,0.12,8,16), dMat);
+    w.rotation.y = Math.PI/2; w.position.set(x,y,z); g.add(w);
   });
-  scene.add(g);
-  carModel = g;
-  modelLoaded = true;
+  scene.add(g); carModel = g; modelLoaded = true;
   document.getElementById('loader').classList.add('done');
 }
 
@@ -347,118 +351,104 @@ const panels = [
   {el:document.getElementById('p4'), start:0.78, end:0.97},
 ];
 
-const hero = document.getElementById('hero');
+const hero      = document.getElementById('hero');
 const scrollcue = document.getElementById('scrollcue');
-const progress = document.getElementById('progress');
+const progress  = document.getElementById('progress');
 
 let targetScroll = 0;
 let smoothScroll = 0;
 
-window.addEventListener('scroll',() => {
+window.addEventListener('scroll', () => {
   const max = document.body.scrollHeight - innerHeight;
   targetScroll = max > 0 ? window.scrollY / max : 0;
-  progress.style.width = (targetScroll*100)+'%';
+  progress.style.width = (targetScroll * 100) + '%';
 }, {passive:true});
 
 function lerp(a,b,t){return a+(b-a)*t;}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
 function easeOut3(t){return 1-Math.pow(1-t,3);}
 
+const CAM_DIST  = isMobile ? 6.5 : 5.5;
+const CAM_DIST2 = isMobile ? 6.0 : 5.0;
+
 function getCameraState(t){
   if(t < 0.12){
-    const p = easeOut3(t/0.12);
+    const p = easeOut3(t / 0.12);
     return {
-      px: lerp(1.4, 0.5, p),
-      py: lerp(0.2, 0.6, p),
-      pz: lerp(2.8, 4.5, p),
-      lx: lerp(0.8, 0, p),
-      ly: lerp(0.0, 0.3, p),
-      lz: lerp(1.2, 0, p),
+      px: lerp(isMobile ? 1.0 : 1.4, 0.5, p),
+      py: lerp(0.3, 0.7, p),
+      pz: lerp(isMobile ? 3.5 : 2.8, isMobile ? 5.5 : 4.5, p),
+      lx: lerp(0.5, 0, p), ly: lerp(0.0, 0.3, p), lz: lerp(1.0, 0, p),
     };
   } else if(t < 0.35){
     const p = easeInOut((t-0.12)/0.23);
     const angle = lerp(0.3, -0.9, p);
-    return {
-      px: Math.sin(angle)*5.5,
-      py: lerp(0.6, 1.4, p),
-      pz: Math.cos(angle)*5.5,
-      lx:0, ly:0.35, lz:0,
-    };
+    return { px:Math.sin(angle)*CAM_DIST, py:lerp(0.7,1.4,p), pz:Math.cos(angle)*CAM_DIST, lx:0, ly:0.35, lz:0 };
   } else if(t < 0.58){
     const p = easeInOut((t-0.35)/0.23);
     const angle = lerp(-0.9, 0.6, p);
-    return {
-      px: Math.sin(angle)*5.0,
-      py: lerp(1.4, 1.8, p),
-      pz: Math.cos(angle)*5.0,
-      lx:0, ly:0.35, lz:0,
-    };
+    return { px:Math.sin(angle)*CAM_DIST2, py:lerp(1.4,1.8,p), pz:Math.cos(angle)*CAM_DIST2, lx:0, ly:0.35, lz:0 };
   } else if(t < 0.82){
     const p = easeInOut((t-0.58)/0.24);
     const angle = lerp(0.6, Math.PI-0.3, p);
-    return {
-      px: Math.sin(angle)*5.5,
-      py: lerp(1.8, 1.4, p),
-      pz: Math.cos(angle)*5.5,
-      lx:0, ly:0.35, lz:0,
-    };
+    return { px:Math.sin(angle)*CAM_DIST, py:lerp(1.8,1.4,p), pz:Math.cos(angle)*CAM_DIST, lx:0, ly:0.35, lz:0 };
   } else {
     const p = easeInOut((t-0.82)/0.18);
     const angle = lerp(Math.PI-0.3, Math.PI+0.4, p);
-    return {
-      px: Math.sin(angle)*4.5,
-      py: lerp(1.4, 2.5, p),
-      pz: Math.cos(angle)*4.5,
-      lx:0, ly:0.2, lz:0,
-    };
+    return { px:Math.sin(angle)*4.5, py:lerp(1.4,2.5,p), pz:Math.cos(angle)*4.5, lx:0, ly:0.2, lz:0 };
   }
 }
 
 const camTarget = new THREE.Vector3();
-const camSmooth = {px:0,py:1.5,pz:6,lx:0,ly:0.35,lz:0};
+const camSmooth = {px:0, py:1.5, pz: isMobile ? 7 : 6, lx:0, ly:0.35, lz:0};
 
+// Throttle to ~30fps on mobile
 let lt = 0;
+let frameCount = 0;
+
 function animate(ts){
   requestAnimationFrame(animate);
-  const dt = Math.min((ts-lt)/1000, 0.05);
+
+  // Skip odd frames on mobile → ~30fps, much less GPU heat
+  frameCount++;
+  if(isMobile && frameCount % 2 !== 0) return;
+
+  const dt = Math.min((ts - lt) / 1000, 0.05);
   lt = ts;
 
-  smoothScroll += (targetScroll - smoothScroll) * Math.min(1, dt * 5);
+  // Snappier scroll lerp on mobile so it doesn't feel sluggish
+  const sLerp = isMobile ? Math.min(1, dt * 9) : Math.min(1, dt * 5);
+  smoothScroll += (targetScroll - smoothScroll) * sLerp;
 
   const cs = getCameraState(smoothScroll);
-  const ease = Math.min(1, dt * 4);
-  camSmooth.px += (cs.px - camSmooth.px) * ease;
-  camSmooth.py += (cs.py - camSmooth.py) * ease;
-  camSmooth.pz += (cs.pz - camSmooth.pz) * ease;
-  camSmooth.lx += (cs.lx - camSmooth.lx) * ease;
-  camSmooth.ly += (cs.ly - camSmooth.ly) * ease;
-  camSmooth.lz += (cs.lz - camSmooth.lz) * ease;
+  const cLerp = isMobile ? Math.min(1, dt * 7) : Math.min(1, dt * 4);
+  camSmooth.px += (cs.px - camSmooth.px) * cLerp;
+  camSmooth.py += (cs.py - camSmooth.py) * cLerp;
+  camSmooth.pz += (cs.pz - camSmooth.pz) * cLerp;
+  camSmooth.lx += (cs.lx - camSmooth.lx) * cLerp;
+  camSmooth.ly += (cs.ly - camSmooth.ly) * cLerp;
+  camSmooth.lz += (cs.lz - camSmooth.lz) * cLerp;
   camera.position.set(camSmooth.px, camSmooth.py, camSmooth.pz);
   camTarget.set(camSmooth.lx, camSmooth.ly, camSmooth.lz);
   camera.lookAt(camTarget);
 
-  if(carModel && modelLoaded){
-    const idleRot = Math.sin(ts * 0.0004) * 0.04;
-    carModel.rotation.y = idleRot;
+  // Idle rotation — desktop only
+  if(!isMobile && carModel && modelLoaded){
+    carModel.rotation.y = Math.sin(ts * 0.0004) * 0.04;
   }
 
   panels.forEach(p => {
-    const mid = (p.start+p.end)/2;
-    const hw  = (p.end-p.start)/2;
-    const d   = Math.abs(smoothScroll-mid)/hw;
-    if(d < 1.1){
-      p.el.classList.add('visible');
-      p.el.classList.remove('exit');
-    } else {
-      p.el.classList.remove('visible');
-      if(smoothScroll > p.end) p.el.classList.add('exit');
-      else p.el.classList.remove('exit');
-    }
+    const mid = (p.start + p.end) / 2;
+    const hw  = (p.end   - p.start) / 2;
+    const d   = Math.abs(smoothScroll - mid) / hw;
+    if(d < 1.1){ p.el.classList.add('visible');   p.el.classList.remove('exit'); }
+    else        { p.el.classList.remove('visible');
+                  if(smoothScroll > p.end) p.el.classList.add('exit');
+                  else p.el.classList.remove('exit'); }
   });
 
-  if(smoothScroll < 0.04) { hero.classList.remove('hidden'); scrollcue.classList.remove('hidden'); }
-  else                    { hero.classList.add('hidden');    scrollcue.classList.add('hidden');    }
+  if(smoothScroll < 0.04){ hero.classList.remove('hidden'); scrollcue.classList.remove('hidden'); }
+  else                   { hero.classList.add('hidden');    scrollcue.classList.add('hidden');    }
 
   renderer.render(scene, camera);
 }

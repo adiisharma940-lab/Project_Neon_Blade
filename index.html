@@ -212,9 +212,10 @@ const back = new THREE.DirectionalLight(0x4488ff, 0.3);
 back.position.set(0, 3, -6);
 scene.add(back);
 
-const top = new THREE.DirectionalLight(0xffffff, 0.4);
-top.position.set(0, 8, 0);
-scene.add(top);
+// ── FIX: renamed 'top' → 'topLight' to avoid conflict with window.top ──
+const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
+topLight.position.set(0, 8, 0);
+scene.add(topLight);
 
 // ── Ground ──
 const gGeo = new THREE.PlaneGeometry(30, 30);
@@ -233,26 +234,6 @@ gridHelper.material.transparent = true;
 scene.add(gridHelper);
 
 // ── Load GLB ──
-// Inline GLTFLoader (r128 compatible)
-class GLTFLoader {
-  constructor(manager){ this.manager = manager || THREE.DefaultLoadingManager; }
-  load(url, onLoad, onProgress, onError){
-    const loader = new THREE.FileLoader(this.manager);
-    loader.setResponseType('arraybuffer');
-    loader.load(url, data => {
-      this.parse(data, '', onLoad, onError);
-    }, onProgress, onError);
-  }
-  parse(data, path, onLoad, onError){
-    // Use THREE built-in if available, else fetch CDN loader
-    if(typeof THREE.GLTFLoader !== 'undefined'){
-      new THREE.GLTFLoader().parse(data, path, onLoad, onError);
-    } else {
-      onError(new Error('GLTFLoader not available inline'));
-    }
-  }
-}
-
 let carModel = null;
 let modelLoaded = false;
 
@@ -263,7 +244,6 @@ gltfScript.onload = () => {
   const loader = new THREE.GLTFLoader();
   const lbar = document.getElementById('lbar');
 
-  // Convert the file to a blob URL so we can load it from disk
   fetch('https://raw.githubusercontent.com/adiisharma940-lab/Project_Neon_Blade/main/alfa_romeo_stradale_1967.glb')
     .then(r => r.blob())
     .then(blob => {
@@ -332,7 +312,6 @@ document.head.appendChild(gltfScript);
 
 function showFallback(){
   document.getElementById('loader').classList.add('done');
-  // Build a simple placeholder car
   buildFallbackCar();
 }
 
@@ -384,11 +363,8 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
 function easeOut3(t){return 1-Math.pow(1-t,3);}
 
-// Camera waypoints based on scroll
 function getCameraState(t){
-  // t: 0=start, 1=end
   if(t < 0.12){
-    // Wheel close-up — low angle near front tyre
     const p = easeOut3(t/0.12);
     return {
       px: lerp(1.4, 0.5, p),
@@ -399,7 +375,6 @@ function getCameraState(t){
       lz: lerp(1.2, 0, p),
     };
   } else if(t < 0.35){
-    // Swing to driver side
     const p = easeInOut((t-0.12)/0.23);
     const angle = lerp(0.3, -0.9, p);
     return {
@@ -409,7 +384,6 @@ function getCameraState(t){
       lx:0, ly:0.35, lz:0,
     };
   } else if(t < 0.58){
-    // Front 3/4
     const p = easeInOut((t-0.35)/0.23);
     const angle = lerp(-0.9, 0.6, p);
     return {
@@ -419,7 +393,6 @@ function getCameraState(t){
       lx:0, ly:0.35, lz:0,
     };
   } else if(t < 0.82){
-    // Rear sweep
     const p = easeInOut((t-0.58)/0.24);
     const angle = lerp(0.6, Math.PI-0.3, p);
     return {
@@ -429,7 +402,6 @@ function getCameraState(t){
       lx:0, ly:0.35, lz:0,
     };
   } else {
-    // Final — top beauty
     const p = easeInOut((t-0.82)/0.18);
     const angle = lerp(Math.PI-0.3, Math.PI+0.4, p);
     return {
@@ -450,10 +422,8 @@ function animate(ts){
   const dt = Math.min((ts-lt)/1000, 0.05);
   lt = ts;
 
-  // Smooth scroll
   smoothScroll += (targetScroll - smoothScroll) * Math.min(1, dt * 5);
 
-  // Camera
   const cs = getCameraState(smoothScroll);
   const ease = Math.min(1, dt * 4);
   camSmooth.px += (cs.px - camSmooth.px) * ease;
@@ -466,13 +436,11 @@ function animate(ts){
   camTarget.set(camSmooth.lx, camSmooth.ly, camSmooth.lz);
   camera.lookAt(camTarget);
 
-  // Gentle idle rotation on car
   if(carModel && modelLoaded){
     const idleRot = Math.sin(ts * 0.0004) * 0.04;
     carModel.rotation.y = idleRot;
   }
 
-  // Panels
   panels.forEach(p => {
     const mid = (p.start+p.end)/2;
     const hw  = (p.end-p.start)/2;
@@ -487,7 +455,6 @@ function animate(ts){
     }
   });
 
-  // Hero
   if(smoothScroll < 0.04) { hero.classList.remove('hidden'); scrollcue.classList.remove('hidden'); }
   else                    { hero.classList.add('hidden');    scrollcue.classList.add('hidden');    }
 

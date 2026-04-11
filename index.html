@@ -692,11 +692,19 @@
       scene.add(car);
       /* Mount car onto the turntable so it rotates with the floor */
       turntable.add(car);
-      setLoad(100,'READY');
-      setTimeout(function(){
+      setLoad(100,'CLICK TO ENTER');
+      loaderEl.style.cursor='pointer';
+      function onLoaderClick(){
+        loaderEl.removeEventListener('click',onLoaderClick);
         loaderEl.classList.add('hide');
         setTimeout(function(){loaderEl.style.display='none';},700);
-      },300);
+        if(window._gtrAudioEngine){
+          window._gtrAudioEngine.startIfReady();
+        } else {
+          window._gtrAudioPending=true;
+        }
+      }
+      loaderEl.addEventListener('click',onLoaderClick);
       animate();
     },
     function(xhr){if(xhr.total){var p=5+(xhr.loaded/xhr.total)*85;setLoad(p,'LOADING... '+Math.round(p)+'%');}},
@@ -771,6 +779,284 @@
     camera.aspect=W()/H();
     camera.updateProjectionMatrix();
     renderer.setSize(W(),H());
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   GT-R SYNTHWAVE ENGINE — Web Audio API soundtrack
+   Dark electro / aggressive synthwave: deep bass, punchy
+   kick, synth lead, turbo whine sweep, reverb tail.
+   Starts only on user gesture (browser autoplay policy).
+═══════════════════════════════════════════════════════ */
+(function(){
+  var ctx=null, masterGain=null, playing=false, scheduledNodes=[];
+  var BPM=138, beat=60/BPM, bar=beat*4;
+
+  /* ── UI BUTTON ── */
+  var btn=document.createElement('div');
+  btn.id='audio-btn';
+  btn.innerHTML='<span id="audio-icon">▶</span><span id="audio-label">PLAY SOUNDTRACK</span>';
+  btn.style.cssText=[
+    'position:fixed','bottom:28px','right:28px','z-index:200',
+    'display:flex','align-items:center','gap:10px',
+    'padding:11px 20px',
+    'background:rgba(5,5,10,0.92)',
+    'border:1px solid rgba(200,16,46,0.45)',
+    'border-left:3px solid #c8102e',
+    'font-family:"Space Mono",monospace','font-size:9px',
+    'letter-spacing:.35em','color:#f0f0f0',
+    'cursor:pointer!important',
+    'transition:border-color .2s,background .2s',
+    'backdrop-filter:blur(8px)',
+    'user-select:none'
+  ].join(';');
+  document.body.appendChild(btn);
+
+  /* Volume knob slider */
+  var volWrap=document.createElement('div');
+  volWrap.style.cssText='position:fixed;bottom:74px;right:28px;z-index:200;display:flex;align-items:center;gap:8px;font-family:"Space Mono",monospace;font-size:8px;letter-spacing:.3em;color:rgba(200,16,46,0.7);opacity:0;transition:opacity .4s;';
+  volWrap.innerHTML='VOL <input id="vol-slider" type="range" min="0" max="100" value="72" style="width:72px;accent-color:#c8102e;cursor:pointer!important;">';
+  document.body.appendChild(volWrap);
+
+  btn.addEventListener('mouseenter',function(){btn.style.background='rgba(200,16,46,0.12)';});
+  btn.addEventListener('mouseleave',function(){btn.style.background='rgba(5,5,10,0.92)';});
+
+  /* ── REVERB IMPULSE ── */
+  function makeReverb(actx, dur, decay){
+    var len=actx.sampleRate*dur, imp=actx.createBuffer(2,len,actx.sampleRate);
+    for(var ch=0;ch<2;ch++){
+      var d=imp.getChannelData(ch);
+      for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
+    }
+    var conv=actx.createConvolver(); conv.buffer=imp; return conv;
+  }
+
+  /* ── DISTORTION CURVE ── */
+  function makeDistCurve(amount){
+    var n=256,curve=new Float32Array(n);
+    for(var i=0;i<n;i++){var x=i*2/n-1;curve[i]=((Math.PI+amount)*x)/(Math.PI+amount*Math.abs(x));}
+    return curve;
+  }
+
+  /* ── INIT AUDIO GRAPH ── */
+  function initAudio(){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    masterGain=ctx.createGain(); masterGain.gain.value=0.72;
+    masterGain.connect(ctx.destination);
+
+    /* Limiter to prevent clipping */
+    var lim=ctx.createDynamicsCompressor();
+    lim.threshold.value=-3; lim.knee.value=0;
+    lim.ratio.value=20; lim.attack.value=0.001; lim.release.value=0.05;
+    masterGain.connect(lim); lim.connect(ctx.destination);
+    masterGain.disconnect(ctx.destination);
+    masterGain.connect(lim);
+
+    /* Reverb send */
+    var rev=makeReverb(ctx,2.2,3.5);
+    var revGain=ctx.createGain(); revGain.gain.value=0.18;
+    rev.connect(revGain); revGain.connect(lim);
+
+    /* ── SYNTH UTILITIES ── */
+    function osc(type,freq,start,dur,gainVal,detune){
+      var o=ctx.createOscillator(), g=ctx.createGain();
+      o.type=type; o.frequency.value=freq;
+      if(detune) o.detune.value=detune;
+      g.gain.setValueAtTime(0,start);
+      g.gain.linearRampToValueAtTime(gainVal,start+0.005);
+      g.gain.setValueAtTime(gainVal,start+dur-0.04);
+      g.gain.linearRampToValueAtTime(0,start+dur);
+      o.connect(g); g.connect(lim); g.connect(revGain);
+      o.start(start); o.stop(start+dur+0.05);
+      scheduledNodes.push(o,g);
+    }
+
+    function kick(start){
+      var o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(160,start);
+      o.frequency.exponentialRampToValueAtTime(28,start+0.12);
+      g.gain.setValueAtTime(0,start);
+      g.gain.linearRampToValueAtTime(1.1,start+0.003);
+      g.gain.exponentialRampToValueAtTime(0.001,start+0.28);
+      /* click transient */
+      var noise=ctx.createOscillator(),ng=ctx.createGain();
+      noise.type='square'; noise.frequency.value=180;
+      ng.gain.setValueAtTime(0.35,start);
+      ng.gain.exponentialRampToValueAtTime(0.001,start+0.025);
+      noise.connect(ng); ng.connect(lim);
+      noise.start(start); noise.stop(start+0.03);
+      o.connect(g); g.connect(lim);
+      o.start(start); o.stop(start+0.32);
+      scheduledNodes.push(o,g,noise,ng);
+    }
+
+    function snare(start){
+      var buf=ctx.createBuffer(1,ctx.sampleRate*0.18,ctx.sampleRate);
+      var d=buf.getChannelData(0);
+      for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      var src=ctx.createBufferSource(), g=ctx.createGain();
+      var filt=ctx.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=1800; filt.Q.value=0.9;
+      src.buffer=buf;
+      g.gain.setValueAtTime(0,start);
+      g.gain.linearRampToValueAtTime(0.55,start+0.003);
+      g.gain.exponentialRampToValueAtTime(0.001,start+0.17);
+      src.connect(filt); filt.connect(g); g.connect(lim); g.connect(revGain);
+      src.start(start); src.stop(start+0.2);
+      scheduledNodes.push(src,g,filt);
+    }
+
+    function hihat(start, open){
+      var buf=ctx.createBuffer(1,ctx.sampleRate*(open?0.22:0.04),ctx.sampleRate);
+      var d=buf.getChannelData(0);
+      for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      var src=ctx.createBufferSource(), g=ctx.createGain();
+      var filt=ctx.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=7000;
+      g.gain.setValueAtTime(0,start);
+      g.gain.linearRampToValueAtTime(open?0.2:0.14,start+0.001);
+      g.gain.exponentialRampToValueAtTime(0.001,start+(open?0.2:0.035));
+      src.connect(filt); filt.connect(g); g.connect(lim);
+      src.start(start); src.stop(start+(open?0.25:0.05));
+      scheduledNodes.push(src,g,filt);
+    }
+
+    function bass(freq,start,dur){
+      /* Saw + sub sine layered for fat bass */
+      var saw=ctx.createOscillator(), sub=ctx.createOscillator();
+      var dist=ctx.createWaveShaper(); dist.curve=makeDistCurve(120);
+      var filt=ctx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=420; filt.Q.value=3.5;
+      var g=ctx.createGain();
+      saw.type='sawtooth'; saw.frequency.value=freq;
+      sub.type='sine'; sub.frequency.value=freq/2;
+      g.gain.setValueAtTime(0,start);
+      g.gain.linearRampToValueAtTime(0.7,start+0.01);
+      g.gain.setValueAtTime(0.7,start+dur-0.06);
+      g.gain.linearRampToValueAtTime(0,start+dur);
+      saw.connect(dist); dist.connect(filt); filt.connect(g);
+      sub.connect(g); g.connect(lim);
+      saw.start(start); saw.stop(start+dur+0.05);
+      sub.start(start); sub.stop(start+dur+0.05);
+      scheduledNodes.push(saw,sub,dist,filt,g);
+    }
+
+    function lead(freq,start,dur,vol){
+      /* Detuned dual-saw for that classic synthwave lead */
+      [0,8,-8].forEach(function(det){
+        osc('sawtooth',freq,start,dur,(vol||0.13),det);
+      });
+    }
+
+    function turboSweep(start){
+      /* Rising filtered noise — turbo spool effect */
+      var buf=ctx.createBuffer(1,ctx.sampleRate*2.5,ctx.sampleRate);
+      var d=buf.getChannelData(0);
+      for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+      var src=ctx.createBufferSource(), g=ctx.createGain();
+      var filt=ctx.createBiquadFilter(); filt.type='bandpass'; filt.Q.value=12;
+      filt.frequency.setValueAtTime(400,start);
+      filt.frequency.exponentialRampToValueAtTime(3800,start+2.2);
+      g.gain.setValueAtTime(0,start);
+      g.gain.linearRampToValueAtTime(0.28,start+0.3);
+      g.gain.setValueAtTime(0.28,start+1.8);
+      g.gain.linearRampToValueAtTime(0,start+2.5);
+      src.connect(filt); filt.connect(g); g.connect(lim);
+      src.start(start); src.stop(start+2.6);
+      scheduledNodes.push(src,g,filt);
+    }
+
+    /* ── SEQUENCE ── */
+    /* Bass line (notes in Hz) — dark minor / phrygian feel */
+    var bassLine=[55,55,82.4,55, 49,49,73.4,49, 51.9,51.9,77.8,51.9, 55,55,82.4,98];
+    /* Lead melody (Hz, 0=rest) */
+    var melody=[
+      220,0,220,246.9, 220,0,196,0,   220,0,220,261.6, 246.9,0,0,0,
+      220,0,220,246.9, 220,0,196,0,   185,0,185,220,   196,0,0,0
+    ];
+
+    function scheduleBar(barStart, barIndex){
+      var bi=barIndex%4;
+      /* Kick pattern */
+      [0,beat*2].forEach(function(o){ kick(barStart+o); });
+      if(bi>=1)[beat*1.5,beat*3.5].forEach(function(o){ kick(barStart+o); });
+      /* Snare */
+      [beat,beat*3].forEach(function(o){ snare(barStart+o); });
+      /* Hi-hats */
+      for(var h=0;h<8;h++){
+        hihat(barStart+h*beat*0.5, h===3||h===7);
+      }
+      /* Bass */
+      for(var b16=0;b16<4;b16++){
+        var bIdx=(bi*4+b16)%bassLine.length;
+        bass(bassLine[bIdx], barStart+b16*beat, beat*0.88);
+      }
+      /* Lead (starts bar 2) */
+      if(barIndex>=2){
+        for(var m=0;m<4;m++){
+          var mIdx=((bi*4+m)%melody.length);
+          if(melody[mIdx]>0) lead(melody[mIdx], barStart+m*beat, beat*0.75, 0.10);
+        }
+      }
+      /* Turbo sweep every 4 bars */
+      if(barIndex%4===3) turboSweep(barStart+bar-0.3);
+      /* Pad chord stab every 2 bars */
+      if(barIndex%2===0){
+        [[110,138.6,165],[98,123.5,147]].forEach(function(chord,ci){
+          if(barIndex%4===ci*2){
+            chord.forEach(function(f){ osc('sawtooth',f,barStart,bar*0.3,0.06,0); });
+          }
+        });
+      }
+    }
+
+    /* Scheduler loop */
+    var scheduleAhead=0.2, scheduleInterval=100;
+    var nextBarTime=ctx.currentTime+0.05, nextBarIndex=0;
+    var schedTimer=null;
+
+    function schedule(){
+      while(nextBarTime < ctx.currentTime + scheduleAhead){
+        scheduleBar(nextBarTime, nextBarIndex);
+        nextBarTime+=bar;
+        nextBarIndex++;
+      }
+      schedTimer=setTimeout(schedule, scheduleInterval);
+    }
+
+    return {
+      start:function(){ nextBarTime=ctx.currentTime+0.05; nextBarIndex=0; schedule(); },
+      stop:function(){
+        clearTimeout(schedTimer);
+        scheduledNodes.forEach(function(n){ try{ n.stop ? n.stop(ctx.currentTime+0.05) : n.disconnect(); }catch(e){} });
+        scheduledNodes=[];
+      },
+      setVol:function(v){ if(masterGain) masterGain.gain.linearRampToValueAtTime(v,ctx.currentTime+0.1); }
+    };
+  }
+
+  var engine=null;
+
+  btn.addEventListener('click',function(){
+    if(!playing){
+      if(!ctx){ engine=initAudio(); }
+      if(ctx.state==='suspended') ctx.resume();
+      engine.start();
+      playing=true;
+      document.getElementById('audio-icon').textContent='■';
+      document.getElementById('audio-label').textContent='STOP SOUNDTRACK';
+      btn.style.borderLeftColor='#d4a800';
+      volWrap.style.opacity='1';
+    } else {
+      engine.stop();
+      playing=false;
+      document.getElementById('audio-icon').textContent='▶';
+      document.getElementById('audio-label').textContent='PLAY SOUNDTRACK';
+      btn.style.borderLeftColor='#c8102e';
+      volWrap.style.opacity='0';
+    }
+  });
+
+  document.getElementById('vol-slider').addEventListener('input',function(){
+    if(engine) engine.setVol(this.value/100);
   });
 })();
 </script>

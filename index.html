@@ -392,7 +392,6 @@
   var H=function(){return wrap.clientHeight;};
 
   var renderer=new THREE.WebGLRenderer({antialias:!isMobile,powerPreference:'high-performance'});
-  /* mobile: 1x pixel ratio cuts fill load in half */
   renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio,2));
   renderer.setSize(W(),H());
   renderer.shadowMap.enabled=!isMobile;
@@ -410,12 +409,13 @@
   camera.position.set(0,2.5,12);
   camera.lookAt(0,0,0);
 
-  /* ── LIGHTS
-     Mobile: strong neutral ambient + one white key — no coloured lights that bleed red.
-     Desktop: full dramatic rig.  ── */
-  scene.add(new THREE.AmbientLight(0xffffff, isMobile ? 0.9 : 0.5));
+  /* ── LIGHTS ── */
 
-  var key=new THREE.DirectionalLight(0xffffff, isMobile ? 2.0 : 2.8);
+  /* Ambient — soft fill so nothing is pitch black */
+  scene.add(new THREE.AmbientLight(0xfff5e0, isMobile ? 0.55 : 0.35));
+
+  /* Main key light — bright white from upper-front */
+  var key=new THREE.DirectionalLight(0xffffff, isMobile ? 1.8 : 2.4);
   key.position.set(6,8,6);
   if(!isMobile){
     key.castShadow=true;
@@ -426,21 +426,66 @@
   }
   scene.add(key);
 
-  /* neutral fill — safe on both platforms */
-  var fill=new THREE.DirectionalLight(0xaabbcc, isMobile ? 0.25 : 0.5);
+  /* neutral fill */
+  var fill=new THREE.DirectionalLight(0xaabbcc, isMobile ? 0.25 : 0.45);
   fill.position.set(-5,3,-4);
   scene.add(fill);
 
-  /* desktop-only accent lights */
+  /* ── WARM CEILING LIGHTS (new) ──
+     Four warm-white spotlights arranged in a cross pattern high above the car,
+     each aimed straight down to simulate studio / showroom ceiling cans.
+     A fifth central light provides the main top-down warmth.
+     SpotLight gives us the cone angle so we can keep spill contained.
+     On mobile we use cheaper PointLights instead. */
+  var CEIL_Y   = 18;          /* height above scene origin          */
+  var CEIL_COL = 0xffe8c0;    /* warm incandescent / halogen colour  */
+  var CEIL_INTENSITY_D = 1.8; /* desktop                             */
+  var CEIL_INTENSITY_M = 1.2; /* mobile                              */
+
+  var ceilPositions = [
+    [ 0,    CEIL_Y,  0   ],   /* centre                              */
+    [-4,    CEIL_Y,  3   ],   /* front-left                          */
+    [ 4,    CEIL_Y,  3   ],   /* front-right                         */
+    [-3.5,  CEIL_Y, -3.5 ],   /* rear-left                           */
+    [ 3.5,  CEIL_Y, -3.5 ],   /* rear-right                          */
+  ];
+
+  ceilPositions.forEach(function(pos, i){
+    if(!isMobile){
+      var spot = new THREE.SpotLight(
+        CEIL_COL,
+        i === 0 ? CEIL_INTENSITY_D * 1.3 : CEIL_INTENSITY_D,  /* centre slightly brighter */
+        40,      /* distance                   */
+        Math.PI / 5.5,  /* cone angle ≈ 33°     */
+        0.45,    /* penumbra — soft edge        */
+        1.2      /* decay                       */
+      );
+      spot.position.set(pos[0], pos[1], pos[2]);
+      spot.target.position.set(pos[0], 0, pos[2]);  /* aim straight down */
+      spot.castShadow = false;  /* shadow already handled by key light */
+      scene.add(spot);
+      scene.add(spot.target);
+    } else {
+      /* mobile: simple PointLight, no cone math */
+      var pt = new THREE.PointLight(CEIL_COL, CEIL_INTENSITY_M, 22, 1.5);
+      pt.position.set(pos[0], pos[1], pos[2]);
+      scene.add(pt);
+    }
+  });
+
+  /* Warm fill from slight rear-top angle to catch rear body panels */
+  var rearWarm = new THREE.DirectionalLight(0xffddaa, isMobile ? 0.4 : 0.55);
+  rearWarm.position.set(0, 10, -8);
+  scene.add(rearWarm);
+
+  /* desktop-only accent lights (unchanged) */
   if(!isMobile){
-    var rim=new THREE.DirectionalLight(0xff4466,0.5); rim.position.set(-3,2,-6); scene.add(rim);
-    var gld=new THREE.DirectionalLight(0xd4a800,0.35); gld.position.set(4,1,3); scene.add(gld);
-    var und=new THREE.PointLight(0xc8102e,0.35,10); und.position.set(0,-.4,0); scene.add(und);
+    var rim=new THREE.DirectionalLight(0xff4466,0.35); rim.position.set(-3,2,-6); scene.add(rim);
+    var gld=new THREE.DirectionalLight(0xd4a800,0.28); gld.position.set(4,1,3); scene.add(gld);
+    var und=new THREE.PointLight(0xc8102e,0.28,10); und.position.set(0,-.4,0); scene.add(und);
   }
 
   /* ── FLOOR ── */
-  /* ── SHINY BLACK TILE FLOOR ── */
-  /* Base: near-black, very low roughness, high metalness = glossy mirror-like reflection */
   var floorMat=new THREE.MeshStandardMaterial({
     color:0x050508,
     roughness: isMobile ? 0.18 : 0.08,
@@ -448,23 +493,18 @@
     envMapIntensity: 1.0
   });
 
-  /* Tile grout texture baked into a canvas — subtle dark grid lines on glossy black */
   (function(){
     var sz=512, tileCount=8;
     var c=document.createElement('canvas'); c.width=c.height=sz;
     var ctx=c.getContext('2d');
-    /* tile face — deep black with very faint specular shimmer gradient */
     ctx.fillStyle='#05050a'; ctx.fillRect(0,0,sz,sz);
-    /* per-tile inner highlight — simulates polished marble/tile sheen */
     var ts=sz/tileCount;
     for(var row=0;row<tileCount;row++){
       for(var col=0;col<tileCount;col++){
         var tx=col*ts, ty=row*ts;
-        /* alternating subtle tone so tiles are individually visible */
         var shade=(row+col)%2===0 ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.0)';
         ctx.fillStyle=shade;
         ctx.fillRect(tx+2,ty+2,ts-4,ts-4);
-        /* inner gloss highlight in top-left corner of each tile */
         var grd=ctx.createLinearGradient(tx+2,ty+2,tx+ts*.6,ty+ts*.6);
         grd.addColorStop(0,'rgba(255,255,255,0.05)');
         grd.addColorStop(1,'rgba(255,255,255,0.0)');
@@ -472,7 +512,6 @@
         ctx.fillRect(tx+2,ty+2,ts-4,ts-4);
       }
     }
-    /* grout lines — very thin near-black */
     ctx.strokeStyle='rgba(0,0,0,0.85)'; ctx.lineWidth=3;
     for(var i=0;i<=tileCount;i++){
       var p=i*ts;
@@ -483,11 +522,10 @@
     tileTex.wrapS=tileTex.wrapT=THREE.RepeatWrapping;
     tileTex.repeat.set(10,10);
     floorMat.map=tileTex;
-    /* roughness map — grout lines are slightly rougher than tile face */
     var rSz=256,rc=document.createElement('canvas');rc.width=rc.height=rSz;
     var rCtx=rc.getContext('2d');
-    rCtx.fillStyle='#111';rCtx.fillRect(0,0,rSz,rSz); /* dark = smooth tiles */
-    rCtx.strokeStyle='#999';rCtx.lineWidth=2; /* lighter = rough grout */
+    rCtx.fillStyle='#111';rCtx.fillRect(0,0,rSz,rSz);
+    rCtx.strokeStyle='#999';rCtx.lineWidth=2;
     var rs=rSz/tileCount;
     for(var ri=0;ri<=tileCount;ri++){var rp=ri*rs;rCtx.beginPath();rCtx.moveTo(rp,0);rCtx.lineTo(rp,rSz);rCtx.stroke();rCtx.beginPath();rCtx.moveTo(0,rp);rCtx.lineTo(rSz,rp);rCtx.stroke();}
     var roughTex=new THREE.CanvasTexture(rc);
@@ -502,8 +540,6 @@
   if(!isMobile) floorMesh.receiveShadow=true;
   scene.add(floorMesh);
 
-  /* Reflection plane — a MeshBasicMaterial semi-transparent dark plane just above
-     the floor that mirrors the scene colour for a wet-floor reflection look */
   if(!isMobile){
     var reflMat=new THREE.MeshBasicMaterial({
       color:0x000000, transparent:true, opacity:0.38, depthWrite:false
@@ -513,7 +549,6 @@
     scene.add(reflMesh);
   }
 
-  /* Subtle tile grout overlay — thin white lines to reinforce tile grid */
   if(!isMobile){
     (function(){
       var sz=512,cells=10,c=document.createElement('canvas');
@@ -534,7 +569,7 @@
       var geo=axis==='x'?new THREE.BoxGeometry(len,.025,.045):new THREE.BoxGeometry(.045,.025,len);
       var b=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xff1a3c}));
       b.position.set(x,.01,z);scene.add(b);
-      var pl=new THREE.PointLight(0xff1a3c,.65,8);pl.position.set(x,.25,z);scene.add(pl);
+      var pl=new THREE.PointLight(0xff1a3c,.55,8);pl.position.set(x,.25,z);scene.add(pl);
     }
     neonBar(0,-6,16,'x');neonBar(0,6,16,'x');
     neonBar(-8,0,12,'z');neonBar(8,0,12,'z');
@@ -678,7 +713,6 @@
   }
 
   /* ── RENDER LOOP ── */
-  /* mobile: throttle to ~30fps to save battery */
   var lastFrame=0;
   var frameBudget=isMobile ? 33 : 0;
 
@@ -694,7 +728,6 @@
     extLx+=(tgtLx-extLx)*EL;extLy+=(tgtLy-extLy)*EL;extLz+=(tgtLz-extLz)*EL;
     extFov+=(tgtFov-extFov)*EL;
 
-    /* breathing float — reduced amplitude on mobile */
     var b=isMobile?.01:.04;
     camera.position.x=extPx+Math.sin(t*.11)*b;
     camera.position.y=extPy+Math.sin(t*.17)*b*.75;

@@ -36,16 +36,12 @@
   #canvas-wrap canvas{width:100%!important;height:100%!important;display:block;}
 
   /* Hex grid overlay */
-  #bg-hex{
-    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.07;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpolygon points='28,2 54,16 54,44 28,58 2,44 2,16' fill='none' stroke='%23c8102e' stroke-width='1'/%3E%3Cpolygon points='28,52 54,66 54,94 28,108 2,94 2,66' fill='none' stroke='%23c8102e' stroke-width='1'/%3E%3C/svg%3E");
-    background-size:56px 100px;
-  }
+
 
   /* Scanlines */
   @media (max-width: 767px) {
     #bg-scan { opacity: 0.5; } /* lighter scanlines on mobile retina */
-    #bg-hex  { opacity: 0.1; } /* slightly more visible hex on mobile */
+
     .panel   { backdrop-filter: none; } /* drop blur for perf on low-end */
     .stat-bars { backdrop-filter: none; }
   }
@@ -440,7 +436,7 @@
 </div>
 
 <div id="bg-blobs"><div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div></div>
-<div id="bg-hex"></div>
+
 <div id="bg-scan"></div>
 <div id="vignette"></div>
 <div id="canvas-wrap"></div>
@@ -724,13 +720,6 @@
 
   /* ── CAMERA MODES ── */
   var CAM_MODE = 'exterior'; // 'exterior' | 'interior'
-  var currentFOV=48, targetFOV=48;
-  var currentCamX=0,  targetCamX=0;
-  var currentCamY=1.4,targetCamY=1.4;
-  var currentCamZ=7,  targetCamZ=7;
-  var currentLookY=-.1,targetLookY=-.1;
-  var currentAngle=0,  targetAngle=0;
-  var safeZ=7.0;
 
   var camera = new THREE.PerspectiveCamera(48, W()/H(), 0.01, 200);
   camera.position.set(0,1.4,7);
@@ -815,39 +804,55 @@
     return Math.max(distV,distH)+0.5;
   }
 
-  /* ── CAMERA ORBIT KEYFRAMES (exterior) ── */
-  var CK=[
-    [0.00,   0, 1.60, 48,'FRONT'],
-    [0.10,   0, 1.05, 40,'FRONT CLOSE'],
-    [0.18,  45, 1.40, 44,'FRONT-SIDE'],
-    [0.26,  45, 1.05, 38,'SIDE CLOSE'],
-    [0.34,  90, 1.50, 46,'SIDE'],
-    [0.42,  90, 1.05, 38,'SIDE CLOSE'],
-    [0.50, 135, 1.45, 44,'REAR-SIDE'],
-    [0.58, 135, 1.05, 38,'REAR-SIDE CLOSE'],
-    [0.66, 180, 1.55, 46,'REAR'],
-    [0.74, 180, 1.05, 38,'REAR CLOSE'],
-    [0.82, 270, 1.45, 44,'PASSENGER'],
-    [0.90, 270, 1.05, 38,'SIDE CLOSE'],
-    [1.00, 360, 1.60, 48,'FULL CIRCLE'],
-  ];
-
   function smoothStep(t){return t*t*(3-2*t);}
 
-  function getCameraOrbit(pct){
-    for(var i=0;i<CK.length-1;i++){
-      if(pct>=CK[i][0]&&pct<=CK[i+1][0]){
-        var t=smoothStep((pct-CK[i][0])/(CK[i+1][0]-CK[i][0]));
-        return{
-          angle:(CK[i][1]+(CK[i+1][1]-CK[i][1])*t)*Math.PI/180,
-          z:safeZ*(CK[i][2]+(CK[i+1][2]-CK[i][2])*t),
-          fov:CK[i][3]+(CK[i+1][3]-CK[i][3])*t,
-          label:CK[i][4]
-        };
-      }
-    }
-    var l=CK[CK.length-1];
-    return{angle:l[1]*Math.PI/180,z:safeZ*l[2],fov:l[3],label:l[4]};
+  /* ── EXTERIOR SHOTS — discrete angles, built after model loads ── */
+  var EXT_SHOTS = [];
+  var extShotIdx = -1;
+
+  function buildExtShots(box){
+    var cx=(box.min.x+box.max.x)*.5;
+    var cz=(box.min.z+box.max.z)*.5;
+    var hw=(box.max.x-box.min.x)*.5;
+    var hl=(box.max.z-box.min.z)*.5;
+    var top=box.max.y;
+    var mid=top*.5;
+    var S=safeZ;
+    EXT_SHOTS=[
+      [0.00, [cx,        top*.55, S*1.6      ], [cx, mid*.7, cz],   46, 'FRONT'],
+      [0.09, [cx,        top*.08, S*1.1      ], [cx, top*.6, cz],   62, 'FRONT LOW'],
+      [0.18, [cx-S*1.4,  top*.55, cz         ], [cx, mid*.8, cz],   44, 'DRIVER SIDE'],
+      [0.27, [cx-S*.7,   top*.22, cz+hl*.5   ], [cx, mid*.5, cz],   64, 'DOOR CLOSE'],
+      [0.36, [cx-S*.85,  top*.65, S*1.05     ], [cx, mid*.7, cz],   50, 'FRONT 3/4'],
+      [0.45, [cx-S*.8,   top*.6, -S*1.0      ], [cx, mid*.65,cz],   48, 'REAR 3/4'],
+      [0.54, [cx,        top*.5, -S*1.5      ], [cx, mid*.7, cz],   44, 'REAR'],
+      [0.63, [cx+hw*.4,  top*.07,-S*1.05     ], [cx, mid*.4, cz],   66, 'REAR LOW'],
+      [0.72, [cx+S*1.4,  top*.55, cz         ], [cx, mid*.8, cz],   44, 'PASSENGER'],
+      [0.81, [cx-S*.5,   top*1.4, S*.75      ], [cx, mid*.3, cz],   54, 'OVERHEAD'],
+      [0.90, [cx,        top*.8,  S*.75      ], [cx, top*.15,cz],   36, 'BONNET TIGHT'],
+      [1.00, [cx,        top*.9,  S*2.2      ], [cx, mid*.5, cz],   42, 'WIDE OUTRO'],
+    ];
+  }
+
+  /* smooth snap target — lerp quickly to each shot */
+  var extCamPx=0,extCamPy=1.4,extCamPz=7;
+  var extCamLx=0,extCamLy=0,extCamLz=0;
+  var extCamFov=46;
+  var extTgtPx=0,extTgtPy=1.4,extTgtPz=7;
+  var extTgtLx=0,extTgtLy=0,extTgtLz=0;
+  var extTgtFov=46;
+
+  function setExtTarget(pct){
+    if(EXT_SHOTS.length===0) return;
+    var idx=0;
+    for(var i=0;i<EXT_SHOTS.length-1;i++){ if(pct>=EXT_SHOTS[i][0]) idx=i; }
+    var s=EXT_SHOTS[idx];
+    extTgtPx=s[1][0]; extTgtPy=s[1][1]; extTgtPz=s[1][2];
+    extTgtLx=s[2][0]; extTgtLy=s[2][1]; extTgtLz=s[2][2];
+    extTgtFov=s[4];
+    /* update HUD label */
+    var lbl=document.getElementById('hud-scroll');
+    if(lbl) lbl.textContent=s[5];
   }
 
   /* ── INTERIOR CAMERA POSITIONS ── */
@@ -919,13 +924,22 @@
 
   /* ── CAM SWITCH ── */
   window.setCam = function(mode){
-    intShotIdx = 0; intLastTime = 0; /* reset to shot 1 each time */
     CAM_MODE = mode;
     document.getElementById('btn-ext').classList.toggle('active', mode==='exterior');
     document.getElementById('btn-int').classList.toggle('active', mode==='interior');
     document.getElementById('interior-frame').classList.toggle('active', mode==='interior');
     document.getElementById('interior-overlay').classList.toggle('active', mode==='interior');
     cockpitHud.classList.toggle('visible', mode==='interior');
+    if(mode === 'interior' && INT_SHOTS.length > 0){
+      intShotIdx = 0;
+      intLastTime = clock.getElapsedTime(); /* start timer from NOW */
+      var s = INT_SHOTS[0];
+      /* snap camera immediately — no drift */
+      camera.position.set(s[0], s[1], s[2]);
+      camera.fov = s[6];
+      camera.updateProjectionMatrix();
+      camera.lookAt(s[3], s[4], s[5]);
+    }
   };
 
   /* ── GLB LOAD ── */
@@ -958,10 +972,15 @@
 
       var wb2=new THREE.Box3().setFromObject(car);
       safeZ=computeSafeFrame(wb2,48);
-      buildIntShots(wb2);  /* build interior shots from real bounding box */
-      currentCamZ=safeZ*CK[0][2];
-      targetCamZ=currentCamZ;
-      currentFOV=CK[0][3]; targetFOV=currentFOV;
+      buildIntShots(wb2);
+      buildExtShots(wb2);
+      /* snap exterior cam to shot 0 immediately */
+      if(EXT_SHOTS.length>0){
+        var s0=EXT_SHOTS[0];
+        extCamPx=extTgtPx=s0[1][0]; extCamPy=extTgtPy=s0[1][1]; extCamPz=extTgtPz=s0[1][2];
+        extCamLx=extTgtLx=s0[2][0]; extCamLy=extTgtLy=s0[2][1]; extCamLz=extTgtLz=s0[2][2];
+        extCamFov=extTgtFov=s0[4];
+      }
 
       scene.add(car);
       setLoad(100,'READY');
@@ -986,12 +1005,7 @@
     progressBar.style.width=(scrollPct*100)+'%';
     hudScroll.textContent=('0'+Math.round(scrollPct*100)).slice(-2)+'%';
 
-    if(CAM_MODE==='exterior'){
-      var orb=getCameraOrbit(scrollPct);
-      targetAngle=orb.angle;
-      targetFOV=orb.fov;
-      targetCamZ=orb.z;
-    }
+    if(CAM_MODE==='exterior') setExtTarget(scrollPct);
     checkBars(); checkOutro();
   },{passive:true});
 
@@ -1027,45 +1041,50 @@
 
   /* ── ANIMATE ── */
   var LERP=0.06;
-  var LERP_INT=0.025; /* slower lerp for interior transitions */
 
   function animate(){
     requestAnimationFrame(animate);
     var t=clock.getElapsedTime();
 
     if(CAM_MODE==='exterior'){
-      /* lerp orbit */
-      currentAngle+=(targetAngle-currentAngle)*LERP;
-      currentFOV  +=(targetFOV  -currentFOV  )*LERP;
-      currentCamZ +=(targetCamZ -currentCamZ )*LERP;
-
-      var d=currentCamZ;
-      camera.position.x=Math.sin(currentAngle)*d + Math.sin(t*.12)*.06;
-      camera.position.y=1.4 + Math.sin(t*.18)*.04;
-      camera.position.z=Math.cos(currentAngle)*d;
-      camera.fov=currentFOV;
+      /* fast lerp toward target shot — snappy but not instant */
+      var EL=0.12;
+      extCamPx+=(extTgtPx-extCamPx)*EL;
+      extCamPy+=(extTgtPy-extCamPy)*EL;
+      extCamPz+=(extTgtPz-extCamPz)*EL;
+      extCamLx+=(extTgtLx-extCamLx)*EL;
+      extCamLy+=(extTgtLy-extCamLy)*EL;
+      extCamLz+=(extTgtLz-extCamLz)*EL;
+      extCamFov+=(extTgtFov-extCamFov)*EL;
+      /* subtle breathing float on top */
+      camera.position.x=extCamPx+Math.sin(t*.11)*.04;
+      camera.position.y=extCamPy+Math.sin(t*.17)*.03;
+      camera.position.z=extCamPz+Math.cos(t*.13)*.04;
+      camera.fov=extCamFov;
       camera.updateProjectionMatrix();
-      camera.lookAt(0, -.1, 0);
+      camera.lookAt(extCamLx, extCamLy+Math.sin(t*.09)*.02, extCamLz);
 
     } else {
-      /* INTERIOR: cycle close cockpit shots using real elapsed time */
+      /* INTERIOR: snap to each shot immediately, only apply micro-shake on top */
       if(INT_SHOTS.length > 0){
-        if(intLastTime === 0) intLastTime = t;
+        /* advance shot index using real time */
         if(t - intLastTime > INT_SHOT_DURATION){
           intLastTime = t;
           intShotIdx = (intShotIdx + 1) % INT_SHOTS.length;
+          /* snap camera to new position instantly to avoid drift lag */
+          var ns = INT_SHOTS[intShotIdx];
+          camera.position.set(ns[0], ns[1], ns[2]);
+          camera.fov = ns[6];
+          camera.updateProjectionMatrix();
         }
         var s = INT_SHOTS[intShotIdx];
-        var tgtX = s[0] + Math.sin(t*1.6)*intShakeAmp;
-        var tgtY = s[1] + Math.sin(t*2.1)*intShakeAmp*.4;
-        var tgtZ = s[2] + Math.cos(t*1.3)*intShakeAmp*.3;
-        var lerpSpd = 0.05;
-        camera.position.x += (tgtX - camera.position.x)*lerpSpd;
-        camera.position.y += (tgtY - camera.position.y)*lerpSpd;
-        camera.position.z += (tgtZ - camera.position.z)*lerpSpd;
-        camera.fov        += (s[6]  - camera.fov)*lerpSpd;
+        /* only micro-shake — no lerp drift */
+        camera.position.x = s[0] + Math.sin(t*1.6)*intShakeAmp;
+        camera.position.y = s[1] + Math.sin(t*2.1)*intShakeAmp*.4;
+        camera.position.z = s[2] + Math.cos(t*1.3)*intShakeAmp*.3;
+        camera.fov = s[6];
         camera.updateProjectionMatrix();
-        camera.lookAt(s[3]+Math.sin(t*.9)*.015, s[4]+Math.sin(t*1.4)*.01, s[5]);
+        camera.lookAt(s[3]+Math.sin(t*.9)*.02, s[4]+Math.sin(t*1.4)*.015, s[5]);
       }
       updateCockpit(t);
     }

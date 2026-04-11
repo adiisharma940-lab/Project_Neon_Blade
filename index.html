@@ -412,11 +412,8 @@
   camera.lookAt(0,0,0);
 
   /* ── LIGHTS ── */
-
-  /* Ambient — soft fill so nothing is pitch black */
   scene.add(new THREE.AmbientLight(0xfff5e0, isMobile ? 0.55 : 0.35));
 
-  /* Main key light — bright white from upper-front */
   var key=new THREE.DirectionalLight(0xffffff, isMobile ? 1.8 : 2.4);
   key.position.set(6,8,6);
   if(!isMobile){
@@ -428,73 +425,58 @@
   }
   scene.add(key);
 
-  /* neutral fill */
   var fill=new THREE.DirectionalLight(0xaabbcc, isMobile ? 0.25 : 0.45);
   fill.position.set(-5,3,-4);
   scene.add(fill);
 
-  /* ── WARM CEILING LIGHTS (new) ──
-     Four warm-white spotlights arranged in a cross pattern high above the car,
-     each aimed straight down to simulate studio / showroom ceiling cans.
-     A fifth central light provides the main top-down warmth.
-     SpotLight gives us the cone angle so we can keep spill contained.
-     On mobile we use cheaper PointLights instead. */
-  var CEIL_Y   = 18;          /* height above scene origin          */
-  var CEIL_COL = 0xffe8c0;    /* warm incandescent / halogen colour  */
-  var CEIL_INTENSITY_D = 1.8; /* desktop                             */
-  var CEIL_INTENSITY_M = 1.2; /* mobile                              */
+  var CEIL_Y   = 18;
+  var CEIL_COL = 0xffe8c0;
+  var CEIL_INTENSITY_D = 1.8;
+  var CEIL_INTENSITY_M = 1.2;
 
   var ceilPositions = [
-    [ 0,    CEIL_Y,  0   ],   /* centre                              */
-    [-4,    CEIL_Y,  3   ],   /* front-left                          */
-    [ 4,    CEIL_Y,  3   ],   /* front-right                         */
-    [-3.5,  CEIL_Y, -3.5 ],   /* rear-left                           */
-    [ 3.5,  CEIL_Y, -3.5 ],   /* rear-right                          */
+    [ 0,    CEIL_Y,  0   ],
+    [-4,    CEIL_Y,  3   ],
+    [ 4,    CEIL_Y,  3   ],
+    [-3.5,  CEIL_Y, -3.5 ],
+    [ 3.5,  CEIL_Y, -3.5 ],
   ];
 
   ceilPositions.forEach(function(pos, i){
     if(!isMobile){
       var spot = new THREE.SpotLight(
         CEIL_COL,
-        i === 0 ? CEIL_INTENSITY_D * 1.3 : CEIL_INTENSITY_D,  /* centre slightly brighter */
-        40,      /* distance                   */
-        Math.PI / 5.5,  /* cone angle ≈ 33°     */
-        0.45,    /* penumbra — soft edge        */
-        1.2      /* decay                       */
+        i === 0 ? CEIL_INTENSITY_D * 1.3 : CEIL_INTENSITY_D,
+        40,
+        Math.PI / 5.5,
+        0.45,
+        1.2
       );
       spot.position.set(pos[0], pos[1], pos[2]);
-      spot.target.position.set(pos[0], 0, pos[2]);  /* aim straight down */
-      spot.castShadow = false;  /* shadow already handled by key light */
+      spot.target.position.set(pos[0], 0, pos[2]);
+      spot.castShadow = false;
       scene.add(spot);
       scene.add(spot.target);
     } else {
-      /* mobile: simple PointLight, no cone math */
       var pt = new THREE.PointLight(CEIL_COL, CEIL_INTENSITY_M, 22, 1.5);
       pt.position.set(pos[0], pos[1], pos[2]);
       scene.add(pt);
     }
   });
 
-  /* Warm fill from slight rear-top angle to catch rear body panels */
   var rearWarm = new THREE.DirectionalLight(0xffddaa, isMobile ? 0.4 : 0.55);
   rearWarm.position.set(0, 10, -8);
   scene.add(rearWarm);
 
-  /* desktop-only accent lights (unchanged) */
   if(!isMobile){
     var rim=new THREE.DirectionalLight(0xff4466,0.35); rim.position.set(-3,2,-6); scene.add(rim);
     var gld=new THREE.DirectionalLight(0xd4a800,0.28); gld.position.set(4,1,3); scene.add(gld);
     var und=new THREE.PointLight(0xc8102e,0.28,10); und.position.set(0,-.4,0); scene.add(und);
   }
 
-  /* ── FLOOR TURNTABLE ──
-     A rotating group holds the floor disc + car so they spin together
-     like a showroom turntable. The wider static floor plane stays fixed
-     so the room doesn't spin — only the platform and car rotate.       */
   var turntable = new THREE.Group();
   scene.add(turntable);
 
-  /* ── FLOOR ── */
   var floorMat=new THREE.MeshStandardMaterial({
     color:0x050508,
     roughness: isMobile ? 0.18 : 0.08,
@@ -544,15 +526,13 @@
     floorMat.needsUpdate=true;
   })();
 
-  /* Turntable disc — circular platform that rotates */
   var discRadius = 9;
   var discGeo = new THREE.CylinderGeometry(discRadius, discRadius, 0.08, 128, 1);
   var discMesh = new THREE.Mesh(discGeo, floorMat);
-  discMesh.position.y = -0.04; /* sit flush with y=0 */
+  discMesh.position.y = -0.04;
   if(!isMobile) discMesh.receiveShadow = true;
   turntable.add(discMesh);
 
-  /* Thin glowing rim ring around the disc edge */
   var rimGeo = new THREE.TorusGeometry(discRadius, 0.045, 8, 128);
   var rimMat = new THREE.MeshBasicMaterial({ color: 0xc8102e });
   var rimMesh = new THREE.Mesh(rimGeo, rimMat);
@@ -560,7 +540,6 @@
   rimMesh.position.y = 0.0;
   turntable.add(rimMesh);
 
-  /* Subtle concentric rings on the disc surface for visual interest */
   [3.2, 5.5, 7.4].forEach(function(r){
     var rg = new THREE.TorusGeometry(r, 0.018, 6, 96);
     var rm = new THREE.MeshBasicMaterial({ color: 0x1a0208, transparent: true, opacity: 0.7 });
@@ -570,7 +549,6 @@
     turntable.add(rv);
   });
 
-  /* Static wide floor beneath — doesn't rotate, just fills the room */
   var staticFloorMat = new THREE.MeshStandardMaterial({
     color: 0x030304, roughness: 0.55, metalness: 0.3
   });
@@ -581,7 +559,6 @@
   scene.add(staticFloor);
 
   if(!isMobile){
-    /* Reflection overlay on the turntable disc */
     var reflMat=new THREE.MeshBasicMaterial({
       color:0x000000, transparent:true, opacity:0.42, depthWrite:false
     });
@@ -589,7 +566,6 @@
     reflMesh.position.y=0.042;
     turntable.add(reflMesh);
 
-    /* Neon bars on the turntable so they rotate with it */
     function neonBar(x,z,len,axis){
       var geo=axis==='x'?new THREE.BoxGeometry(len,.025,.045):new THREE.BoxGeometry(.045,.025,len);
       var b=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xff1a3c}));
@@ -604,6 +580,17 @@
   var lbar=document.getElementById('lbar'),lstatus=document.getElementById('lstatus'),loaderEl=document.getElementById('loader');
   function setLoad(p,t){lbar.style.width=p+'%';if(t)lstatus.textContent=t;}
   setLoad(5,'CONNECTING...');
+
+  /* Auto-dismiss loader — no click required */
+  function dismissLoader(){
+    loaderEl.classList.add('hide');
+    setTimeout(function(){loaderEl.style.display='none';},700);
+    if(window._gtrAudioEngine){
+      window._gtrAudioEngine.startIfReady();
+    } else {
+      window._gtrAudioPending=true;
+    }
+  }
 
   var car=null,clock=new THREE.Clock(),safeZ=12;
   var EXT_SHOTS=[];
@@ -692,22 +679,12 @@
       }
 
       scene.add(car);
-      /* Mount car onto the turntable so it rotates with the floor */
       turntable.add(car);
-      setLoad(100,'CLICK TO ENTER');
-      document.getElementById('lstatus').classList.add('ready');
-      loaderEl.style.cursor='pointer';
-      function onLoaderClick(){
-        loaderEl.removeEventListener('click',onLoaderClick);
-        loaderEl.classList.add('hide');
-        setTimeout(function(){loaderEl.style.display='none';},700);
-        if(window._gtrAudioEngine){
-          window._gtrAudioEngine.startIfReady();
-        } else {
-          window._gtrAudioPending=true;
-        }
-      }
-      loaderEl.addEventListener('click',onLoaderClick);
+
+      setLoad(100,'LOADING COMPLETE');
+      /* Auto-dismiss after a brief pause so the user sees 100% */
+      setTimeout(dismissLoader, 800);
+
       animate();
     },
     function(xhr){if(xhr.total){var p=5+(xhr.loaded/xhr.total)*85;setLoad(p,'LOADING... '+Math.round(p)+'%');}},
@@ -772,7 +749,6 @@
     camera.updateProjectionMatrix();
     camera.lookAt(extLx,extLy+Math.sin(t*.09)*.01,extLz);
 
-    /* Rotate turntable — full revolution every ~18 s on desktop, ~24 s on mobile */
     turntable.rotation.y += isMobile ? 0.0044 : 0.0058;
 
     renderer.render(scene,camera);
@@ -788,9 +764,6 @@
 
 /* ═══════════════════════════════════════════════════════
    GT-R AUDIO ENGINE — Progressive House / Dark Drop
-   Inspired by driving four-on-the-floor kick, massive
-   rising filter sweep buildup, heavy distorted bass drop,
-   atmospheric pads. Pure Web Audio API — no files.
 ═══════════════════════════════════════════════════════ */
 (function(){
   var ctx=null, masterGain=null, playing=false;
@@ -863,7 +836,6 @@
       masterGain.gain.linearRampToValueAtTime(0.8,ctx.currentTime+2.8);
     }
 
-    /* KICK — deep punchy 4/4 */
     function kick(t){
       var o=track(ctx.createOscillator()),g=track(ctx.createGain());
       o.type='sine';
@@ -879,7 +851,6 @@
       o.connect(g); g.connect(comp); o.start(t); o.stop(t+0.4);
     }
 
-    /* CLAP — layered noise bursts */
     function clap(t){
       [0,0.007,0.015].forEach(function(d){
         var s=track(ctx.createBufferSource()),g=track(ctx.createGain());
@@ -894,7 +865,6 @@
       });
     }
 
-    /* HH closed */
     function hh(t,vol){
       var s=track(ctx.createBufferSource()),g=track(ctx.createGain());
       var f=track(ctx.createBiquadFilter()); f.type='highpass'; f.frequency.value=9500;
@@ -905,7 +875,6 @@
       g.connect(comp); s.start(t); s.stop(t+0.032);
     }
 
-    /* HH open */
     function ohh(t){
       var s=track(ctx.createBufferSource()),g=track(ctx.createGain());
       var f=track(ctx.createBiquadFilter()); f.type='highpass'; f.frequency.value=7200;
@@ -916,7 +885,6 @@
       g.connect(comp); s.start(t); s.stop(t+0.32);
     }
 
-    /* BASS — detuned saws + dist + resonant filter envelope */
     function bassNote(freq,t,dur){
       var s1=track(ctx.createOscillator()),s2=track(ctx.createOscillator());
       var dist=track(ctx.createWaveShaper()); dist.curve=distCurve(300);
@@ -936,7 +904,6 @@
       s2.start(t); s2.stop(t+dur+0.05);
     }
 
-    /* SUB BASS — pure sine under the bass */
     function sub(freq,t,dur){
       var o=track(ctx.createOscillator()),g=track(ctx.createGain());
       o.type='sine'; o.frequency.value=freq/2;
@@ -948,9 +915,7 @@
       o.start(t); o.stop(t+dur+0.05);
     }
 
-    /* RISING SWEEP — the Animals tension builder */
     function buildSweep(startT,duration){
-      /* Noise sweep */
       var s=track(ctx.createBufferSource());
       var filt=track(ctx.createBiquadFilter()); filt.type='bandpass'; filt.Q.value=22;
       var g=track(ctx.createGain());
@@ -963,7 +928,6 @@
       s.buffer=noiseBuffer(duration+0.2);
       s.connect(filt); filt.connect(g); g.connect(comp); g.connect(revSend);
       s.start(startT); s.stop(startT+duration+0.2);
-      /* Pitched saw sweep underneath */
       var sw=track(ctx.createOscillator());
       var swf=track(ctx.createBiquadFilter()); swf.type='lowpass'; swf.frequency.value=700;
       var swg=track(ctx.createGain());
@@ -978,7 +942,6 @@
       sw.start(startT); sw.stop(startT+duration+0.1);
     }
 
-    /* PAD — atmospheric swell */
     function pad(freq,t,dur,vol){
       var oA=track(ctx.createOscillator()),oB=track(ctx.createOscillator()),oC=track(ctx.createOscillator());
       var f=track(ctx.createBiquadFilter()); f.type='lowpass'; f.frequency.value=1100; f.Q.value=0.8;
@@ -997,7 +960,6 @@
       oC.start(t); oC.stop(t+dur+0.1);
     }
 
-    /* LEAD STAB — the signature high riff sting */
     function stab(freq,t,dur){
       var o=track(ctx.createOscillator());
       var o2=track(ctx.createOscillator());
@@ -1017,20 +979,14 @@
       o2.start(t); o2.stop(t+dur+0.05);
     }
 
-    /* SIDECHAIN pump helper */
     function pump(t){
       masterGain.gain.cancelScheduledValues(t);
       masterGain.gain.setValueAtTime(0.18,t);
       masterGain.gain.linearRampToValueAtTime(0.8,t+beat*0.72);
     }
 
-    /* ── ARRANGEMENT ── */
-    /* Root notes per bar (A minor cycle) */
-    var roots=[55,43.65,65.41,49.0];  /* A1 F1 C2 G1 */
-    var padRoots=[110,87.3,130.8,98]; /* A2 F2 C3 G2 */
-
-    /* Animals-inspired riff: repeating motif, minor pentatonic A */
-    /* A  A  C  B   A  -  G  -   A  A  C  B   A  G  E  - */
+    var roots=[55,43.65,65.41,49.0];
+    var padRoots=[110,87.3,130.8,98];
     var riffHz=[220,220,261.6,246.9, 220,0,196,0, 220,220,261.6,246.9, 220,196,164.8,0];
 
     var barIndex=0, nextBarTime=0, schedTimer=null;
@@ -1038,7 +994,6 @@
     function scheduleBar(t,bi){
       var phase=bi%32;
 
-      /* ── INTRO (0-7): kick + hats, sparse pad ── */
       if(phase<8){
         for(var k=0;k<4;k++) kick(t+k*beat);
         clap(t+beat); clap(t+beat*3);
@@ -1048,7 +1003,6 @@
         for(var k2=0;k2<4;k2++) pump(t+k2*beat);
       }
 
-      /* ── BUILD (8-15): sweep rises, drums intensify ── */
       if(phase>=8&&phase<16){
         for(var k=0;k<4;k++) kick(t+k*beat);
         clap(t+beat); clap(t+beat*3);
@@ -1064,29 +1018,24 @@
         for(var k2=0;k2<4;k2++) pump(t+k2*beat);
       }
 
-      /* ── DROP (16-23): full power ── */
       if(phase>=16&&phase<24){
         for(var k=0;k<4;k++) kick(t+k*beat);
         clap(t+beat); clap(t+beat*3);
         for(var h=0;h<16;h++) hh(t+h*beat*0.25, h%2===1?0.2:0.13);
         ohh(t+beat*1.5); ohh(t+beat*3.5);
-        /* Pumping bass on every beat */
         var bn=roots[bi%4];
         for(var q=0;q<4;q++){
           bassNote(bn,t+q*beat,beat*0.85);
           sub(bn,t+q*beat,beat*0.85);
         }
         if(bi%2===0) pad(padRoots[bi%4],t,bar*2,0.07);
-        /* Lead riff stabs */
         for(var r=0;r<4;r++){
           var rf=riffHz[((bi%4)*4+r)%riffHz.length];
           if(rf>0) stab(rf*2,t+r*beat,beat*0.6);
         }
-        /* Sidechain pump on every kick */
         for(var k2=0;k2<4;k2++) pump(t+k2*beat);
       }
 
-      /* ── BREAK (24-31): stripped, rebuild tension ── */
       if(phase>=24){
         kick(t); kick(t+beat*2);
         clap(t+beat); clap(t+beat*3);

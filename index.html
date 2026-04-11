@@ -485,6 +485,13 @@
     var und=new THREE.PointLight(0xc8102e,0.28,10); und.position.set(0,-.4,0); scene.add(und);
   }
 
+  /* ── FLOOR TURNTABLE ──
+     A rotating group holds the floor disc + car so they spin together
+     like a showroom turntable. The wider static floor plane stays fixed
+     so the room doesn't spin — only the platform and car rotate.       */
+  var turntable = new THREE.Group();
+  scene.add(turntable);
+
   /* ── FLOOR ── */
   var floorMat=new THREE.MeshStandardMaterial({
     color:0x050508,
@@ -535,44 +542,60 @@
     floorMat.needsUpdate=true;
   })();
 
-  var floorMesh=new THREE.Mesh(new THREE.PlaneGeometry(80,80,1,1),floorMat);
-  floorMesh.rotation.x=-Math.PI/2; floorMesh.position.y=0;
-  if(!isMobile) floorMesh.receiveShadow=true;
-  scene.add(floorMesh);
+  /* Turntable disc — circular platform that rotates */
+  var discRadius = 9;
+  var discGeo = new THREE.CylinderGeometry(discRadius, discRadius, 0.08, 128, 1);
+  var discMesh = new THREE.Mesh(discGeo, floorMat);
+  discMesh.position.y = -0.04; /* sit flush with y=0 */
+  if(!isMobile) discMesh.receiveShadow = true;
+  turntable.add(discMesh);
+
+  /* Thin glowing rim ring around the disc edge */
+  var rimGeo = new THREE.TorusGeometry(discRadius, 0.045, 8, 128);
+  var rimMat = new THREE.MeshBasicMaterial({ color: 0xc8102e });
+  var rimMesh = new THREE.Mesh(rimGeo, rimMat);
+  rimMesh.rotation.x = Math.PI / 2;
+  rimMesh.position.y = 0.0;
+  turntable.add(rimMesh);
+
+  /* Subtle concentric rings on the disc surface for visual interest */
+  [3.2, 5.5, 7.4].forEach(function(r){
+    var rg = new THREE.TorusGeometry(r, 0.018, 6, 96);
+    var rm = new THREE.MeshBasicMaterial({ color: 0x1a0208, transparent: true, opacity: 0.7 });
+    var rv = new THREE.Mesh(rg, rm);
+    rv.rotation.x = Math.PI / 2;
+    rv.position.y = 0.001;
+    turntable.add(rv);
+  });
+
+  /* Static wide floor beneath — doesn't rotate, just fills the room */
+  var staticFloorMat = new THREE.MeshStandardMaterial({
+    color: 0x030304, roughness: 0.55, metalness: 0.3
+  });
+  var staticFloor = new THREE.Mesh(new THREE.PlaneGeometry(200,200,1,1), staticFloorMat);
+  staticFloor.rotation.x = -Math.PI/2;
+  staticFloor.position.y = -0.09;
+  if(!isMobile) staticFloor.receiveShadow = true;
+  scene.add(staticFloor);
 
   if(!isMobile){
+    /* Reflection overlay on the turntable disc */
     var reflMat=new THREE.MeshBasicMaterial({
-      color:0x000000, transparent:true, opacity:0.38, depthWrite:false
+      color:0x000000, transparent:true, opacity:0.42, depthWrite:false
     });
-    var reflMesh=new THREE.Mesh(new THREE.PlaneGeometry(80,80),reflMat);
-    reflMesh.rotation.x=-Math.PI/2; reflMesh.position.y=0.002;
-    scene.add(reflMesh);
-  }
+    var reflMesh=new THREE.Mesh(new THREE.CylinderGeometry(discRadius,discRadius,0.001,128),reflMat);
+    reflMesh.position.y=0.042;
+    turntable.add(reflMesh);
 
-  if(!isMobile){
-    (function(){
-      var sz=512,cells=10,c=document.createElement('canvas');
-      c.width=c.height=sz;
-      var ctx=c.getContext('2d');
-      ctx.clearRect(0,0,sz,sz);
-      var s=sz/cells;
-      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1.5;
-      for(var i=0;i<=cells;i++){var p=i*s;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();}
-      var tex=new THREE.CanvasTexture(c);
-      tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(10,10);
-      var gm=new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:1,depthWrite:false});
-      var g=new THREE.Mesh(new THREE.PlaneGeometry(80,80),gm);
-      g.rotation.x=-Math.PI/2;g.position.y=.003;scene.add(g);
-    })();
-    /* neon stage bars */
+    /* Neon bars on the turntable so they rotate with it */
     function neonBar(x,z,len,axis){
       var geo=axis==='x'?new THREE.BoxGeometry(len,.025,.045):new THREE.BoxGeometry(.045,.025,len);
       var b=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xff1a3c}));
-      b.position.set(x,.01,z);scene.add(b);
-      var pl=new THREE.PointLight(0xff1a3c,.55,8);pl.position.set(x,.25,z);scene.add(pl);
+      b.position.set(x,.01,z);turntable.add(b);
+      var pl=new THREE.PointLight(0xff1a3c,.45,7);pl.position.set(x,.25,z);turntable.add(pl);
     }
-    neonBar(0,-6,16,'x');neonBar(0,6,16,'x');
-    neonBar(-8,0,12,'z');neonBar(8,0,12,'z');
+    neonBar(0,-5.5,11,'x');neonBar(0,5.5,11,'x');
+    neonBar(-5.5,0,11,'z');neonBar(5.5,0,11,'z');
   }
 
   /* ── LOADER ── */
@@ -667,6 +690,8 @@
       }
 
       scene.add(car);
+      /* Mount car onto the turntable so it rotates with the floor */
+      turntable.add(car);
       setLoad(100,'READY');
       setTimeout(function(){
         loaderEl.classList.add('hide');
@@ -735,6 +760,9 @@
     camera.fov=extFov;
     camera.updateProjectionMatrix();
     camera.lookAt(extLx,extLy+Math.sin(t*.09)*.01,extLz);
+
+    /* Rotate turntable — full revolution every ~18 s on desktop, ~24 s on mobile */
+    turntable.rotation.y += isMobile ? 0.0044 : 0.0058;
 
     renderer.render(scene,camera);
   }

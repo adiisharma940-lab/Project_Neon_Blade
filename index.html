@@ -439,33 +439,95 @@
   }
 
   /* ── FLOOR ── */
-  var floorMat=new THREE.MeshStandardMaterial({color:0x080810,roughness:.3,metalness:.5});
-  var floorMesh=new THREE.Mesh(new THREE.PlaneGeometry(80,80),floorMat);
+  /* ── SHINY BLACK TILE FLOOR ── */
+  /* Base: near-black, very low roughness, high metalness = glossy mirror-like reflection */
+  var floorMat=new THREE.MeshStandardMaterial({
+    color:0x050508,
+    roughness: isMobile ? 0.18 : 0.08,
+    metalness: isMobile ? 0.6 : 0.85,
+    envMapIntensity: 1.0
+  });
+
+  /* Tile grout texture baked into a canvas — subtle dark grid lines on glossy black */
+  (function(){
+    var sz=512, tileCount=8;
+    var c=document.createElement('canvas'); c.width=c.height=sz;
+    var ctx=c.getContext('2d');
+    /* tile face — deep black with very faint specular shimmer gradient */
+    ctx.fillStyle='#05050a'; ctx.fillRect(0,0,sz,sz);
+    /* per-tile inner highlight — simulates polished marble/tile sheen */
+    var ts=sz/tileCount;
+    for(var row=0;row<tileCount;row++){
+      for(var col=0;col<tileCount;col++){
+        var tx=col*ts, ty=row*ts;
+        /* alternating subtle tone so tiles are individually visible */
+        var shade=(row+col)%2===0 ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.0)';
+        ctx.fillStyle=shade;
+        ctx.fillRect(tx+2,ty+2,ts-4,ts-4);
+        /* inner gloss highlight in top-left corner of each tile */
+        var grd=ctx.createLinearGradient(tx+2,ty+2,tx+ts*.6,ty+ts*.6);
+        grd.addColorStop(0,'rgba(255,255,255,0.05)');
+        grd.addColorStop(1,'rgba(255,255,255,0.0)');
+        ctx.fillStyle=grd;
+        ctx.fillRect(tx+2,ty+2,ts-4,ts-4);
+      }
+    }
+    /* grout lines — very thin near-black */
+    ctx.strokeStyle='rgba(0,0,0,0.85)'; ctx.lineWidth=3;
+    for(var i=0;i<=tileCount;i++){
+      var p=i*ts;
+      ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();
+    }
+    var tileTex=new THREE.CanvasTexture(c);
+    tileTex.wrapS=tileTex.wrapT=THREE.RepeatWrapping;
+    tileTex.repeat.set(10,10);
+    floorMat.map=tileTex;
+    /* roughness map — grout lines are slightly rougher than tile face */
+    var rSz=256,rc=document.createElement('canvas');rc.width=rc.height=rSz;
+    var rCtx=rc.getContext('2d');
+    rCtx.fillStyle='#111';rCtx.fillRect(0,0,rSz,rSz); /* dark = smooth tiles */
+    rCtx.strokeStyle='#999';rCtx.lineWidth=2; /* lighter = rough grout */
+    var rs=rSz/tileCount;
+    for(var ri=0;ri<=tileCount;ri++){var rp=ri*rs;rCtx.beginPath();rCtx.moveTo(rp,0);rCtx.lineTo(rp,rSz);rCtx.stroke();rCtx.beginPath();rCtx.moveTo(0,rp);rCtx.lineTo(rSz,rp);rCtx.stroke();}
+    var roughTex=new THREE.CanvasTexture(rc);
+    roughTex.wrapS=roughTex.wrapT=THREE.RepeatWrapping;
+    roughTex.repeat.set(10,10);
+    floorMat.roughnessMap=roughTex;
+    floorMat.needsUpdate=true;
+  })();
+
+  var floorMesh=new THREE.Mesh(new THREE.PlaneGeometry(80,80,1,1),floorMat);
   floorMesh.rotation.x=-Math.PI/2; floorMesh.position.y=0;
   if(!isMobile) floorMesh.receiveShadow=true;
   scene.add(floorMesh);
 
-  /* grid texture — desktop only */
+  /* Reflection plane — a MeshBasicMaterial semi-transparent dark plane just above
+     the floor that mirrors the scene colour for a wet-floor reflection look */
+  if(!isMobile){
+    var reflMat=new THREE.MeshBasicMaterial({
+      color:0x000000, transparent:true, opacity:0.38, depthWrite:false
+    });
+    var reflMesh=new THREE.Mesh(new THREE.PlaneGeometry(80,80),reflMat);
+    reflMesh.rotation.x=-Math.PI/2; reflMesh.position.y=0.002;
+    scene.add(reflMesh);
+  }
+
+  /* Subtle tile grout overlay — thin white lines to reinforce tile grid */
   if(!isMobile){
     (function(){
-      var sz=1024,cells=32,c=document.createElement('canvas');
+      var sz=512,cells=10,c=document.createElement('canvas');
       c.width=c.height=sz;
       var ctx=c.getContext('2d');
-      ctx.fillStyle='#000';ctx.fillRect(0,0,sz,sz);
+      ctx.clearRect(0,0,sz,sz);
       var s=sz/cells;
-      ctx.strokeStyle='rgba(200,16,46,0.18)';ctx.lineWidth=4;
+      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1.5;
       for(var i=0;i<=cells;i++){var p=i*s;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();}
-      ctx.strokeStyle='rgba(200,16,46,0.55)';ctx.lineWidth=1.5;
-      for(var j=0;j<=cells;j++){var q=j*s;ctx.beginPath();ctx.moveTo(q,0);ctx.lineTo(q,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,q);ctx.lineTo(sz,q);ctx.stroke();}
-      var cx=sz/2;
-      ctx.strokeStyle='rgba(212,168,0,0.7)';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,sz);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,cx);ctx.lineTo(sz,cx);ctx.stroke();
       var tex=new THREE.CanvasTexture(c);
-      tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(4,4);
-      var gm=new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.5,depthWrite:false});
+      tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(10,10);
+      var gm=new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:1,depthWrite:false});
       var g=new THREE.Mesh(new THREE.PlaneGeometry(80,80),gm);
-      g.rotation.x=-Math.PI/2;g.position.y=.001;scene.add(g);
+      g.rotation.x=-Math.PI/2;g.position.y=.003;scene.add(g);
     })();
     /* neon stage bars */
     function neonBar(x,z,len,axis){

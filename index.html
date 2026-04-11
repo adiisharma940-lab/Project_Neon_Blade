@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,49 +15,14 @@
   *{margin:0;padding:0;box-sizing:border-box;}
   *{cursor:none!important;}
 
-  /* ── CUSTOM CURSOR — targeting reticle ── */
-  #cursor-reticle{
-    position:fixed;width:48px;height:48px;pointer-events:none;z-index:99999;
+  /* ── CUSTOM CURSOR — Sniper Scope ── */
+  #cursor-scope{
+    position:fixed;width:56px;height:56px;pointer-events:none;z-index:99999;
     transform:translate(-50%,-50%);
-    transition:width .15s,height .15s;
+    transition:width .12s,height .12s,opacity .2s;
   }
-  #cursor-reticle.fast{width:60px;height:60px;}
-  #cursor-reticle .r-ring{
-    position:absolute;inset:0;border-radius:50%;
-    border:1.5px solid rgba(200,16,46,0.9);
-    animation:rPulse 2s ease-in-out infinite;
-  }
-  #cursor-reticle .r-ring2{
-    position:absolute;inset:8px;border-radius:50%;
-    border:1px solid rgba(212,168,0,0.45);
-  }
-  #cursor-reticle .r-dot{
-    position:absolute;top:50%;left:50%;
-    width:4px;height:4px;border-radius:50%;
-    background:var(--red);
-    transform:translate(-50%,-50%);
-    box-shadow:0 0 6px 2px rgba(200,16,46,0.6);
-  }
-  #cursor-reticle .r-tick{position:absolute;background:var(--red);}
-  #cursor-reticle .r-tick.t{width:1px;height:8px;left:50%;top:2px;transform:translateX(-50%);}
-  #cursor-reticle .r-tick.b{width:1px;height:8px;left:50%;bottom:2px;transform:translateX(-50%);}
-  #cursor-reticle .r-tick.l{height:1px;width:8px;top:50%;left:2px;transform:translateY(-50%);}
-  #cursor-reticle .r-tick.r{height:1px;width:8px;top:50%;right:2px;transform:translateY(-50%);}
-  #cursor-reticle .r-arc{
-    position:absolute;inset:-5px;border-radius:50%;
-    border:1.5px solid transparent;
-    border-top-color:var(--gold);
-    border-right-color:rgba(212,168,0,0.25);
-    animation:rSpin 2.2s linear infinite;
-  }
-  #cursor-reticle .r-arc2{
-    position:absolute;inset:-5px;border-radius:50%;
-    border:1px solid transparent;
-    border-bottom-color:rgba(200,16,46,0.45);
-    animation:rSpin 2.2s linear infinite reverse;
-  }
-  @keyframes rPulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
-  @keyframes rSpin{to{transform:rotate(360deg);}}
+  #cursor-scope svg{width:100%;height:100%;}
+  #cursor-scope.fast{width:70px;height:70px;}
 
   body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;}
 
@@ -185,7 +149,9 @@
   #hud{position:fixed;top:24px;right:24px;z-index:100;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(200,16,46,0.6);text-align:right;line-height:2;pointer-events:none;}
   #vignette{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);}
 
-  /* ── LOADER ── */
+  /* ══════════════════════════════════════════════
+     LOADER — GT-R Logo + Spinning Wheel in Smoke
+  ══════════════════════════════════════════════ */
   #loader{
     position:fixed;inset:0;z-index:999;overflow:hidden;
     background:#000;
@@ -193,27 +159,25 @@
   }
   #loader.hide{opacity:0;transform:scale(1.04);pointer-events:none;}
 
-  /* Animated hex grid background */
-  #loader-hex{position:absolute;inset:0;opacity:0.07;}
+  /* Hex grid bg */
+  #loader-hex{position:absolute;inset:0;opacity:0.05;}
   #loader-hex svg{width:100%;height:100%;}
 
-  /* Vertical scan beam */
+  /* Scanbeam */
   #loader-scanbeam{
     position:absolute;top:0;left:-100%;width:60%;height:100%;
-    background:linear-gradient(90deg,transparent 0%,rgba(200,16,46,0.08) 40%,rgba(200,16,46,0.18) 50%,rgba(200,16,46,0.08) 60%,transparent 100%);
-    animation:scanBeam 2.4s cubic-bezier(.4,0,.6,1) infinite;
+    background:linear-gradient(90deg,transparent 0%,rgba(200,16,46,0.06) 40%,rgba(200,16,46,0.14) 50%,rgba(200,16,46,0.06) 60%,transparent 100%);
+    animation:scanBeam 2.8s cubic-bezier(.4,0,.6,1) infinite;
     pointer-events:none;
   }
   @keyframes scanBeam{0%{left:-60%;}100%{left:120%;}}
 
-  /* Horizontal CRT lines */
-  #loader-crt{
-    position:absolute;inset:0;pointer-events:none;
-    background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.22) 3px,rgba(0,0,0,0.22) 4px);
-  }
+  /* CRT lines */
+  #loader-crt{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.18) 3px,rgba(0,0,0,0.18) 4px);}
 
-  /* Corner bracket decorations */
-  .l-corner{position:absolute;width:40px;height:40px;pointer-events:none;}
+  /* Corner brackets */
+  .l-corner{position:absolute;width:44px;height:44px;pointer-events:none;}
   .l-corner::before,.l-corner::after{content:'';position:absolute;background:var(--red);}
   .l-corner::before{width:100%;height:2px;top:0;left:0;}
   .l-corner::after{width:2px;height:100%;top:0;left:0;}
@@ -222,63 +186,101 @@
   .l-corner.br{bottom:24px;right:24px;transform:scale(-1);}
   .l-corner.bl{bottom:24px;left:24px;transform:scaleY(-1);}
 
-  /* GT-R silhouette SVG */
-  #loader-car{
-    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-    width:min(700px,90vw);opacity:0;
-    animation:carReveal 1.2s cubic-bezier(.16,1,.3,1) .3s forwards;
+  /* Side data readouts */
+  .l-readout{
+    position:absolute;top:50%;transform:translateY(-50%);
+    font-family:'Space Mono',monospace;font-size:8px;
+    letter-spacing:.2em;color:rgba(200,16,46,0.4);
+    line-height:2.4;
+    opacity:0;animation:lFadeUp .6s ease .5s forwards;
   }
-  @keyframes carReveal{
-    0%{opacity:0;transform:translateX(-50%) translateY(40px);}
-    100%{opacity:1;transform:translateX(-50%) translateY(0);}
-  }
+  .l-readout.left{left:clamp(16px,3vw,48px);text-align:left;}
+  .l-readout.right{right:clamp(16px,3vw,48px);text-align:right;}
+  .l-readout span{color:rgba(212,168,0,0.5);}
 
-  /* Glowing ground line under car */
-  #loader-glow{
-    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-    width:min(600px,80vw);height:1px;
-    background:linear-gradient(90deg,transparent,var(--red) 30%,#ff6688 50%,var(--red) 70%,transparent);
-    box-shadow:0 0 18px 4px rgba(200,16,46,0.5);
-    animation:glowPulse 2s ease-in-out infinite;
-  }
-  @keyframes glowPulse{0%,100%{opacity:.7;}50%{opacity:1;}}
-
-  /* Central content */
+  /* Central loader content */
   #loader-content{
     position:absolute;inset:0;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:0;
-    padding-bottom:min(200px,28vh);
   }
 
+  /* GT-R Logo text */
   .l-eyebrow{
     font-family:'Space Mono',monospace;font-size:clamp(7px,1vw,10px);
-    letter-spacing:.55em;color:var(--gold);margin-bottom:18px;
+    letter-spacing:.55em;color:var(--gold);margin-bottom:14px;
     opacity:0;animation:lFadeUp .6s ease .1s forwards;
   }
-  .l-title{
+  .l-gtr-logo{
     font-family:'Orbitron',sans-serif;
-    font-size:clamp(64px,12vw,160px);
-    line-height:.85;font-weight:900;letter-spacing:.05em;
+    font-size:clamp(80px,15vw,200px);
+    line-height:.85;font-weight:900;letter-spacing:.08em;
     color:#fff;position:relative;
-    opacity:0;animation:lFadeUp .7s cubic-bezier(.16,1,.3,1) .25s forwards;
+    opacity:0;animation:lFadeUp .8s cubic-bezier(.16,1,.3,1) .2s forwards;
+    text-shadow:0 0 60px rgba(200,16,46,0.3);
   }
-  .l-title span{color:var(--red);}
-  .l-title::after{
-    content:'GT‑R';position:absolute;inset:0;
-    color:transparent;-webkit-text-stroke:1px rgba(200,16,46,0.25);
-    transform:translate(3px,3px);pointer-events:none;
-  }
-  .l-model{
-    font-family:'Space Mono',monospace;font-size:clamp(8px,1.1vw,11px);
-    letter-spacing:.6em;color:var(--muted);margin-top:10px;
-    opacity:0;animation:lFadeUp .6s ease .4s forwards;
+  .l-gtr-logo .gt{color:#fff;}
+  .l-gtr-logo .dash{color:var(--red);}
+  .l-gtr-logo .r{color:var(--red);}
+
+  /* GT-R badge underline */
+  .l-gtr-sub{
+    font-family:'Space Mono',monospace;font-size:clamp(8px,1.2vw,12px);
+    letter-spacing:.7em;color:var(--muted);margin-top:8px;
+    opacity:0;animation:lFadeUp .6s ease .5s forwards;
+    border-top:1px solid rgba(200,16,46,0.3);
+    padding-top:10px;
+    margin-bottom:32px;
   }
 
-  /* Progress block */
+  /* Wheel + smoke container */
+  #wheel-scene{
+    position:relative;
+    width:min(320px,70vw);
+    height:min(180px,40vw);
+    margin-bottom:28px;
+    opacity:0;animation:lFadeUp .7s ease .4s forwards;
+  }
+  /* Smoke layers — CSS particle blobs */
+  .smoke{
+    position:absolute;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(180,180,180,0.12) 0%,rgba(100,100,100,0.06) 50%,transparent 70%);
+    animation:smokeDrift linear infinite;
+    pointer-events:none;
+  }
+  @keyframes smokeDrift{
+    0%{transform:translateX(0) translateY(0) scale(0.5);opacity:0.7;}
+    100%{transform:translateX(var(--dx)) translateY(var(--dy)) scale(2.5);opacity:0;}
+  }
+  /* Wheel SVG container */
+  #wheel-svg-wrap{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+  }
+  /* Spinning wheel animation */
+  #wheel-spin{animation:wheelSpin 0.6s linear infinite;}
+  @keyframes wheelSpin{to{transform:rotate(360deg);}}
+
+  /* Ground line */
+  .l-ground{
+    position:absolute;bottom:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(200,16,46,0.5) 30%,rgba(255,100,120,0.8) 50%,rgba(200,16,46,0.5) 70%,transparent);
+    box-shadow:0 0 12px 2px rgba(200,16,46,0.3);
+  }
+
+  /* Burn marks */
+  .l-burnmark{
+    position:absolute;bottom:1px;left:50%;transform:translateX(-50%);
+    width:80%;height:8px;
+    background:radial-gradient(ellipse,rgba(200,16,46,0.15) 0%,transparent 70%);
+  }
+
+  /* Progress bar */
   #loader-prog{
     display:flex;flex-direction:column;align-items:center;gap:10px;
-    margin-top:36px;
-    opacity:0;animation:lFadeUp .6s ease .6s forwards;
+    opacity:0;animation:lFadeUp .6s ease .65s forwards;
   }
   .l-bar-outer{
     width:min(320px,70vw);height:2px;
@@ -307,18 +309,6 @@
   #lstatus{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--muted);}
   #lpct{font-family:'Orbitron',monospace;font-size:10px;color:var(--red);font-weight:700;}
 
-  /* Data readouts on the sides */
-  .l-readout{
-    position:absolute;top:50%;transform:translateY(-50%);
-    font-family:'Space Mono',monospace;font-size:8px;
-    letter-spacing:.2em;color:rgba(200,16,46,0.4);
-    line-height:2.4;
-    opacity:0;animation:lFadeUp .6s ease .5s forwards;
-  }
-  .l-readout.left{left:clamp(16px,3vw,48px);text-align:left;}
-  .l-readout.right{right:clamp(16px,3vw,48px);text-align:right;}
-  .l-readout span{color:rgba(212,168,0,0.5);}
-
   @keyframes lFadeUp{0%{opacity:0;transform:translateY(14px);}100%{opacity:1;transform:translateY(0);}}
 
   .encrypting{color:var(--red)!important;}
@@ -326,40 +316,57 @@
 </head>
 <body>
 
-<div id="cursor-reticle">
-  <div class="r-arc"></div>
-  <div class="r-arc2"></div>
-  <div class="r-ring"></div>
-  <div class="r-ring2"></div>
-  <div class="r-tick t"></div>
-  <div class="r-tick b"></div>
-  <div class="r-tick l"></div>
-  <div class="r-tick r"></div>
-  <div class="r-dot"></div>
+<!-- ── CUSTOM CURSOR: Sniper Scope ── -->
+<div id="cursor-scope">
+  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer ring -->
+    <circle cx="28" cy="28" r="26" stroke="#c8102e" stroke-width="1.2" opacity="0.9"/>
+    <!-- Inner ring -->
+    <circle cx="28" cy="28" r="18" stroke="rgba(200,16,46,0.4)" stroke-width="0.8"/>
+    <!-- Rotating arc -->
+    <circle cx="28" cy="28" r="22" stroke="#d4a800" stroke-width="1" stroke-dasharray="15 50" opacity="0.7">
+      <animateTransform attributeName="transform" type="rotate" from="0 28 28" to="360 28 28" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Counter-rotating arc -->
+    <circle cx="28" cy="28" r="22" stroke="rgba(200,16,46,0.3)" stroke-width="0.8" stroke-dasharray="8 64">
+      <animateTransform attributeName="transform" type="rotate" from="360 28 28" to="0 28 28" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Crosshair lines -->
+    <line x1="28" y1="2" x2="28" y2="10" stroke="#c8102e" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="28" y1="46" x2="28" y2="54" stroke="#c8102e" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="2" y1="28" x2="10" y2="28" stroke="#c8102e" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="46" y1="28" x2="54" y2="28" stroke="#c8102e" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Center dot -->
+    <circle cx="28" cy="28" r="2.5" fill="#c8102e"/>
+    <circle cx="28" cy="28" r="1" fill="#fff" opacity="0.8"/>
+    <!-- Corner ticks on inner ring -->
+    <line x1="28" y1="10" x2="28" y2="15" stroke="rgba(212,168,0,0.5)" stroke-width="0.8"/>
+    <line x1="28" y1="41" x2="28" y2="46" stroke="rgba(212,168,0,0.5)" stroke-width="0.8"/>
+    <line x1="10" y1="28" x2="15" y2="28" stroke="rgba(212,168,0,0.5)" stroke-width="0.8"/>
+    <line x1="41" y1="28" x2="46" y2="28" stroke="rgba(212,168,0,0.5)" stroke-width="0.8"/>
+  </svg>
 </div>
 
+<!-- ════════════════════════════════════
+     LOADER
+════════════════════════════════════ -->
 <div id="loader">
-  <!-- Hex grid bg -->
   <div id="loader-hex">
     <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-      <defs>
-        <pattern id="hex" x="0" y="0" width="56" height="48" patternUnits="userSpaceOnUse">
-          <polygon points="28,2 54,14 54,34 28,46 2,34 2,14" fill="none" stroke="#c8102e" stroke-width="0.8"/>
-        </pattern>
-      </defs>
+      <defs><pattern id="hex" x="0" y="0" width="56" height="48" patternUnits="userSpaceOnUse">
+        <polygon points="28,2 54,14 54,34 28,46 2,34 2,14" fill="none" stroke="#c8102e" stroke-width="0.6"/>
+      </pattern></defs>
       <rect width="100%" height="100%" fill="url(#hex)"/>
     </svg>
   </div>
   <div id="loader-scanbeam"></div>
   <div id="loader-crt"></div>
 
-  <!-- Corner brackets -->
   <div class="l-corner tl"></div>
   <div class="l-corner tr"></div>
   <div class="l-corner bl"></div>
   <div class="l-corner br"></div>
 
-  <!-- Side data readouts -->
   <div class="l-readout left">
     ENGINE<br><span>VR38DETT</span><br><br>
     DISPLACEMENT<br><span>3,799 CC</span><br><br>
@@ -373,11 +380,75 @@
     YEAR<br><span>2013</span>
   </div>
 
-  <!-- Main title block -->
   <div id="loader-content">
-    <div class="l-eyebrow">NISSAN MOTOR CO. &nbsp;·&nbsp; R35 PLATFORM</div>
-    <div class="l-title">GT<span>&#8209;R</span></div>
-    <div class="l-model">BLACK EDITION &nbsp;//&nbsp; VR38DETT &nbsp;//&nbsp; AWD</div>
+    <div class="l-eyebrow">NISSAN MOTOR CO. &nbsp;·&nbsp; R35 PLATFORM &nbsp;·&nbsp; BLACK EDITION</div>
+
+    <!-- GT-R LOGO -->
+    <div class="l-gtr-logo">
+      <span class="gt">GT</span><span class="dash">&#8209;</span><span class="r">R</span>
+    </div>
+    <div class="l-gtr-sub">GODZILLA &nbsp;//&nbsp; VR38DETT &nbsp;//&nbsp; AWD</div>
+
+    <!-- WHEEL + SMOKE SCENE -->
+    <div id="wheel-scene">
+      <!-- Smoke particles (injected by JS) -->
+      <div id="smoke-container"></div>
+
+      <!-- Wheel SVG -->
+      <div id="wheel-svg-wrap">
+        <svg width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Tyre -->
+          <circle cx="65" cy="65" r="62" fill="#0a0a0a" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- Tyre tread -->
+          <circle cx="65" cy="65" r="62" fill="none" stroke="#222" stroke-width="8" stroke-dasharray="4 6"/>
+          <!-- Rim outer -->
+          <g id="wheel-spin" style="transform-origin:65px 65px">
+            <circle cx="65" cy="65" r="50" fill="#111" stroke="rgba(212,168,0,0.7)" stroke-width="1.5"/>
+            <!-- Spokes — 5 spoke Rays forged style -->
+            <g stroke="rgba(212,168,0,0.6)" stroke-width="3" stroke-linecap="round">
+              <!-- Spoke 1 -->
+              <line x1="65" y1="20" x2="65" y2="52"/>
+              <line x1="65" y1="20" x2="57" y2="22"/>
+              <line x1="65" y1="20" x2="73" y2="22"/>
+              <!-- Spoke 2 (72deg) -->
+              <line x1="103.5" y1="38.5" x2="79" y2="54"/>
+              <line x1="103.5" y1="38.5" x2="99" y2="30.5"/>
+              <line x1="103.5" y1="38.5" x2="107.5" y2="46"/>
+              <!-- Spoke 3 (144deg) -->
+              <line x1="91" y1="101" x2="72" y2="78"/>
+              <line x1="91" y1="101" x2="83" y2="105"/>
+              <line x1="91" y1="101" x2="98.5" y2="97.5"/>
+              <!-- Spoke 4 (216deg) -->
+              <line x1="39" y1="101" x2="58" y2="78"/>
+              <line x1="39" y1="101" x2="31.5" y2="97.5"/>
+              <line x1="39" y1="101" x2="47" y2="105"/>
+              <!-- Spoke 5 (288deg) -->
+              <line x1="26.5" y1="38.5" x2="51" y2="54"/>
+              <line x1="26.5" y1="38.5" x2="22.5" y2="46"/>
+              <line x1="26.5" y1="38.5" x2="31" y2="30.5"/>
+            </g>
+            <!-- Centre cap -->
+            <circle cx="65" cy="65" r="16" fill="#0a0a0a" stroke="rgba(200,16,46,0.9)" stroke-width="1.5"/>
+            <circle cx="65" cy="65" r="10" fill="#111" stroke="rgba(212,168,0,0.5)" stroke-width="1"/>
+            <!-- GT-R centre badge -->
+            <text x="65" y="69" text-anchor="middle" font-family="Orbitron,sans-serif" font-size="7" font-weight="900" fill="#c8102e">GT-R</text>
+            <!-- Rim inner detail rings -->
+            <circle cx="65" cy="65" r="44" fill="none" stroke="rgba(200,16,46,0.2)" stroke-width="0.5"/>
+            <circle cx="65" cy="65" r="38" fill="none" stroke="rgba(212,168,0,0.15)" stroke-width="0.5"/>
+          </g>
+          <!-- Brake caliper (static, red) -->
+          <path d="M 65,17 A 48 48 0 0 1 107,38" stroke="#c8102e" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.9"/>
+          <!-- Valve stem hole -->
+          <circle cx="65" cy="7" r="3" fill="#333" stroke="#555" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- Ground + burn -->
+      <div class="l-ground"></div>
+      <div class="l-burnmark"></div>
+    </div>
+
+    <!-- PROGRESS -->
     <div id="loader-prog">
       <div class="l-bar-outer"><div id="lbar"></div></div>
       <div class="l-meta">
@@ -386,38 +457,6 @@
       </div>
     </div>
   </div>
-
-  <!-- GT-R silhouette -->
-  <svg id="loader-car" viewBox="0 0 800 220" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
-    <!-- Body outline — GT-R R35 side profile -->
-    <path d="M60,180 L60,150 Q80,100 130,85 L200,75 Q240,60 290,52 Q340,44 380,44 Q430,42 470,46 Q530,50 570,62 L640,80 Q680,92 710,115 L730,140 L740,160 L740,180 Z"
-      fill="rgba(200,16,46,0.08)" stroke="rgba(200,16,46,0.7)" stroke-width="1.5"/>
-    <!-- Roof -->
-    <path d="M200,75 Q250,40 320,34 Q390,28 460,34 Q510,38 545,54 L570,62"
-      fill="none" stroke="rgba(200,16,46,0.5)" stroke-width="1"/>
-    <!-- Window -->
-    <path d="M215,72 Q260,40 330,32 Q395,26 455,33 Q500,38 530,55 L510,68 Q470,58 390,54 Q310,50 240,65 Z"
-      fill="rgba(100,160,255,0.06)" stroke="rgba(100,160,255,0.3)" stroke-width="1"/>
-    <!-- Rear wing -->
-    <path d="M610,62 L660,50 L665,56 L618,70 Z" fill="rgba(200,16,46,0.4)" stroke="rgba(200,16,46,0.8)" stroke-width="1"/>
-    <!-- Front wheel arch -->
-    <circle cx="190" cy="180" r="42" fill="rgba(0,0,0,0.6)" stroke="rgba(200,16,46,0.6)" stroke-width="1.5"/>
-    <circle cx="190" cy="180" r="28" fill="rgba(20,20,20,0.8)" stroke="rgba(212,168,0,0.5)" stroke-width="1"/>
-    <circle cx="190" cy="180" r="10" fill="rgba(212,168,0,0.3)" stroke="rgba(212,168,0,0.8)" stroke-width="1.5"/>
-    <!-- Rear wheel arch -->
-    <circle cx="610" cy="180" r="42" fill="rgba(0,0,0,0.6)" stroke="rgba(200,16,46,0.6)" stroke-width="1.5"/>
-    <circle cx="610" cy="180" r="28" fill="rgba(20,20,20,0.8)" stroke="rgba(212,168,0,0.5)" stroke-width="1"/>
-    <circle cx="610" cy="180" r="10" fill="rgba(212,168,0,0.3)" stroke="rgba(212,168,0,0.8)" stroke-width="1.5"/>
-    <!-- Headlight -->
-    <path d="M68,130 L95,118 L105,128 L80,142 Z" fill="rgba(200,220,255,0.15)" stroke="rgba(180,210,255,0.8)" stroke-width="1"/>
-    <line x1="68" y1="130" x2="10" y2="110" stroke="rgba(180,210,255,0.25)" stroke-width="1"/>
-    <line x1="80" y1="142" x2="20" y2="155" stroke="rgba(180,210,255,0.15)" stroke-width="1"/>
-    <!-- Brakelight -->
-    <rect x="718" y="120" width="16" height="28" rx="2" fill="rgba(255,10,10,0.25)" stroke="rgba(255,30,30,0.9)" stroke-width="1.2"/>
-    <!-- Ground reflection line -->
-    <line x1="60" y1="180" x2="740" y2="180" stroke="rgba(200,16,46,0.3)" stroke-width="1"/>
-  </svg>
-  <div id="loader-glow"></div>
 </div>
 
 <div id="progress"></div>
@@ -588,15 +627,41 @@
 (function(){
 
   /* ── CURSOR ── */
-  var cursorEl = document.getElementById('cursor-reticle');
-  var lastX=0,lastY=0;
-  document.addEventListener('mousemove',function(e){
-    cursorEl.style.left=e.clientX+'px';
-    cursorEl.style.top=e.clientY+'px';
-    var dx=e.clientX-lastX,dy=e.clientY-lastY;
-    cursorEl.classList.toggle('fast',Math.sqrt(dx*dx+dy*dy)>10);
-    lastX=e.clientX;lastY=e.clientY;
+  var scopeEl = document.getElementById('cursor-scope');
+  var lastX=0, lastY=0;
+  document.addEventListener('mousemove', function(e){
+    scopeEl.style.left = e.clientX + 'px';
+    scopeEl.style.top  = e.clientY + 'px';
+    var dx = e.clientX - lastX, dy = e.clientY - lastY;
+    scopeEl.classList.toggle('fast', Math.sqrt(dx*dx+dy*dy) > 10);
+    lastX = e.clientX; lastY = e.clientY;
   });
+
+  /* ── SMOKE PARTICLES ── */
+  (function spawnSmoke(){
+    var container = document.getElementById('smoke-container');
+    if(!container) return;
+    function makeSmoke(){
+      var el = document.createElement('div');
+      el.className = 'smoke';
+      var size = 40 + Math.random()*80;
+      var startX = 50 + (Math.random()-0.5)*30; // % of scene width
+      var dur    = 1.8 + Math.random()*1.4;
+      var dx     = (Math.random()-0.5)*120 + 'px';
+      var dy     = -(40 + Math.random()*60) + 'px';
+      el.style.cssText = [
+        'width:'+size+'px','height:'+size+'px',
+        'left:'+startX+'%','bottom:'+(-size/2)+'px',
+        'transform-origin:center center',
+        '--dx:'+dx,'--dy:'+dy,
+        'animation-duration:'+dur+'s',
+        'animation-delay:'+(Math.random()*0.6)+'s'
+      ].join(';');
+      container.appendChild(el);
+      setTimeout(function(){ el.remove(); }, dur*1000+600);
+    }
+    setInterval(makeSmoke, 120);
+  })();
 
   /* ── ENCRYPT HOVER ── */
   var glyphs='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?><[]{}';
@@ -665,43 +730,23 @@
   fill.position.set(-5,3,-4);
   scene.add(fill);
 
-  var CEIL_Y   = 18;
-  var CEIL_COL = 0xffe8c0;
-  var CEIL_INTENSITY_D = 1.8;
-  var CEIL_INTENSITY_M = 1.2;
-
-  var ceilPositions = [
-    [ 0,    CEIL_Y,  0   ],
-    [-4,    CEIL_Y,  3   ],
-    [ 4,    CEIL_Y,  3   ],
-    [-3.5,  CEIL_Y, -3.5 ],
-    [ 3.5,  CEIL_Y, -3.5 ],
-  ];
-
-  ceilPositions.forEach(function(pos, i){
+  var CEIL_Y=18, CEIL_COL=0xffe8c0;
+  [[0,CEIL_Y,0],[-4,CEIL_Y,3],[4,CEIL_Y,3],[-3.5,CEIL_Y,-3.5],[3.5,CEIL_Y,-3.5]].forEach(function(pos,i){
     if(!isMobile){
-      var spot = new THREE.SpotLight(
-        CEIL_COL,
-        i === 0 ? CEIL_INTENSITY_D * 1.3 : CEIL_INTENSITY_D,
-        40,
-        Math.PI / 5.5,
-        0.45,
-        1.2
-      );
-      spot.position.set(pos[0], pos[1], pos[2]);
-      spot.target.position.set(pos[0], 0, pos[2]);
-      spot.castShadow = false;
-      scene.add(spot);
-      scene.add(spot.target);
+      var spot=new THREE.SpotLight(CEIL_COL,i===0?2.3:1.8,40,Math.PI/5.5,0.45,1.2);
+      spot.position.set(pos[0],pos[1],pos[2]);
+      spot.target.position.set(pos[0],0,pos[2]);
+      spot.castShadow=false;
+      scene.add(spot); scene.add(spot.target);
     } else {
-      var pt = new THREE.PointLight(CEIL_COL, CEIL_INTENSITY_M, 22, 1.5);
-      pt.position.set(pos[0], pos[1], pos[2]);
+      var pt=new THREE.PointLight(CEIL_COL,1.2,22,1.5);
+      pt.position.set(pos[0],pos[1],pos[2]);
       scene.add(pt);
     }
   });
 
-  var rearWarm = new THREE.DirectionalLight(0xffddaa, isMobile ? 0.4 : 0.55);
-  rearWarm.position.set(0, 10, -8);
+  var rearWarm=new THREE.DirectionalLight(0xffddaa, isMobile ? 0.4 : 0.55);
+  rearWarm.position.set(0,10,-8);
   scene.add(rearWarm);
 
   if(!isMobile){
@@ -710,135 +755,90 @@
     var und=new THREE.PointLight(0xc8102e,0.28,10); und.position.set(0,-.4,0); scene.add(und);
   }
 
-  var turntable = new THREE.Group();
+  var turntable=new THREE.Group();
   scene.add(turntable);
 
-  var floorMat=new THREE.MeshStandardMaterial({
-    color:0x050508,
-    roughness: isMobile ? 0.18 : 0.08,
-    metalness: isMobile ? 0.6 : 0.85,
-    envMapIntensity: 1.0
-  });
-
+  /* Floor */
+  var floorMat=new THREE.MeshStandardMaterial({color:0x050508,roughness:isMobile?0.18:0.08,metalness:isMobile?0.6:0.85});
   (function(){
-    var sz=512, tileCount=8;
+    var sz=512,tileCount=8;
     var c=document.createElement('canvas'); c.width=c.height=sz;
     var ctx=c.getContext('2d');
     ctx.fillStyle='#05050a'; ctx.fillRect(0,0,sz,sz);
     var ts=sz/tileCount;
     for(var row=0;row<tileCount;row++){
       for(var col=0;col<tileCount;col++){
-        var tx=col*ts, ty=row*ts;
-        var shade=(row+col)%2===0 ? 'rgba(255,255,255,0.018)' : 'rgba(0,0,0,0.0)';
-        ctx.fillStyle=shade;
-        ctx.fillRect(tx+2,ty+2,ts-4,ts-4);
-        var grd=ctx.createLinearGradient(tx+2,ty+2,tx+ts*.6,ty+ts*.6);
-        grd.addColorStop(0,'rgba(255,255,255,0.05)');
-        grd.addColorStop(1,'rgba(255,255,255,0.0)');
-        ctx.fillStyle=grd;
+        var tx=col*ts,ty=row*ts;
+        ctx.fillStyle=(row+col)%2===0?'rgba(255,255,255,0.018)':'rgba(0,0,0,0.0)';
         ctx.fillRect(tx+2,ty+2,ts-4,ts-4);
       }
     }
     ctx.strokeStyle='rgba(0,0,0,0.85)'; ctx.lineWidth=3;
-    for(var i=0;i<=tileCount;i++){
-      var p=i*ts;
-      ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();
-    }
+    for(var i=0;i<=tileCount;i++){var p=i*ts;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();}
     var tileTex=new THREE.CanvasTexture(c);
     tileTex.wrapS=tileTex.wrapT=THREE.RepeatWrapping;
     tileTex.repeat.set(10,10);
     floorMat.map=tileTex;
-    var rSz=256,rc=document.createElement('canvas');rc.width=rc.height=rSz;
-    var rCtx=rc.getContext('2d');
-    rCtx.fillStyle='#111';rCtx.fillRect(0,0,rSz,rSz);
-    rCtx.strokeStyle='#999';rCtx.lineWidth=2;
-    var rs=rSz/tileCount;
-    for(var ri=0;ri<=tileCount;ri++){var rp=ri*rs;rCtx.beginPath();rCtx.moveTo(rp,0);rCtx.lineTo(rp,rSz);rCtx.stroke();rCtx.beginPath();rCtx.moveTo(0,rp);rCtx.lineTo(rSz,rp);rCtx.stroke();}
-    var roughTex=new THREE.CanvasTexture(rc);
-    roughTex.wrapS=roughTex.wrapT=THREE.RepeatWrapping;
-    roughTex.repeat.set(10,10);
-    floorMat.roughnessMap=roughTex;
-    floorMat.needsUpdate=true;
   })();
 
-  var discRadius = 9;
-  var discGeo = new THREE.CylinderGeometry(discRadius, discRadius, 0.08, 128, 1);
-  var discMesh = new THREE.Mesh(discGeo, floorMat);
-  discMesh.position.y = -0.04;
-  if(!isMobile) discMesh.receiveShadow = true;
+  var discGeo=new THREE.CylinderGeometry(9,9,0.08,128,1);
+  var discMesh=new THREE.Mesh(discGeo,floorMat);
+  discMesh.position.y=-0.04;
+  if(!isMobile) discMesh.receiveShadow=true;
   turntable.add(discMesh);
 
-  var rimGeo = new THREE.TorusGeometry(discRadius, 0.045, 8, 128);
-  var rimMat = new THREE.MeshBasicMaterial({ color: 0xc8102e });
-  var rimMesh = new THREE.Mesh(rimGeo, rimMat);
-  rimMesh.rotation.x = Math.PI / 2;
-  rimMesh.position.y = 0.0;
+  var rimGeo=new THREE.TorusGeometry(9,0.045,8,128);
+  var rimMesh=new THREE.Mesh(rimGeo,new THREE.MeshBasicMaterial({color:0xc8102e}));
+  rimMesh.rotation.x=Math.PI/2; rimMesh.position.y=0.0;
   turntable.add(rimMesh);
 
-  [3.2, 5.5, 7.4].forEach(function(r){
-    var rg = new THREE.TorusGeometry(r, 0.018, 6, 96);
-    var rm = new THREE.MeshBasicMaterial({ color: 0x1a0208, transparent: true, opacity: 0.7 });
-    var rv = new THREE.Mesh(rg, rm);
-    rv.rotation.x = Math.PI / 2;
-    rv.position.y = 0.001;
+  [3.2,5.5,7.4].forEach(function(r){
+    var rg=new THREE.TorusGeometry(r,0.018,6,96);
+    var rv=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:0x1a0208,transparent:true,opacity:0.7}));
+    rv.rotation.x=Math.PI/2; rv.position.y=0.001;
     turntable.add(rv);
   });
 
-  var staticFloorMat = new THREE.MeshStandardMaterial({
-    color: 0x030304, roughness: 0.55, metalness: 0.3
-  });
-  var staticFloor = new THREE.Mesh(new THREE.PlaneGeometry(200,200,1,1), staticFloorMat);
-  staticFloor.rotation.x = -Math.PI/2;
-  staticFloor.position.y = -0.09;
-  if(!isMobile) staticFloor.receiveShadow = true;
+  var staticFloor=new THREE.Mesh(new THREE.PlaneGeometry(200,200,1,1),new THREE.MeshStandardMaterial({color:0x030304,roughness:0.55,metalness:0.3}));
+  staticFloor.rotation.x=-Math.PI/2; staticFloor.position.y=-0.09;
+  if(!isMobile) staticFloor.receiveShadow=true;
   scene.add(staticFloor);
 
   if(!isMobile){
-    var reflMat=new THREE.MeshBasicMaterial({
-      color:0x000000, transparent:true, opacity:0.42, depthWrite:false
-    });
-    var reflMesh=new THREE.Mesh(new THREE.CylinderGeometry(discRadius,discRadius,0.001,128),reflMat);
-    reflMesh.position.y=0.042;
-    turntable.add(reflMesh);
-
+    turntable.add(new THREE.Mesh(new THREE.CylinderGeometry(9,9,0.001,128),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.42,depthWrite:false})));
     function neonBar(x,z,len,axis){
       var geo=axis==='x'?new THREE.BoxGeometry(len,.025,.045):new THREE.BoxGeometry(.045,.025,len);
       var b=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xff1a3c}));
-      b.position.set(x,.01,z);turntable.add(b);
-      var pl=new THREE.PointLight(0xff1a3c,.45,7);pl.position.set(x,.25,z);turntable.add(pl);
+      b.position.set(x,.01,z); turntable.add(b);
+      var pl=new THREE.PointLight(0xff1a3c,.45,7); pl.position.set(x,.25,z); turntable.add(pl);
     }
-    neonBar(0,-5.5,11,'x');neonBar(0,5.5,11,'x');
-    neonBar(-5.5,0,11,'z');neonBar(5.5,0,11,'z');
+    neonBar(0,-5.5,11,'x'); neonBar(0,5.5,11,'x');
+    neonBar(-5.5,0,11,'z'); neonBar(5.5,0,11,'z');
   }
 
-  /* ── LOADER ── */
+  /* ── LOADER PROGRESS ── */
   var lbar=document.getElementById('lbar'),lstatus=document.getElementById('lstatus'),loaderEl=document.getElementById('loader');
   function setLoad(p,t){
     lbar.style.width=p+'%';
     document.getElementById('lpct').textContent=Math.round(p)+'%';
-    if(t)lstatus.textContent=t;
+    if(t) lstatus.textContent=t;
   }
   setLoad(5,'CONNECTING...');
 
-  /* Auto-dismiss loader — no click required */
   function dismissLoader(){
     loaderEl.classList.add('hide');
     setTimeout(function(){loaderEl.style.display='none';},700);
-    if(window._gtrAudioEngine){
-      window._gtrAudioEngine.startIfReady();
-    } else {
-      window._gtrAudioPending=true;
-    }
+    if(window._gtrAudioEngine) window._gtrAudioEngine.startIfReady();
+    else window._gtrAudioPending=true;
   }
 
-  var car=null,clock=new THREE.Clock(),safeZ=12;
+  var car=null, clock=new THREE.Clock(), safeZ=12;
   var EXT_SHOTS=[];
 
   function buildExtShots(box){
     var cx=(box.min.x+box.max.x)*.5;
     var cz=(box.min.z+box.max.z)*.5;
-    var top=box.max.y,mid=top*.5,S=safeZ;
+    var top=box.max.y, mid=top*.5, S=safeZ;
     EXT_SHOTS=[
       [0.00,[cx,top*.6,S*1.5],[cx,mid*.7,cz],44,'FRONT'],
       [0.09,[cx,top*.1,S*1.05],[cx,top*.5,cz],60,'FRONT LOW'],
@@ -859,9 +859,9 @@
   var tgtPx=0,tgtPy=2.5,tgtPz=12,tgtLx=0,tgtLy=0,tgtLz=0,tgtFov=44;
 
   function setExtTarget(pct){
-    if(!EXT_SHOTS.length)return;
+    if(!EXT_SHOTS.length) return;
     var idx=0;
-    for(var i=0;i<EXT_SHOTS.length-1;i++){if(pct>=EXT_SHOTS[i][0])idx=i;}
+    for(var i=0;i<EXT_SHOTS.length-1;i++){if(pct>=EXT_SHOTS[i][0]) idx=i;}
     var s=EXT_SHOTS[idx];
     tgtPx=s[1][0];tgtPy=s[1][1];tgtPz=s[1][2];
     tgtLx=s[2][0];tgtLy=s[2][1];tgtLz=s[2][2];
@@ -914,101 +914,15 @@
         extLx=tgtLx=s0[2][0];extLy=tgtLy=s0[2][1];extLz=tgtLz=s0[2][2];
         extFov=tgtFov=s0[3];
         camera.position.set(extPx,extPy,extPz);
-        camera.fov=extFov;camera.updateProjectionMatrix();
+        camera.fov=extFov; camera.updateProjectionMatrix();
         camera.lookAt(extLx,extLy,extLz);
       }
 
       scene.add(car);
       turntable.add(car);
 
-      /* ── HEADLIGHTS & BRAKE LIGHTS ── */
-      /* Use the car's world bounding box to place lights at correct positions */
-      var lb = new THREE.Box3().setFromObject(car);
-      var carCX = (lb.min.x + lb.max.x) * 0.5;
-      var carCZ = (lb.min.z + lb.max.z) * 0.5;
-      var carW2 = (lb.max.x - lb.min.x) * 0.5;
-      var headY  = lb.min.y + (lb.max.y - lb.min.y) * 0.30;  /* ~lower-third height */
-      var brakeY = lb.min.y + (lb.max.y - lb.min.y) * 0.32;
-
-      /* Headlight lens meshes — small emissive ellipsoids at front corners */
-      var hlGeo = new THREE.SphereGeometry(0.09, 12, 8);
-      var hlMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        emissive: 0xd0e8ff,
-        emissiveIntensity: 6.0,
-        roughness: 0.1,
-        metalness: 0.0
-      });
-      var hlOffX = carW2 * 0.72;   /* left/right spread */
-      var hlZ    = lb.max.z + 0.04; /* front face */
-
-      [-hlOffX, hlOffX].forEach(function(ox){
-        var m = new THREE.Mesh(hlGeo, hlMat);
-        m.position.set(carCX + ox, headY, hlZ);
-        turntable.add(m);
-      });
-
-      /* Headlight SpotLights — beam forward (+Z in scene) */
-      if(!isMobile){
-        [-hlOffX, hlOffX].forEach(function(ox){
-          var sp = new THREE.SpotLight(0xd0e8ff, 3.5, 28, Math.PI / 8, 0.35, 1.5);
-          sp.position.set(carCX + ox, headY, hlZ);
-          sp.target.position.set(carCX + ox, headY - 0.5, hlZ + 14);
-          turntable.add(sp);
-          turntable.add(sp.target);
-          /* Subtle floor cone glow */
-          var fp = new THREE.PointLight(0xc8d8ff, 0.6, 7, 2.0);
-          fp.position.set(carCX + ox, headY * 0.3, hlZ + 3);
-          turntable.add(fp);
-        });
-      } else {
-        /* Mobile: cheaper point lights */
-        var mHL = new THREE.PointLight(0xd0e8ff, 1.8, 10, 2.0);
-        mHL.position.set(carCX, headY, hlZ + 1);
-        turntable.add(mHL);
-      }
-
-      /* Brake light lens meshes — glowing red strips at rear corners */
-      var blGeo = new THREE.BoxGeometry(0.28, 0.06, 0.04);
-      var blMat = new THREE.MeshStandardMaterial({
-        color: 0xff0000,
-        emissive: 0xff1100,
-        emissiveIntensity: 8.0,
-        roughness: 0.15,
-        metalness: 0.0
-      });
-      var blOffX = carW2 * 0.68;
-      var blZ    = lb.min.z - 0.04; /* rear face */
-
-      [-blOffX, blOffX].forEach(function(ox){
-        var bm = new THREE.Mesh(blGeo, blMat);
-        bm.position.set(carCX + ox, brakeY, blZ);
-        turntable.add(bm);
-        /* Inner centre strip — GT-R has a thin centre bar */
-        var bm2 = new THREE.Mesh(
-          new THREE.BoxGeometry(0.12, 0.035, 0.04),
-          blMat
-        );
-        bm2.position.set(carCX + ox, brakeY - 0.07, blZ);
-        turntable.add(bm2);
-      });
-
-      /* Brake light point lights — red glow behind the car */
-      var blPL1 = new THREE.PointLight(0xff1100, isMobile ? 1.2 : 2.0, isMobile ? 4 : 6, 2.0);
-      blPL1.position.set(carCX - blOffX, brakeY, blZ - 0.3);
-      turntable.add(blPL1);
-      var blPL2 = new THREE.PointLight(0xff1100, isMobile ? 1.2 : 2.0, isMobile ? 4 : 6, 2.0);
-      blPL2.position.set(carCX + blOffX, brakeY, blZ - 0.3);
-      turntable.add(blPL2);
-      /* Centre rear diffuser glow */
-      var blPLC = new THREE.PointLight(0xff2200, isMobile ? 0.6 : 1.0, isMobile ? 3 : 5, 2.0);
-      blPLC.position.set(carCX, brakeY * 0.6, blZ - 0.2);
-      turntable.add(blPLC);
-
       setLoad(100,'LOADING COMPLETE');
-      /* Auto-dismiss after a brief pause so the user sees 100% */
       setTimeout(dismissLoader, 800);
-
       animate();
     },
     function(xhr){if(xhr.total){var p=5+(xhr.loaded/xhr.total)*85;setLoad(p,'LOADING... '+Math.round(p)+'%');}},
@@ -1022,13 +936,13 @@
     var pct=docH>0?window.scrollY/docH:0;
     progressBar.style.width=(pct*100)+'%';
     setExtTarget(pct);
-    checkBars();checkOutro();
+    checkBars(); checkOutro();
   },{passive:true});
 
   function revealPanels(){
     document.querySelectorAll('.panel:not(.visible)').forEach(function(p){
       var r=p.getBoundingClientRect();
-      if(r.top<window.innerHeight*.88&&r.bottom>0)p.classList.add('visible');
+      if(r.top<window.innerHeight*.88&&r.bottom>0) p.classList.add('visible');
     });
   }
   setTimeout(revealPanels,100);
@@ -1036,7 +950,7 @@
 
   function checkBars(){
     var el=document.getElementById('stat-bars');
-    if(!el||el.classList.contains('visible'))return;
+    if(!el||el.classList.contains('visible')) return;
     if(el.getBoundingClientRect().top<window.innerHeight*.85){
       el.classList.add('visible');
       el.querySelectorAll('.bar-fill').forEach(function(f,i){setTimeout(function(){f.classList.add('go');},i*150+400);});
@@ -1045,36 +959,28 @@
   function checkOutro(){
     ['outro-title','outro-label','outro-sub'].forEach(function(id){
       var el=document.getElementById(id);
-      if(el&&el.getBoundingClientRect().top<window.innerHeight*.82)el.classList.add('visible');
+      if(el&&el.getBoundingClientRect().top<window.innerHeight*.82) el.classList.add('visible');
     });
   }
 
   /* ── RENDER LOOP ── */
-  var lastFrame=0;
-  var frameBudget=isMobile ? 33 : 0;
-
+  var lastFrame=0, frameBudget=isMobile?33:0;
   function animate(now){
     requestAnimationFrame(animate);
-    if(isMobile && now-lastFrame < frameBudget) return;
+    if(isMobile && now-lastFrame<frameBudget) return;
     lastFrame=now;
-
     var t=clock.getElapsedTime();
     var EL=0.028;
-
     extPx+=(tgtPx-extPx)*EL;extPy+=(tgtPy-extPy)*EL;extPz+=(tgtPz-extPz)*EL;
     extLx+=(tgtLx-extLx)*EL;extLy+=(tgtLy-extLy)*EL;extLz+=(tgtLz-extLz)*EL;
     extFov+=(tgtFov-extFov)*EL;
-
     var b=isMobile?.01:.04;
     camera.position.x=extPx+Math.sin(t*.11)*b;
     camera.position.y=extPy+Math.sin(t*.17)*b*.75;
     camera.position.z=extPz+Math.cos(t*.13)*b;
-    camera.fov=extFov;
-    camera.updateProjectionMatrix();
+    camera.fov=extFov; camera.updateProjectionMatrix();
     camera.lookAt(extLx,extLy+Math.sin(t*.09)*.01,extLz);
-
-    turntable.rotation.y += isMobile ? 0.0044 : 0.0058;
-
+    turntable.rotation.y += isMobile?0.0044:0.0058;
     renderer.render(scene,camera);
   }
 
@@ -1087,17 +993,16 @@
 
 
 /* ═══════════════════════════════════════════════════════
-   GT-R AUDIO ENGINE — Progressive House / Dark Drop
+   GT-R AUDIO ENGINE
 ═══════════════════════════════════════════════════════ */
 (function(){
   var ctx=null, masterGain=null, playing=false;
   var allNodes=[];
   var BPM=128, beat=60/BPM, bar=beat*4;
 
-  /* ── UI BUTTON ── */
   var btn=document.createElement('div');
   btn.id='audio-btn';
-  btn.innerHTML='<span id="audio-icon">▶</span><span id="audio-label">PLAY SOUNDTRACK</span>';
+  btn.innerHTML='<span id="audio-icon">&#9654;</span><span id="audio-label">PLAY SOUNDTRACK</span>';
   btn.style.cssText=[
     'position:fixed','bottom:28px','right:28px','z-index:200',
     'display:flex','align-items:center','gap:10px','padding:11px 20px',
@@ -1118,24 +1023,18 @@
   btn.addEventListener('mouseleave',function(){btn.style.background='rgba(5,5,10,0.92)';});
 
   function track(n){allNodes.push(n);return n;}
-
   function noiseBuffer(sec){
     var b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*sec),ctx.sampleRate);
     var d=b.getChannelData(0);
     for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
     return b;
   }
-
   function makeReverb(dur,decay){
     var len=Math.ceil(ctx.sampleRate*dur);
     var buf=ctx.createBuffer(2,len,ctx.sampleRate);
-    for(var c=0;c<2;c++){
-      var d=buf.getChannelData(c);
-      for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
-    }
+    for(var c=0;c<2;c++){var d=buf.getChannelData(c);for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);}
     var cv=track(ctx.createConvolver()); cv.buffer=buf; return cv;
   }
-
   function distCurve(amt){
     var n=512,c=new Float32Array(n);
     for(var i=0;i<n;i++){var x=i*2/n-1;c[i]=(Math.PI+amt)*x/(Math.PI+amt*Math.abs(x));}
@@ -1145,296 +1044,139 @@
   function initAudio(){
     ctx=new (window.AudioContext||window.webkitAudioContext)();
     masterGain=track(ctx.createGain()); masterGain.gain.value=0;
-
     var comp=track(ctx.createDynamicsCompressor());
-    comp.threshold.value=-5; comp.knee.value=3;
-    comp.ratio.value=8; comp.attack.value=0.003; comp.release.value=0.12;
+    comp.threshold.value=-5;comp.knee.value=3;comp.ratio.value=8;comp.attack.value=0.003;comp.release.value=0.12;
     masterGain.connect(comp); comp.connect(ctx.destination);
-
     var rev=makeReverb(2.6,2.5);
     var revSend=track(ctx.createGain()); revSend.gain.value=0.13;
     rev.connect(revSend); revSend.connect(comp);
 
-    function fadeIn(){
-      masterGain.gain.setValueAtTime(0,ctx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(0.8,ctx.currentTime+2.8);
-    }
-
+    function fadeIn(){masterGain.gain.setValueAtTime(0,ctx.currentTime);masterGain.gain.linearRampToValueAtTime(0.8,ctx.currentTime+2.8);}
     function kick(t){
       var o=track(ctx.createOscillator()),g=track(ctx.createGain());
-      o.type='sine';
-      o.frequency.setValueAtTime(210,t);
-      o.frequency.exponentialRampToValueAtTime(28,t+0.16);
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(1.5,t+0.004);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.36);
+      o.type='sine';o.frequency.setValueAtTime(210,t);o.frequency.exponentialRampToValueAtTime(28,t+0.16);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1.5,t+0.004);g.gain.exponentialRampToValueAtTime(0.001,t+0.36);
       var click=track(ctx.createOscillator()),cg=track(ctx.createGain());
-      click.type='square'; click.frequency.value=260;
-      cg.gain.setValueAtTime(0.5,t); cg.gain.exponentialRampToValueAtTime(0.001,t+0.018);
-      click.connect(cg); cg.connect(comp); click.start(t); click.stop(t+0.02);
-      o.connect(g); g.connect(comp); o.start(t); o.stop(t+0.4);
+      click.type='square';click.frequency.value=260;cg.gain.setValueAtTime(0.5,t);cg.gain.exponentialRampToValueAtTime(0.001,t+0.018);
+      click.connect(cg);cg.connect(comp);click.start(t);click.stop(t+0.02);
+      o.connect(g);g.connect(comp);o.start(t);o.stop(t+0.4);
     }
-
     function clap(t){
       [0,0.007,0.015].forEach(function(d){
-        var s=track(ctx.createBufferSource()),g=track(ctx.createGain());
-        var f=track(ctx.createBiquadFilter());
-        f.type='bandpass'; f.frequency.value=1300; f.Q.value=0.75;
-        s.buffer=noiseBuffer(0.15); s.connect(f); f.connect(g);
-        g.gain.setValueAtTime(0,t+d);
-        g.gain.linearRampToValueAtTime(0.65,t+d+0.003);
-        g.gain.exponentialRampToValueAtTime(0.001,t+d+0.13);
-        g.connect(comp); g.connect(revSend);
-        s.start(t+d); s.stop(t+d+0.16);
+        var s=track(ctx.createBufferSource()),g=track(ctx.createGain()),f=track(ctx.createBiquadFilter());
+        f.type='bandpass';f.frequency.value=1300;f.Q.value=0.75;
+        s.buffer=noiseBuffer(0.15);s.connect(f);f.connect(g);
+        g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(0.65,t+d+0.003);g.gain.exponentialRampToValueAtTime(0.001,t+d+0.13);
+        g.connect(comp);g.connect(revSend);s.start(t+d);s.stop(t+d+0.16);
       });
     }
-
     function hh(t,vol){
-      var s=track(ctx.createBufferSource()),g=track(ctx.createGain());
-      var f=track(ctx.createBiquadFilter()); f.type='highpass'; f.frequency.value=9500;
-      s.buffer=noiseBuffer(0.03); s.connect(f); f.connect(g);
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(vol||0.16,t+0.001);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.026);
-      g.connect(comp); s.start(t); s.stop(t+0.032);
+      var s=track(ctx.createBufferSource()),g=track(ctx.createGain()),f=track(ctx.createBiquadFilter());
+      f.type='highpass';f.frequency.value=9500;s.buffer=noiseBuffer(0.03);s.connect(f);f.connect(g);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||0.16,t+0.001);g.gain.exponentialRampToValueAtTime(0.001,t+0.026);
+      g.connect(comp);s.start(t);s.stop(t+0.032);
     }
-
     function ohh(t){
-      var s=track(ctx.createBufferSource()),g=track(ctx.createGain());
-      var f=track(ctx.createBiquadFilter()); f.type='highpass'; f.frequency.value=7200;
-      s.buffer=noiseBuffer(0.3); s.connect(f); f.connect(g);
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(0.15,t+0.002);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.26);
-      g.connect(comp); s.start(t); s.stop(t+0.32);
+      var s=track(ctx.createBufferSource()),g=track(ctx.createGain()),f=track(ctx.createBiquadFilter());
+      f.type='highpass';f.frequency.value=7200;s.buffer=noiseBuffer(0.3);s.connect(f);f.connect(g);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.002);g.gain.exponentialRampToValueAtTime(0.001,t+0.26);
+      g.connect(comp);s.start(t);s.stop(t+0.32);
     }
-
     function bassNote(freq,t,dur){
       var s1=track(ctx.createOscillator()),s2=track(ctx.createOscillator());
-      var dist=track(ctx.createWaveShaper()); dist.curve=distCurve(300);
-      var filt=track(ctx.createBiquadFilter());
-      filt.type='lowpass'; filt.Q.value=5;
-      filt.frequency.setValueAtTime(2200,t);
-      filt.frequency.exponentialRampToValueAtTime(220,t+0.09);
+      var dist=track(ctx.createWaveShaper());dist.curve=distCurve(300);
+      var filt=track(ctx.createBiquadFilter());filt.type='lowpass';filt.Q.value=5;
+      filt.frequency.setValueAtTime(2200,t);filt.frequency.exponentialRampToValueAtTime(220,t+0.09);
       var g=track(ctx.createGain());
-      s1.type='sawtooth'; s1.frequency.value=freq;
-      s2.type='sawtooth'; s2.frequency.value=freq*1.004;
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(0.9,t+0.007);
-      g.gain.setValueAtTime(0.9,t+dur-0.05);
-      g.gain.linearRampToValueAtTime(0,t+dur);
-      s1.connect(dist); s2.connect(dist); dist.connect(filt); filt.connect(g); g.connect(comp);
-      s1.start(t); s1.stop(t+dur+0.05);
-      s2.start(t); s2.stop(t+dur+0.05);
+      s1.type='sawtooth';s1.frequency.value=freq;s2.type='sawtooth';s2.frequency.value=freq*1.004;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.9,t+0.007);g.gain.setValueAtTime(0.9,t+dur-0.05);g.gain.linearRampToValueAtTime(0,t+dur);
+      s1.connect(dist);s2.connect(dist);dist.connect(filt);filt.connect(g);g.connect(comp);
+      s1.start(t);s1.stop(t+dur+0.05);s2.start(t);s2.stop(t+dur+0.05);
     }
-
     function sub(freq,t,dur){
       var o=track(ctx.createOscillator()),g=track(ctx.createGain());
-      o.type='sine'; o.frequency.value=freq/2;
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(0.55,t+0.01);
-      g.gain.setValueAtTime(0.55,t+dur-0.04);
-      g.gain.linearRampToValueAtTime(0,t+dur);
-      o.connect(g); g.connect(comp);
-      o.start(t); o.stop(t+dur+0.05);
+      o.type='sine';o.frequency.value=freq/2;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.55,t+0.01);g.gain.setValueAtTime(0.55,t+dur-0.04);g.gain.linearRampToValueAtTime(0,t+dur);
+      o.connect(g);g.connect(comp);o.start(t);o.stop(t+dur+0.05);
     }
-
     function buildSweep(startT,duration){
-      var s=track(ctx.createBufferSource());
-      var filt=track(ctx.createBiquadFilter()); filt.type='bandpass'; filt.Q.value=22;
-      var g=track(ctx.createGain());
-      filt.frequency.setValueAtTime(60,startT);
-      filt.frequency.exponentialRampToValueAtTime(5500,startT+duration);
-      g.gain.setValueAtTime(0,startT);
-      g.gain.linearRampToValueAtTime(0.55,startT+duration*0.08);
-      g.gain.linearRampToValueAtTime(1.1,startT+duration*0.9);
-      g.gain.linearRampToValueAtTime(0,startT+duration);
-      s.buffer=noiseBuffer(duration+0.2);
-      s.connect(filt); filt.connect(g); g.connect(comp); g.connect(revSend);
-      s.start(startT); s.stop(startT+duration+0.2);
-      var sw=track(ctx.createOscillator());
-      var swf=track(ctx.createBiquadFilter()); swf.type='lowpass'; swf.frequency.value=700;
-      var swg=track(ctx.createGain());
-      sw.type='sawtooth';
-      sw.frequency.setValueAtTime(40,startT);
-      sw.frequency.exponentialRampToValueAtTime(1100,startT+duration);
-      swg.gain.setValueAtTime(0,startT);
-      swg.gain.linearRampToValueAtTime(0.28,startT+duration*0.15);
-      swg.gain.linearRampToValueAtTime(0.45,startT+duration*0.88);
-      swg.gain.linearRampToValueAtTime(0,startT+duration);
-      sw.connect(swf); swf.connect(swg); swg.connect(comp); swg.connect(revSend);
-      sw.start(startT); sw.stop(startT+duration+0.1);
+      var s=track(ctx.createBufferSource()),filt=track(ctx.createBiquadFilter()),g=track(ctx.createGain());
+      filt.type='bandpass';filt.Q.value=22;
+      filt.frequency.setValueAtTime(60,startT);filt.frequency.exponentialRampToValueAtTime(5500,startT+duration);
+      g.gain.setValueAtTime(0,startT);g.gain.linearRampToValueAtTime(0.55,startT+duration*0.08);g.gain.linearRampToValueAtTime(1.1,startT+duration*0.9);g.gain.linearRampToValueAtTime(0,startT+duration);
+      s.buffer=noiseBuffer(duration+0.2);s.connect(filt);filt.connect(g);g.connect(comp);g.connect(revSend);
+      s.start(startT);s.stop(startT+duration+0.2);
     }
-
     function pad(freq,t,dur,vol){
       var oA=track(ctx.createOscillator()),oB=track(ctx.createOscillator()),oC=track(ctx.createOscillator());
-      var f=track(ctx.createBiquadFilter()); f.type='lowpass'; f.frequency.value=1100; f.Q.value=0.8;
+      var f=track(ctx.createBiquadFilter());f.type='lowpass';f.frequency.value=1100;f.Q.value=0.8;
       var g=track(ctx.createGain());
-      oA.type='sawtooth'; oA.frequency.value=freq; oA.detune.value=-6;
-      oB.type='sawtooth'; oB.frequency.value=freq; oB.detune.value=7;
-      oC.type='sine';     oC.frequency.value=freq*1.5;
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(vol||0.07,t+0.8);
-      g.gain.setValueAtTime(vol||0.07,t+dur-1.0);
-      g.gain.linearRampToValueAtTime(0,t+dur);
+      oA.type='sawtooth';oA.frequency.value=freq;oA.detune.value=-6;
+      oB.type='sawtooth';oB.frequency.value=freq;oB.detune.value=7;
+      oC.type='sine';oC.frequency.value=freq*1.5;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||0.07,t+0.8);g.gain.setValueAtTime(vol||0.07,t+dur-1.0);g.gain.linearRampToValueAtTime(0,t+dur);
       [oA,oB,oC].forEach(function(o){o.connect(f);});
-      f.connect(g); g.connect(comp); g.connect(revSend);
-      oA.start(t); oA.stop(t+dur+0.1);
-      oB.start(t); oB.stop(t+dur+0.1);
-      oC.start(t); oC.stop(t+dur+0.1);
+      f.connect(g);g.connect(comp);g.connect(revSend);
+      oA.start(t);oA.stop(t+dur+0.1);oB.start(t);oB.stop(t+dur+0.1);oC.start(t);oC.stop(t+dur+0.1);
     }
-
     function stab(freq,t,dur){
-      var o=track(ctx.createOscillator());
-      var o2=track(ctx.createOscillator());
-      var f=track(ctx.createBiquadFilter()); f.type='lowpass'; f.Q.value=2.5;
-      f.frequency.setValueAtTime(4000,t);
-      f.frequency.exponentialRampToValueAtTime(500,t+dur*0.4);
+      var o=track(ctx.createOscillator()),o2=track(ctx.createOscillator());
+      var f=track(ctx.createBiquadFilter());f.type='lowpass';f.Q.value=2.5;
+      f.frequency.setValueAtTime(4000,t);f.frequency.exponentialRampToValueAtTime(500,t+dur*0.4);
       var g=track(ctx.createGain());
-      o.type='sawtooth'; o.frequency.value=freq; o.detune.value=-8;
-      o2.type='sawtooth'; o2.frequency.value=freq; o2.detune.value=8;
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(0.24,t+0.004);
-      g.gain.setValueAtTime(0.24,t+dur*0.25);
-      g.gain.linearRampToValueAtTime(0,t+dur);
-      o.connect(f); o2.connect(f); f.connect(g);
-      g.connect(comp); g.connect(revSend);
-      o.start(t); o.stop(t+dur+0.05);
-      o2.start(t); o2.stop(t+dur+0.05);
+      o.type='sawtooth';o.frequency.value=freq;o.detune.value=-8;
+      o2.type='sawtooth';o2.frequency.value=freq;o2.detune.value=8;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.24,t+0.004);g.gain.setValueAtTime(0.24,t+dur*0.25);g.gain.linearRampToValueAtTime(0,t+dur);
+      o.connect(f);o2.connect(f);f.connect(g);g.connect(comp);g.connect(revSend);
+      o.start(t);o.stop(t+dur+0.05);o2.start(t);o2.stop(t+dur+0.05);
     }
-
-    function pump(t){
-      masterGain.gain.cancelScheduledValues(t);
-      masterGain.gain.setValueAtTime(0.18,t);
-      masterGain.gain.linearRampToValueAtTime(0.8,t+beat*0.72);
-    }
+    function pump(t){masterGain.gain.cancelScheduledValues(t);masterGain.gain.setValueAtTime(0.18,t);masterGain.gain.linearRampToValueAtTime(0.8,t+beat*0.72);}
 
     var roots=[55,43.65,65.41,49.0];
     var padRoots=[110,87.3,130.8,98];
     var riffHz=[220,220,261.6,246.9, 220,0,196,0, 220,220,261.6,246.9, 220,196,164.8,0];
-
     var barIndex=0, nextBarTime=0, schedTimer=null;
 
     function scheduleBar(t,bi){
       var phase=bi%32;
-
-      if(phase<8){
-        for(var k=0;k<4;k++) kick(t+k*beat);
-        clap(t+beat); clap(t+beat*3);
-        for(var h=0;h<16;h++) hh(t+h*beat*0.25, h%4===0?0.2:0.12);
-        ohh(t+beat*1.5); ohh(t+beat*3.5);
-        if(bi%4===0) pad(padRoots[bi%4],t,bar*4,0.045);
-        for(var k2=0;k2<4;k2++) pump(t+k2*beat);
-      }
-
-      if(phase>=8&&phase<16){
-        for(var k=0;k<4;k++) kick(t+k*beat);
-        clap(t+beat); clap(t+beat*3);
-        var hSteps=(phase>=14)?32:16;
-        for(var h=0;h<hSteps;h++) hh(t+h*(bar/hSteps), 0.09+(h/hSteps)*0.18);
-        ohh(t+beat*1.5); ohh(t+beat*3.5);
-        if(bi%8===0) buildSweep(t,bar*7.85);
-        if(phase>=12){
-          bassNote(roots[bi%4],t,beat*0.45);
-          sub(roots[bi%4],t,beat*0.45);
-        }
-        if(bi%4===0) pad(padRoots[bi%4],t,bar*4,0.06);
-        for(var k2=0;k2<4;k2++) pump(t+k2*beat);
-      }
-
-      if(phase>=16&&phase<24){
-        for(var k=0;k<4;k++) kick(t+k*beat);
-        clap(t+beat); clap(t+beat*3);
-        for(var h=0;h<16;h++) hh(t+h*beat*0.25, h%2===1?0.2:0.13);
-        ohh(t+beat*1.5); ohh(t+beat*3.5);
-        var bn=roots[bi%4];
-        for(var q=0;q<4;q++){
-          bassNote(bn,t+q*beat,beat*0.85);
-          sub(bn,t+q*beat,beat*0.85);
-        }
-        if(bi%2===0) pad(padRoots[bi%4],t,bar*2,0.07);
-        for(var r=0;r<4;r++){
-          var rf=riffHz[((bi%4)*4+r)%riffHz.length];
-          if(rf>0) stab(rf*2,t+r*beat,beat*0.6);
-        }
-        for(var k2=0;k2<4;k2++) pump(t+k2*beat);
-      }
-
-      if(phase>=24){
-        kick(t); kick(t+beat*2);
-        clap(t+beat); clap(t+beat*3);
-        for(var h=0;h<8;h++) hh(t+h*beat*0.5,0.09);
-        ohh(t+beat*1.5);
-        if(bi%4===0) pad(padRoots[bi%4],t,bar*4,0.09);
-        bassNote(roots[bi%4]*0.5,t,bar*0.85);
-        sub(roots[bi%4]*0.5,t,bar*0.85);
-        if(bi%8===7) buildSweep(t+beat*2,beat*1.9);
-        pump(t); pump(t+beat*2);
-      }
+      if(phase<8){for(var k=0;k<4;k++) kick(t+k*beat);clap(t+beat);clap(t+beat*3);for(var h=0;h<16;h++) hh(t+h*beat*0.25,h%4===0?0.2:0.12);ohh(t+beat*1.5);ohh(t+beat*3.5);if(bi%4===0) pad(padRoots[bi%4],t,bar*4,0.045);for(var k2=0;k2<4;k2++) pump(t+k2*beat);}
+      if(phase>=8&&phase<16){for(var k=0;k<4;k++) kick(t+k*beat);clap(t+beat);clap(t+beat*3);var hSteps=(phase>=14)?32:16;for(var h=0;h<hSteps;h++) hh(t+h*(bar/hSteps),0.09+(h/hSteps)*0.18);ohh(t+beat*1.5);ohh(t+beat*3.5);if(bi%8===0) buildSweep(t,bar*7.85);if(phase>=12){bassNote(roots[bi%4],t,beat*0.45);sub(roots[bi%4],t,beat*0.45);}if(bi%4===0) pad(padRoots[bi%4],t,bar*4,0.06);for(var k2=0;k2<4;k2++) pump(t+k2*beat);}
+      if(phase>=16&&phase<24){for(var k=0;k<4;k++) kick(t+k*beat);clap(t+beat);clap(t+beat*3);for(var h=0;h<16;h++) hh(t+h*beat*0.25,h%2===1?0.2:0.13);ohh(t+beat*1.5);ohh(t+beat*3.5);var bn=roots[bi%4];for(var q=0;q<4;q++){bassNote(bn,t+q*beat,beat*0.85);sub(bn,t+q*beat,beat*0.85);}if(bi%2===0) pad(padRoots[bi%4],t,bar*2,0.07);for(var r=0;r<4;r++){var rf=riffHz[((bi%4)*4+r)%riffHz.length];if(rf>0) stab(rf*2,t+r*beat,beat*0.6);}for(var k2=0;k2<4;k2++) pump(t+k2*beat);}
+      if(phase>=24){kick(t);kick(t+beat*2);clap(t+beat);clap(t+beat*3);for(var h=0;h<8;h++) hh(t+h*beat*0.5,0.09);ohh(t+beat*1.5);if(bi%4===0) pad(padRoots[bi%4],t,bar*4,0.09);bassNote(roots[bi%4]*0.5,t,bar*0.85);sub(roots[bi%4]*0.5,t,bar*0.85);if(bi%8===7) buildSweep(t+beat*2,beat*1.9);pump(t);pump(t+beat*2);}
     }
 
     function schedule(){
       var ahead=0.25;
-      while(nextBarTime < ctx.currentTime+ahead){
-        scheduleBar(nextBarTime,barIndex);
-        nextBarTime+=bar; barIndex++;
-      }
+      while(nextBarTime<ctx.currentTime+ahead){scheduleBar(nextBarTime,barIndex);nextBarTime+=bar;barIndex++;}
       schedTimer=setTimeout(schedule,90);
     }
 
     return {
-      start:function(){
-        nextBarTime=ctx.currentTime+0.05; barIndex=0;
-        fadeIn(); schedule();
-      },
-      stop:function(){
-        clearTimeout(schedTimer);
-        masterGain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5);
-        setTimeout(function(){
-          allNodes.forEach(function(n){try{if(n.stop)n.stop();else n.disconnect();}catch(e){}});
-          allNodes=[];
-        },600);
-      },
+      start:function(){nextBarTime=ctx.currentTime+0.05;barIndex=0;fadeIn();schedule();},
+      stop:function(){clearTimeout(schedTimer);masterGain.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5);setTimeout(function(){allNodes.forEach(function(n){try{if(n.stop)n.stop();else n.disconnect();}catch(e){}});allNodes=[];},600);},
       setVol:function(v){masterGain.gain.linearRampToValueAtTime(v,ctx.currentTime+0.1);}
     };
   }
 
   var engine=null;
-
-  function buildEngine(){
+  function startAudio(){
     if(!engine) engine=initAudio();
     if(ctx&&ctx.state==='suspended') ctx.resume();
-  }
-
-  function startAudio(){
-    buildEngine(); engine.start(); playing=true;
+    engine.start(); playing=true;
     document.getElementById('audio-icon').textContent='■';
     document.getElementById('audio-label').textContent='STOP SOUNDTRACK';
     btn.style.borderLeftColor='#d4a800';
     volWrap.style.opacity='1';
   }
 
-  window._gtrAudioEngine={ startIfReady:function(){ startAudio(); } };
-  if(window._gtrAudioPending){
-    window._gtrAudioEngine.startIfReady();
-    window._gtrAudioPending=false;
-  }
+  window._gtrAudioEngine={startIfReady:function(){startAudio();}};
+  if(window._gtrAudioPending){window._gtrAudioEngine.startIfReady();window._gtrAudioPending=false;}
 
   btn.addEventListener('click',function(){
-    if(!playing){
-      startAudio();
-    } else {
-      engine.stop(); engine=null; playing=false;
-      document.getElementById('audio-icon').textContent='▶';
-      document.getElementById('audio-label').textContent='PLAY SOUNDTRACK';
-      btn.style.borderLeftColor='#c8102e';
-      volWrap.style.opacity='0';
-    }
+    if(!playing){startAudio();}
+    else{engine.stop();engine=null;playing=false;document.getElementById('audio-icon').textContent='▶';document.getElementById('audio-label').textContent='PLAY SOUNDTRACK';btn.style.borderLeftColor='#c8102e';volWrap.style.opacity='0';}
   });
-
-  document.getElementById('vol-slider').addEventListener('input',function(){
-    if(engine) engine.setVol(this.value/100);
-  });
+  document.getElementById('vol-slider').addEventListener('input',function(){if(engine) engine.setVol(this.value/100);});
 })();
 </script>
 </body>

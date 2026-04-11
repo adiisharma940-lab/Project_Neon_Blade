@@ -5,68 +5,145 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Nissan GT-R Black Edition 2013</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@100;300;400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --red:#c8102e; --red-glow:#ff1a3c; --dark:#050507; --darker:#020203;
-    --panel:rgba(8,8,12,0.92); --text:#e8e8e8; --muted:#888; --border:rgba(200,16,46,0.3);
+    --red:#c8102e; --red-glow:#ff1a3c; --gold:#d4a800; --gold-dim:#8a6d00;
+    --dark:#030305; --darker:#010102;
+    --panel:rgba(5,5,10,0.93); --text:#f0f0f0; --muted:#777; --border:rgba(200,16,46,0.28);
+    --accent2: rgba(212,168,0,0.35);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--dark);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
 
+  /* Custom cursor — spinning wheel */
+  *{cursor:none!important;}
+  #cursor-wheel{
+    position:fixed;width:36px;height:36px;pointer-events:none;z-index:99999;
+    transform:translate(-50%,-50%);transition:transform .08s linear;
+  }
+  #cursor-wheel svg{width:100%;height:100%;animation:wheelSpin 1.2s linear infinite;}
+  #cursor-wheel.fast svg{animation-duration:.3s;}
+  @keyframes wheelSpin{to{transform:rotate(360deg);}}
+
+  body{
+    background:var(--dark);color:var(--text);
+    font-family:'Exo 2',sans-serif;
+    overflow-x:hidden;
+  }
+
+  /* ── DYNAMIC BACKGROUND ── */
   #canvas-wrap{position:fixed;inset:0;z-index:0;background:var(--darker);}
   #canvas-wrap canvas{width:100%!important;height:100%!important;display:block;}
-  #canvas-wrap::after{content:'';position:absolute;inset:0;pointer-events:none;
-    background:linear-gradient(rgba(200,16,46,0.04)1px,transparent 1px),
-               linear-gradient(90deg,rgba(200,16,46,0.04)1px,transparent 1px);
-    background-size:60px 60px;}
+
+  /* Hex grid overlay */
+  #bg-hex{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.07;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpolygon points='28,2 54,16 54,44 28,58 2,44 2,16' fill='none' stroke='%23c8102e' stroke-width='1'/%3E%3Cpolygon points='28,52 54,66 54,94 28,108 2,94 2,66' fill='none' stroke='%23c8102e' stroke-width='1'/%3E%3C/svg%3E");
+    background-size:56px 100px;
+  }
+
+  /* Scanlines */
+  #bg-scan{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.14) 2px,rgba(0,0,0,0.14) 4px);
+  }
+
+  /* Ambient red glow blobs */
+  #bg-blobs{
+    position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;
+  }
+  .blob{
+    position:absolute;border-radius:50%;filter:blur(80px);opacity:0.12;
+    animation:blobFloat 8s ease-in-out infinite alternate;
+  }
+  .blob1{width:500px;height:500px;background:var(--red);top:-100px;left:-100px;animation-delay:0s;}
+  .blob2{width:400px;height:400px;background:#001a55;bottom:-80px;right:-80px;animation-delay:-3s;}
+  .blob3{width:300px;height:300px;background:var(--gold);top:40%;left:60%;animation-delay:-5s;opacity:0.07;}
+  @keyframes blobFloat{
+    0%{transform:translate(0,0) scale(1);}
+    100%{transform:translate(40px,30px) scale(1.1);}
+  }
 
   #scroll-container{position:relative;z-index:10;pointer-events:none;}
 
   /* ── HERO ── */
-  #hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 8vh;}
+  #hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 8vh;position:relative;}
+
+  /* Stair text effect */
+  .stair-text{overflow:hidden;}
+  .stair-text .s-char{
+    display:inline-block;opacity:0;transform:translateY(60px) rotate(6deg);
+    animation:stairIn .6s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes stairIn{to{opacity:1;transform:translateY(0) rotate(0deg);}}
 
   .hero-eyebrow{
-    font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.4vw,14px);
-    letter-spacing:.4em;color:var(--red);margin-bottom:10px;
-    opacity:0;transform:translateX(-60px);
-    animation:slideRight .8s cubic-bezier(.16,1,.3,1) .3s forwards;
+    font-family:'Space Mono',monospace;font-size:clamp(9px,1.2vw,12px);
+    letter-spacing:.5em;color:var(--gold);margin-bottom:14px;
+    opacity:0;animation:fadeSlideUp .7s ease .2s forwards;
   }
-  .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,11vw,160px);line-height:.88;overflow:hidden;}
+  .hero-title{
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(52px,10vw,148px);line-height:.88;font-weight:900;
+  }
   .hero-title .line{
-    display:block;opacity:0;transform:translateY(110%);
-    animation:slideUp .9s cubic-bezier(.16,1,.3,1) forwards;
+    display:block;overflow:hidden;
   }
-  .hero-title .line:nth-child(1){animation-delay:.4s;}
-  .hero-title .line:nth-child(2){animation-delay:.55s;color:var(--red);}
+  .hero-title .line .inner{
+    display:block;opacity:0;transform:translateX(-80px) skewX(-5deg);
+    animation:slideSkew .9s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .hero-title .line:nth-child(1) .inner{animation-delay:.3s;}
+  .hero-title .line:nth-child(2) .inner{animation-delay:.5s;color:var(--red);}
+
+  @keyframes slideSkew{to{opacity:1;transform:translateX(0) skewX(0deg);}}
+
   .hero-sub{
-    margin-top:20px;font-size:clamp(14px,2vw,20px);font-weight:300;
-    color:var(--muted);letter-spacing:.15em;
-    opacity:0;transform:translateX(-40px);
-    animation:slideRight .8s cubic-bezier(.16,1,.3,1) .85s forwards;
+    margin-top:18px;font-size:clamp(12px,1.6vw,17px);font-weight:100;
+    color:var(--muted);letter-spacing:.2em;
+    opacity:0;animation:fadeSlideUp .8s ease .9s forwards;
   }
+  @keyframes fadeSlideUp{
+    0%{opacity:0;transform:translateY(20px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
+
   .scroll-hint{
     margin-top:40px;display:flex;align-items:center;gap:14px;
-    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--muted);
-    opacity:0;transform:translateY(16px);animation:fadeUp .8s ease 1.2s forwards;
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.35em;color:var(--muted);
+    opacity:0;animation:fadeSlideUp .8s ease 1.3s forwards;
   }
-  .scroll-hint-line{width:40px;height:1px;background:var(--red);overflow:hidden;position:relative;}
-  .scroll-hint-line::after{content:'';position:absolute;left:-100%;top:0;width:100%;height:100%;background:#fff;animation:scanLine 1.5s 1.8s infinite;}
+  .scroll-line{width:40px;height:1px;background:var(--red);overflow:hidden;position:relative;}
+  .scroll-line::after{content:'';position:absolute;left:-100%;top:0;width:100%;height:1px;background:#fff;animation:scan 1.4s 1.9s infinite;}
+  @keyframes scan{0%{left:-100%}100%{left:200%}}
 
-  @keyframes scanLine  {0%{left:-100%}100%{left:200%}}
-  @keyframes fadeUp    {to{opacity:1;transform:translateY(0);}}
-  @keyframes slideUp   {to{opacity:1;transform:translateY(0);}}
-  @keyframes slideRight{to{opacity:1;transform:translateX(0);}}
+  /* Interior cam indicator */
+  #interior-badge{
+    position:absolute;top:32px;right:32px;
+    font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;
+    color:var(--gold);border:1px solid var(--gold-dim);padding:6px 14px;
+    opacity:0;animation:fadeSlideUp .6s ease 1.5s forwards;
+    background:rgba(212,168,0,0.06);
+  }
+  .badge-dot{
+    display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:var(--gold);margin-right:8px;
+    animation:blink 1.2s infinite;
+  }
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
 
   /* ── SECTIONS ── */
   .section{min-height:100vh;display:flex;align-items:center;padding:6vh 6vw;}
   .section.right{justify-content:flex-end;}
 
   .panel{
-    background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);
+    background:var(--panel);
+    border:1px solid var(--border);border-left:3px solid var(--red);
     padding:clamp(24px,4vw,48px);max-width:min(520px,90vw);
-    position:relative;opacity:0;transform:translateX(-60px) scale(0.97);
+    position:relative;
+    opacity:0;transform:translateX(-60px) scale(0.97);
     transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1);
+    backdrop-filter:blur(10px);
     will-change:transform,opacity;
   }
   .panel.right-panel{
@@ -74,113 +151,123 @@
     transform:translateX(60px) scale(0.97);
   }
   .panel.visible{opacity:1;transform:translateX(0) scale(1);}
+
+  /* Gold corner accent */
+  .panel::after{
+    content:'';position:absolute;bottom:0;right:0;
+    width:24px;height:24px;
+    border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);
+    opacity:0.5;
+  }
+
   .panel::before{content:attr(data-index);position:absolute;top:-18px;left:16px;
-    font-family:'Bebas Neue',sans-serif;font-size:72px;color:rgba(200,16,46,0.07);
+    font-family:'Orbitron',sans-serif;font-size:72px;color:rgba(200,16,46,0.06);
     line-height:1;pointer-events:none;user-select:none;}
 
   .panel-tag{
-    font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.4em;
-    color:var(--red);margin-bottom:10px;text-transform:uppercase;
+    font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.45em;
+    color:var(--gold);margin-bottom:10px;text-transform:uppercase;
     opacity:0;transform:translateX(-20px);
     transition:opacity .5s .15s,transform .5s .15s cubic-bezier(.16,1,.3,1);
   }
   .panel.visible .panel-tag{opacity:1;transform:translateX(0);}
 
+  /* Panel title — stair effect on visible */
   .panel-title{
-    font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,52px);
-    line-height:1.05;margin-bottom:16px;letter-spacing:.03em;overflow:hidden;
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(22px,3.5vw,42px);
+    line-height:1.1;margin-bottom:16px;font-weight:700;overflow:hidden;
   }
-  .panel-title .word{
+  .stair-word{
     display:inline-block;opacity:0;transform:translateY(110%);
     transition:opacity .5s,transform .5s cubic-bezier(.16,1,.3,1);
     margin-right:.12em;
   }
-  .panel.visible .panel-title .word:nth-child(1){opacity:1;transform:translateY(0);transition-delay:.2s;}
-  .panel.visible .panel-title .word:nth-child(2){opacity:1;transform:translateY(0);transition-delay:.32s;}
-  .panel.visible .panel-title .word:nth-child(3){opacity:1;transform:translateY(0);transition-delay:.44s;}
-  .panel.visible .panel-title .word:nth-child(4){opacity:1;transform:translateY(0);transition-delay:.56s;}
-  .panel.visible .panel-title .word:nth-child(5){opacity:1;transform:translateY(0);transition-delay:.68s;}
+  .panel.visible .stair-word:nth-child(1){opacity:1;transform:translateY(0);transition-delay:.2s;}
+  .panel.visible .stair-word:nth-child(2){opacity:1;transform:translateY(0);transition-delay:.34s;}
+  .panel.visible .stair-word:nth-child(3){opacity:1;transform:translateY(0);transition-delay:.48s;}
+  .panel.visible .stair-word:nth-child(4){opacity:1;transform:translateY(0);transition-delay:.62s;}
+  .panel.visible .stair-word:nth-child(5){opacity:1;transform:translateY(0);transition-delay:.76s;}
 
+  /* fade-up body */
   .panel-body{
-    font-size:clamp(13px,1.6vw,16px);line-height:1.75;color:#bbb;font-weight:300;
+    font-size:clamp(12px,1.4vw,15px);line-height:1.8;color:#aaa;font-weight:300;
     opacity:0;transform:translateY(18px);
-    transition:opacity .6s .4s,transform .6s .4s cubic-bezier(.16,1,.3,1);
+    transition:opacity .6s .5s,transform .6s .5s cubic-bezier(.16,1,.3,1);
   }
   .panel.visible .panel-body{opacity:1;transform:translateY(0);}
 
+  /* stats */
   .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:24px;border:1px solid var(--border);}
   .stat-cell{
-    padding:14px 16px;background:rgba(200,16,46,0.04);border:1px solid rgba(200,16,46,0.08);
+    padding:14px 16px;background:rgba(200,16,46,0.04);
+    border:1px solid rgba(200,16,46,0.08);
     opacity:0;transform:translateY(20px) scale(0.95);
     transition:opacity .45s,transform .45s cubic-bezier(.16,1,.3,1);
   }
   .panel.visible .stat-cell:nth-child(1){opacity:1;transform:none;transition-delay:.3s;}
-  .panel.visible .stat-cell:nth-child(2){opacity:1;transform:none;transition-delay:.42s;}
-  .panel.visible .stat-cell:nth-child(3){opacity:1;transform:none;transition-delay:.54s;}
-  .panel.visible .stat-cell:nth-child(4){opacity:1;transform:none;transition-delay:.66s;}
-  .stat-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,40px);color:var(--red);line-height:1;}
-  .stat-unit{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-left:2px;}
-  .stat-label{font-size:11px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
+  .panel.visible .stat-cell:nth-child(2){opacity:1;transform:none;transition-delay:.44s;}
+  .panel.visible .stat-cell:nth-child(3){opacity:1;transform:none;transition-delay:.58s;}
+  .panel.visible .stat-cell:nth-child(4){opacity:1;transform:none;transition-delay:.72s;}
+  .stat-val{font-family:'Orbitron',sans-serif;font-size:clamp(24px,3.5vw,38px);color:var(--red);line-height:1;font-weight:900;}
+  .stat-unit{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-left:2px;}
+  .stat-label{font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
 
   .spec-table{width:100%;margin-top:20px;border-collapse:collapse;}
   .spec-table tr{border-bottom:1px solid rgba(200,16,46,0.1);opacity:0;transform:translateX(-14px);transition:opacity .35s,transform .35s ease;}
   .spec-table tr:last-child{border-bottom:none;}
-  .panel.visible .spec-table tr:nth-child(1) {opacity:1;transform:none;transition-delay:.30s;}
-  .panel.visible .spec-table tr:nth-child(2) {opacity:1;transform:none;transition-delay:.38s;}
-  .panel.visible .spec-table tr:nth-child(3) {opacity:1;transform:none;transition-delay:.46s;}
-  .panel.visible .spec-table tr:nth-child(4) {opacity:1;transform:none;transition-delay:.54s;}
-  .panel.visible .spec-table tr:nth-child(5) {opacity:1;transform:none;transition-delay:.62s;}
-  .panel.visible .spec-table tr:nth-child(6) {opacity:1;transform:none;transition-delay:.70s;}
-  .panel.visible .spec-table tr:nth-child(7) {opacity:1;transform:none;transition-delay:.78s;}
-  .panel.visible .spec-table tr:nth-child(8) {opacity:1;transform:none;transition-delay:.86s;}
-  .panel.visible .spec-table tr:nth-child(9) {opacity:1;transform:none;transition-delay:.94s;}
-  .panel.visible .spec-table tr:nth-child(n+10){opacity:1;transform:none;transition-delay:1.02s;}
-  .spec-table td{padding:8px 0;font-size:clamp(12px,1.5vw,14px);}
-  .spec-table td:first-child{color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.1em;width:45%;padding-right:12px;}
-  .spec-table td:last-child{color:var(--text);font-weight:600;}
+  .panel.visible .spec-table tr:nth-child(1){opacity:1;transform:none;transition-delay:.30s;}
+  .panel.visible .spec-table tr:nth-child(2){opacity:1;transform:none;transition-delay:.38s;}
+  .panel.visible .spec-table tr:nth-child(3){opacity:1;transform:none;transition-delay:.46s;}
+  .panel.visible .spec-table tr:nth-child(4){opacity:1;transform:none;transition-delay:.54s;}
+  .panel.visible .spec-table tr:nth-child(5){opacity:1;transform:none;transition-delay:.62s;}
+  .panel.visible .spec-table tr:nth-child(6){opacity:1;transform:none;transition-delay:.70s;}
+  .panel.visible .spec-table tr:nth-child(n+7){opacity:1;transform:none;transition-delay:.78s;}
+  .spec-table td{padding:8px 0;font-size:clamp(11px,1.3vw,13px);}
+  .spec-table td:first-child{color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;width:45%;padding-right:12px;}
+  .spec-table td:last-child{color:var(--text);font-weight:700;font-family:'Exo 2',sans-serif;}
 
   /* ── STAT BARS ── */
   .stat-bar-section{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:6vh 6vw;}
   .stat-bars{
     width:min(700px,90vw);background:var(--panel);border:1px solid var(--border);
-    padding:clamp(24px,4vw,48px);
+    padding:clamp(24px,4vw,48px);backdrop-filter:blur(10px);
     opacity:0;transform:translateY(40px) scale(0.98);
-    transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);
+    transition:opacity .7s,transform .7s cubic-bezier(.16,1,.3,1);
   }
   .stat-bars.visible{opacity:1;transform:translateY(0) scale(1);}
   .bar-title{
-    font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);margin-bottom:30px;letter-spacing:.05em;
+    font-family:'Orbitron',sans-serif;font-size:clamp(22px,3.5vw,38px);
+    margin-bottom:30px;letter-spacing:.05em;font-weight:700;
     opacity:0;transform:translateX(-30px);
-    transition:opacity .6s .1s,transform .6s .1s cubic-bezier(.16,1,.3,1);
+    transition:opacity .6s .1s,transform .6s .1s;
   }
   .stat-bars.visible .bar-title{opacity:1;transform:translateX(0);}
-  .bar-row{
-    margin-bottom:20px;opacity:0;transform:translateX(-20px);
-    transition:opacity .5s,transform .5s cubic-bezier(.16,1,.3,1);
-  }
+  .bar-row{margin-bottom:20px;opacity:0;transform:translateX(-20px);transition:opacity .5s,transform .5s cubic-bezier(.16,1,.3,1);}
   .stat-bars.visible .bar-row:nth-child(2){opacity:1;transform:none;transition-delay:.20s;}
   .stat-bars.visible .bar-row:nth-child(3){opacity:1;transform:none;transition-delay:.33s;}
   .stat-bars.visible .bar-row:nth-child(4){opacity:1;transform:none;transition-delay:.46s;}
   .stat-bars.visible .bar-row:nth-child(5){opacity:1;transform:none;transition-delay:.59s;}
   .stat-bars.visible .bar-row:nth-child(6){opacity:1;transform:none;transition-delay:.72s;}
   .stat-bars.visible .bar-row:nth-child(7){opacity:1;transform:none;transition-delay:.85s;}
-  .bar-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;letter-spacing:.15em;}
-  .bar-name{color:var(--muted);text-transform:uppercase;}
-  .bar-val{color:var(--red);font-family:'Share Tech Mono',monospace;}
-  .bar-track{height:4px;background:rgba(255,255,255,0.06);overflow:hidden;}
-  .bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--red-glow));width:0%;
-    transition:width 1.3s cubic-bezier(.16,1,.3,1);box-shadow:0 0 12px var(--red-glow);}
+  .bar-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;letter-spacing:.15em;}
+  .bar-name{color:var(--muted);text-transform:uppercase;font-family:'Exo 2',sans-serif;}
+  .bar-val{color:var(--red);font-family:'Space Mono',monospace;}
+  .bar-track{height:3px;background:rgba(255,255,255,0.05);overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--red) 0%,#ff4466 60%,var(--gold) 100%);width:0%;
+    transition:width 1.4s cubic-bezier(.16,1,.3,1);}
   .bar-fill.go{width:var(--pct);}
 
   /* ── OUTRO ── */
   #outro{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6vh 6vw;gap:20px;}
   .outro-label{
-    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.5em;color:var(--red);
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.6em;color:var(--gold);
     opacity:0;transform:translateY(-16px);transition:opacity .6s,transform .6s ease;
   }
   .outro-label.visible{opacity:1;transform:translateY(0);}
   .outro-title{
-    font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,160px);line-height:.9;overflow:hidden;
+    font-family:'Orbitron',sans-serif;font-size:clamp(44px,10vw,140px);
+    line-height:.9;font-weight:900;overflow:hidden;
   }
   .outro-title .line{
     display:block;opacity:0;transform:translateY(100%) skewY(3deg);
@@ -191,70 +278,187 @@
   .outro-title .line:nth-child(3){transition-delay:.35s;}
   .outro-title.visible .line{opacity:1;transform:translateY(0) skewY(0deg);}
   .outro-sub{
-    color:var(--muted);font-size:clamp(13px,1.5vw,16px);letter-spacing:.15em;font-weight:300;
-    max-width:400px;text-align:center;font-family:'Share Tech Mono',monospace;line-height:2;
+    color:var(--muted);font-size:clamp(10px,1.2vw,13px);letter-spacing:.2em;
+    max-width:400px;font-family:'Space Mono',monospace;line-height:2.2;
     opacity:0;transform:translateY(16px);transition:opacity .7s .6s,transform .7s .6s ease;
   }
   .outro-sub.visible{opacity:1;transform:translateY(0);}
 
   /* ── FIXED UI ── */
-  #progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--red),var(--red-glow));z-index:100;width:0%;box-shadow:0 0 8px var(--red-glow);}
-  #hud{position:fixed;top:24px;right:24px;z-index:100;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.2em;color:rgba(200,16,46,0.7);text-align:right;line-height:1.8;pointer-events:none;}
-  #zoom-hud{
-    position:fixed;bottom:32px;right:24px;z-index:100;
-    font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.25em;
-    color:rgba(200,16,46,0.55);pointer-events:none;
-    display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+  #progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));z-index:100;width:0%;}
+  #hud{
+    position:fixed;top:24px;right:24px;z-index:100;
+    font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;
+    color:rgba(200,16,46,0.6);text-align:right;line-height:2;pointer-events:none;
   }
-  #zoom-bar-wrap{width:60px;height:1px;background:rgba(255,255,255,0.08);}
-  #zoom-bar-inner{height:1px;background:var(--red);width:50%;transition:width .4s cubic-bezier(.16,1,.3,1);}
+
+  /* CAM SWITCH HUD */
+  #cam-switch{
+    position:fixed;bottom:32px;left:24px;z-index:100;
+    font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;
+    color:rgba(212,168,0,0.65);
+    display:flex;flex-direction:column;gap:6px;pointer-events:auto;
+  }
+  .cam-btn{
+    padding:5px 12px;border:1px solid rgba(212,168,0,0.3);background:rgba(5,5,10,0.8);
+    color:rgba(212,168,0,0.7);font-family:'Space Mono',monospace;font-size:9px;
+    letter-spacing:.2em;text-transform:uppercase;
+    cursor:none!important;transition:background .2s,color .2s;
+  }
+  .cam-btn.active{background:rgba(212,168,0,0.15);color:var(--gold);}
+  .cam-btn:hover{background:rgba(212,168,0,0.1);}
 
   /* ── LOADER ── */
-  #loader{position:fixed;inset:0;background:var(--darker);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s;}
+  #loader{
+    position:fixed;inset:0;background:var(--darker);z-index:999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+    transition:opacity .6s;
+  }
   #loader.hide{opacity:0;pointer-events:none;}
-  .loader-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:.1em;color:var(--red);}
-  .loader-bar-wrap{width:240px;height:2px;background:rgba(255,255,255,0.08);overflow:hidden;}
-  .loader-bar{height:100%;background:var(--red);width:0%;transition:width .3s linear;box-shadow:0 0 10px var(--red-glow);}
-  .loader-status{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--muted);}
+  .loader-title{
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(36px,6vw,72px);letter-spacing:.15em;color:var(--red);font-weight:900;
+  }
+  .loader-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.4em;color:var(--gold);margin-top:-12px;}
+  .loader-bar-wrap{width:240px;height:2px;background:rgba(255,255,255,0.08);}
+  .loader-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));width:0%;transition:width .3s linear;}
+  .loader-status{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--muted);}
+
+  /* Encrypt effect */
+  .encrypting{color:var(--red)!important;}
+
+  /* ── INTERIOR VIEW STYLES ── */
+  #interior-overlay{
+    position:fixed;inset:0;z-index:50;pointer-events:none;
+    background:rgba(2,2,4,0.0);transition:background .6s;
+  }
+  #interior-overlay.active{background:rgba(2,2,4,0.55);}
+
+  /* Vignette always present */
+  #vignette{
+    position:fixed;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);
+  }
+
+  /* cockpit HUD elements when in interior mode */
+  #cockpit-hud{
+    position:fixed;bottom:60px;left:50%;transform:translateX(-50%);
+    z-index:60;pointer-events:none;
+    opacity:0;transition:opacity .6s;
+    display:flex;gap:30px;
+  }
+  #cockpit-hud.visible{opacity:1;}
+  .c-gauge{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:.2em;
+  }
+  .c-gauge-val{font-size:24px;font-weight:900;color:var(--red);}
+  .c-gauge-label{color:var(--muted);font-size:8px;letter-spacing:.3em;}
+
+  /* Interior camera transition */
+  #interior-frame{
+    position:fixed;inset:0;z-index:45;pointer-events:none;
+    border:0px solid rgba(212,168,0,0);
+    transition:border .5s;
+  }
+  #interior-frame.active{
+    border:1px solid rgba(212,168,0,0.2);
+  }
+
+  /* Interior corner brackets */
+  .bracket{
+    position:absolute;width:24px;height:24px;
+    border-color:var(--gold);border-style:solid;border-width:0;opacity:0;
+    transition:opacity .5s,border-width .4s;
+  }
+  #interior-frame.active .bracket{opacity:0.6;border-width:2px;}
+  .bracket.tl{top:16px;left:16px;border-top-width:2px!important;border-left-width:2px!important;}
+  .bracket.tr{top:16px;right:16px;border-top-width:2px!important;border-right-width:2px!important;}
+  .bracket.bl{bottom:16px;left:16px;border-bottom-width:2px!important;border-left-width:2px!important;}
+  .bracket.br{bottom:16px;right:16px;border-bottom-width:2px!important;border-right-width:2px!important;}
 </style>
 </head>
 <body>
 
+<!-- Custom wheel cursor -->
+<div id="cursor-wheel">
+  <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- outer rim -->
+    <circle cx="18" cy="18" r="16" stroke="#c8102e" stroke-width="2"/>
+    <!-- spokes -->
+    <line x1="18" y1="2" x2="18" y2="34" stroke="#c8102e" stroke-width="1.2" opacity=".5"/>
+    <line x1="2" y1="18" x2="34" y2="18" stroke="#c8102e" stroke-width="1.2" opacity=".5"/>
+    <line x1="6.3" y1="6.3" x2="29.7" y2="29.7" stroke="#c8102e" stroke-width="1.2" opacity=".35"/>
+    <line x1="29.7" y1="6.3" x2="6.3" y2="29.7" stroke="#c8102e" stroke-width="1.2" opacity=".35"/>
+    <!-- hub -->
+    <circle cx="18" cy="18" r="4" stroke="#d4a800" stroke-width="1.5" fill="rgba(212,168,0,0.15)"/>
+    <!-- centre dot -->
+    <circle cx="18" cy="18" r="1.5" fill="#d4a800"/>
+    <!-- valve stem indicator -->
+    <rect x="17" y="0" width="2" height="4" rx="1" fill="#d4a800" opacity=".8"/>
+  </svg>
+</div>
+
 <div id="loader">
-  <div class="loader-title">GT-R</div>
+  <div class="loader-title">GT&#8209;R</div>
+  <div class="loader-sub">BLACK EDITION // R35</div>
   <div class="loader-bar-wrap"><div class="loader-bar" id="lbar"></div></div>
-  <div class="loader-status" id="lstatus">LOADING MODEL...</div>
+  <div class="loader-status" id="lstatus">INITIALISING...</div>
 </div>
 
 <div id="progress"></div>
-<div id="hud">NISSAN GT-R R35<br>BLACK EDITION 2013<br><span id="hud-scroll">00%</span></div>
-<div id="zoom-hud">
-  <span id="zoom-label">ZOOM 1.0&times;</span>
-  <div id="zoom-bar-wrap"><div id="zoom-bar-inner"></div></div>
+<div id="hud">NISSAN GT&#8209;R R35<br>BLACK EDITION 2013<br><span id="hud-scroll">00%</span></div>
+
+<!-- Camera switch buttons -->
+<div id="cam-switch">
+  <button class="cam-btn active" id="btn-ext" onclick="setCam('exterior')">EXT CAM</button>
+  <button class="cam-btn" id="btn-int" onclick="setCam('interior')">INT CAM</button>
 </div>
 
+<!-- Interior frame overlay -->
+<div id="interior-frame">
+  <div class="bracket tl"></div>
+  <div class="bracket tr"></div>
+  <div class="bracket bl"></div>
+  <div class="bracket br"></div>
+</div>
+<div id="interior-overlay"></div>
+<div id="interior-overlay"></div>
+
+<!-- Cockpit HUD -->
+<div id="cockpit-hud">
+  <div class="c-gauge"><span class="c-gauge-val" id="rpm-val">0</span><span class="c-gauge-label">RPM ×1000</span></div>
+  <div class="c-gauge"><span class="c-gauge-val" style="color:var(--gold)" id="spd-val">0</span><span class="c-gauge-label">KM/H</span></div>
+  <div class="c-gauge"><span class="c-gauge-val" style="color:#4488ff" id="boost-val">0.0</span><span class="c-gauge-label">BAR BOOST</span></div>
+</div>
+
+<div id="bg-blobs"><div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div></div>
+<div id="bg-hex"></div>
+<div id="bg-scan"></div>
+<div id="vignette"></div>
 <div id="canvas-wrap"></div>
 
 <div id="scroll-container">
 
   <section id="hero">
-    <div class="hero-eyebrow">2013 // BLACK EDITION // R35</div>
+    <div id="interior-badge"><span class="badge-dot"></span>DUAL CAM SYSTEM ONLINE</div>
+    <div class="hero-eyebrow">2013 // BLACK EDITION // R35 // VR38DETT</div>
     <h1 class="hero-title">
-      <span class="line">NISSAN</span>
-      <span class="line">GT-R</span>
+      <span class="line"><span class="inner">NISSAN</span></span>
+      <span class="line"><span class="inner">GT&#8209;R</span></span>
     </h1>
-    <p class="hero-sub">The Supercar Killer. Born from the Track.</p>
-    <div class="scroll-hint"><div class="scroll-hint-line"></div>SCROLL TO EXPLORE</div>
+    <p class="hero-sub">The Supercar Killer &nbsp;//&nbsp; Born from the Track &nbsp;//&nbsp; Hand-Assembled</p>
+    <div class="scroll-hint"><div class="scroll-line"></div>SCROLL TO ENGAGE</div>
   </section>
 
   <section class="section">
     <div class="panel" data-index="01">
       <div class="panel-tag">Heritage // Legacy</div>
-      <h2 class="panel-title"><span class="word">Born</span> <span class="word">to</span> <span class="word">Dominate</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Born</span> <span class="stair-word">to</span> <span class="stair-word">Dominate</span></h2>
       <p class="panel-body">
-        The Nissan GT-R is not merely a car — it is a philosophy forged in steel, rubber, and relentless pursuit of perfection. Rooted in the legendary Skyline lineage that terrorized the 1990s racing circuits, the R35 generation arrived in 2007 and immediately redefined what a production car could achieve. It embarrassed Ferraris and Porsches at half their price. It was an act of defiance — Japanese engineering declaring war on European tradition.
+        The Nissan GT-R is not merely a car — it is a philosophy forged in steel, rubber, and relentless pursuit of perfection. Rooted in the legendary Skyline lineage that terrorized 1990s circuits, the R35 generation arrived in 2007 and redefined what a production car could achieve. It embarrassed Ferraris and Porsches at half their price.
         <br><br>
-        The 2013 Black Edition represents the pinnacle of this evolution: a factory-tuned, performance-optimized variant that wears its intentions on every sculpted surface. Dark chrome accents, blacked-out Rays forged wheels, and exclusive interior stitching signal this isn't the standard GT-R — it's the sharper edge of an already razor-sharp machine.
+        The 2013 Black Edition represents the pinnacle of this evolution: factory-tuned, performance-optimized, wearing its intentions on every sculpted surface. Dark chrome accents, blacked-out Rays forged wheels, exclusive interior stitching — this is the sharper edge of an already razor-sharp machine.
       </p>
     </div>
   </section>
@@ -262,7 +466,7 @@
   <section class="section right">
     <div class="panel right-panel" data-index="02">
       <div class="panel-tag">Performance // Numbers</div>
-      <h2 class="panel-title"><span class="word">Raw</span> <span class="word">Numbers</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Raw</span> <span class="stair-word">Numbers</span></h2>
       <div class="stats-grid">
         <div class="stat-cell"><div class="stat-val">545<span class="stat-unit">HP</span></div><div class="stat-label">Peak Power</div></div>
         <div class="stat-cell"><div class="stat-val">463<span class="stat-unit">LB&middot;FT</span></div><div class="stat-label">Peak Torque</div></div>
@@ -275,11 +479,11 @@
   <section class="section">
     <div class="panel" data-index="03">
       <div class="panel-tag">Powertrain // VR38DETT</div>
-      <h2 class="panel-title"><span class="word">The</span> <span class="word">Heart</span> <span class="word">of</span> <span class="word">a</span> <span class="word">God</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Heart</span> <span class="stair-word">of</span> <span class="stair-word">a</span> <span class="stair-word">God</span></h2>
       <p class="panel-body">
-        Beneath the long aluminium hood sits the VR38DETT — a hand-assembled 3.8-litre twin-turbocharged V6 that Nissan's master engine builder Shoichi Miyatani signs by hand on every single unit. Not a robot. Not an assembly line. A human being accountable for every tolerance, every torque spec, every seal.
+        Beneath the aluminium hood sits the VR38DETT — a hand-assembled 3.8-litre twin-turbocharged V6 signed by master builder Shoichi Miyatani. Not a robot. A human accountable for every tolerance, every seal.
         <br><br>
-        Twin Garrett turbochargers spool with ferocious urgency, delivering linear, relentless thrust from idle to redline. The dry-sump oil system means it corners without oil starvation. Every component exists to serve one purpose: transfer energy to the road with zero compromise.
+        Twin Garrett turbochargers spool with ferocious urgency, linear and relentless from idle to redline. The dry-sump system corners without oil starvation. Every component exists to transfer energy with zero compromise.
       </p>
       <table class="spec-table">
         <tr><td>Engine</td><td>VR38DETT V6 TT</td></tr>
@@ -295,11 +499,9 @@
   <section class="section right">
     <div class="panel right-panel" data-index="04">
       <div class="panel-tag">Transmission // ATTESA E-TS</div>
-      <h2 class="panel-title"><span class="word">Lightning-Fast</span> <span class="word">Shifts</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Lightning</span> <span class="stair-word">Shifts</span></h2>
       <p class="panel-body">
-        The GT-R's 6-speed dual-clutch transaxle (GR6) is mounted at the rear axle, creating near-perfect 53/47 weight distribution. Shifts happen in 0.15 seconds — faster than a human nerve impulse. Three driving modes — Normal, Sport, and R — adjust shift speed, aggression, and clutch engagement.
-        <br><br>
-        The ATTESA E-TS AWD system monitors g-forces, steering angle, and wheel slip hundreds of times per second. Under hard acceleration it can push up to 100% torque to the rear. It doesn't just prevent mistakes — it makes the impossible routine.
+        The GR6 dual-clutch transaxle sits at the rear axle, achieving near-perfect 53/47 weight balance. Shifts execute in 0.15 seconds — faster than a nerve impulse. The ATTESA E-TS AWD monitors g-forces and wheel slip hundreds of times per second.
       </p>
       <table class="spec-table">
         <tr><td>Type</td><td>6-Speed Dual-Clutch</td></tr>
@@ -315,11 +517,11 @@
   <section class="section">
     <div class="panel" data-index="05">
       <div class="panel-tag">Aerodynamics // Chassis</div>
-      <h2 class="panel-title"><span class="word">Sculpted</span> <span class="word">by</span> <span class="word">Wind</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Sculpted</span> <span class="stair-word">by</span> <span class="stair-word">Wind</span></h2>
       <p class="panel-body">
-        Every line on the GT-R's body is purposeful. The front fascia channels air beneath the car to the underbody diffuser, generating downforce without drag-inducing wings. Wide rear haunches house 285mm tyres that claw into tarmac.
+        Every line on the GT-R's body is purposeful. The front fascia channels air beneath the car to the underbody diffuser, generating downforce without drag. Wide rear haunches house 285mm tyres clawing into tarmac.
         <br><br>
-        The chassis is a rigid steel monocoque with multi-link suspension tuned by Bilstein, adjustable via DampTronic across three modes. Brembo six-piston front calipers haul the GT-R from 100 to 0 in just 31 metres.
+        Bilstein DampTronic suspension across three modes. Brembo six-piston front calipers haul the GT-R from 100 to 0 in just 31 metres.
       </p>
     </div>
   </section>
@@ -339,15 +541,13 @@
   <section class="section right">
     <div class="panel right-panel" data-index="06">
       <div class="panel-tag">Black Edition // Exclusives</div>
-      <h2 class="panel-title"><span class="word">Beyond</span> <span class="word">Standard</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Beyond</span> <span class="stair-word">Standard</span></h2>
       <p class="panel-body">
-        The Black Edition isn't a trim package. It's a statement. Exclusive 20-inch Rays forged aluminium wheels in Midnight Opal finish are lighter than cast wheels by 2 kg per corner, directly reducing unsprung mass for faster steering response.
-        <br><br>
-        Carbon fibre interior trim, red stitching on Recaro-style leather seats, a dedicated lap timer, and Pearl Black paint that absorbs light like obsidian. Everything is intentional.
+        Exclusive 20-inch Rays forged wheels in Midnight Opal — 2 kg lighter per corner, reducing unsprung mass for instant steering response. Carbon fibre interior trim, red stitching, and Pearl Black paint that absorbs light like obsidian.
       </p>
       <table class="spec-table">
         <tr><td>Wheels</td><td>20&rdquo; Rays Forged Midnight Opal</td></tr>
-        <tr><td>Brake Calipers</td><td>Brembo Bright Red</td></tr>
+        <tr><td>Calipers</td><td>Brembo Bright Red</td></tr>
         <tr><td>Exterior</td><td>Exclusive Pearl Black</td></tr>
         <tr><td>Interior Trim</td><td>Carbon Fibre + Red Stitch</td></tr>
         <tr><td>Seats</td><td>Recaro Sport Suede</td></tr>
@@ -359,11 +559,9 @@
   <section class="section">
     <div class="panel" data-index="07">
       <div class="panel-tag">Interior // Technology</div>
-      <h2 class="panel-title"><span class="word">Cockpit</span> <span class="word">Mentality</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Cockpit</span> <span class="stair-word">Mentality</span></h2>
       <p class="panel-body">
-        Step inside and the world outside ceases to exist. The driver-focused cockpit wraps around you with purpose. The multi-function 7-inch display shows turbo boost, g-forces, lap times, tyre pressures, and exhaust sound profiles simultaneously.
-        <br><br>
-        The 11-speaker Bose Premium Audio delivers 710 watts. Dual-zone climate control maintains perfect conditions. And despite its fearsome performance, the GT-R offers legitimate rear seats and a 244-litre boot.
+        The 7-inch multi-function display shows turbo boost, g-forces, lap times, tyre pressures, and exhaust sound profiles simultaneously. 11-speaker Bose Premium Audio at 710 watts. Dual-zone climate. Legitimate rear seats and 244-litre boot.
       </p>
     </div>
   </section>
@@ -371,11 +569,11 @@
   <section class="section right">
     <div class="panel right-panel" data-index="08">
       <div class="panel-tag">Culture // Godzilla</div>
-      <h2 class="panel-title"><span class="word">Godzilla</span> <span class="word">Lives</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Godzilla</span> <span class="stair-word">Lives</span></h2>
       <p class="panel-body">
-        The press nicknamed it Godzilla — a monster from Japan capable of crushing anything in its path. On the N&uuml;rburgring, it held production car lap records. It made supercar ownership seem irresponsible, matching a $200,000 Italian exotic for $80,000.
+        The press nicknamed it Godzilla — a monster from Japan capable of crushing anything. On the N&uuml;rburgring, it held production car lap records. It matched $200,000 Italian exotics for $80,000.
         <br><br>
-        The 2013 Black Edition is one of the most celebrated variants of this legend. In two decades, these will be icons — artefacts of a golden era when engineers prioritised the purity of driving above all else.
+        In two decades these will be icons — artefacts of a golden era when engineers prioritised the purity of driving above all else.
       </p>
     </div>
   </section>
@@ -383,7 +581,7 @@
   <section class="section">
     <div class="panel" data-index="09" style="max-width:min(580px,90vw);">
       <div class="panel-tag">Technical Specifications // Complete</div>
-      <h2 class="panel-title"><span class="word">Complete</span> <span class="word">Spec</span> <span class="word">Sheet</span></h2>
+      <h2 class="panel-title"><span class="stair-word">Full</span> <span class="stair-word">Spec</span> <span class="stair-word">Sheet</span></h2>
       <table class="spec-table">
         <tr><td>Year</td><td>2013</td></tr>
         <tr><td>Model</td><td>GT-R Black Edition (R35)</td></tr>
@@ -419,423 +617,408 @@
       NISSAN GT-R R35 BLACK EDITION<br>2013 // VR38DETT // AWD
     </p>
   </section>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
-(function () {
+(function(){
+  /* ──────────────────────────────────────────────────────────
+     CUSTOM CURSOR
+  ────────────────────────────────────────────────────────── */
+  var cursorEl = document.getElementById('cursor-wheel');
+  document.addEventListener('mousemove', function(e){
+    cursorEl.style.left = e.clientX + 'px';
+    cursorEl.style.top  = e.clientY + 'px';
+  });
+
+  /* speed up wheel when moving fast */
+  var lastX=0, lastY=0;
+  document.addEventListener('mousemove', function(e){
+    var dx = e.clientX - lastX, dy = e.clientY - lastY;
+    var speed = Math.sqrt(dx*dx + dy*dy);
+    if(speed > 8) cursorEl.classList.add('fast');
+    else cursorEl.classList.remove('fast');
+    lastX=e.clientX; lastY=e.clientY;
+  });
+
+  /* ──────────────────────────────────────────────────────────
+     ENCRYPT ON HOVER
+  ────────────────────────────────────────────────────────── */
+  var glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?><[]{}';
+  var encryptTimers = new WeakMap();
+
+  function encryptElement(el){
+    if(encryptTimers.has(el)) return;
+    var orig = el.getAttribute('data-orig') || el.innerText;
+    if(!el.getAttribute('data-orig')) el.setAttribute('data-orig', orig);
+    var len = orig.length;
+    var revealed = new Array(len).fill(false);
+    var tick = 0;
+    el.classList.add('encrypting');
+
+    var iv = setInterval(function(){
+      tick++;
+      var txt = '';
+      for(var i=0;i<len;i++){
+        if(revealed[i]){
+          txt += orig[i];
+        } else if(orig[i]===' '){
+          txt += ' ';
+          revealed[i]=true;
+        } else {
+          txt += glyphs[Math.floor(Math.random()*glyphs.length)];
+          if(Math.random() < 0.09) revealed[i]=true;
+        }
+      }
+      el.innerText = txt;
+      if(revealed.every(function(r){return r;})){
+        clearInterval(iv);
+        el.innerText = orig;
+        el.classList.remove('encrypting');
+        encryptTimers.delete(el);
+      }
+    }, 40);
+    encryptTimers.set(el, iv);
+  }
+
+  /* attach to all text nodes that make sense */
+  function attachEncrypt(){
+    var targets = document.querySelectorAll('.panel-tag,.panel-title,.panel-body,.stat-label,.bar-name,.spec-table td,.hero-eyebrow,.hero-sub,.stat-val,.outro-label,.outro-sub');
+    targets.forEach(function(el){
+      el.addEventListener('mouseenter', function(){ encryptElement(el); });
+    });
+  }
+  attachEncrypt();
+
+  /* ──────────────────────────────────────────────────────────
+     THREE.JS SETUP
+  ────────────────────────────────────────────────────────── */
   var wrap = document.getElementById('canvas-wrap');
   var W = function(){ return wrap.clientWidth; };
   var H = function(){ return wrap.clientHeight; };
-
-  // Detect mobile once — drives all quality decisions
   var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 768;
 
-  var renderer = new THREE.WebGLRenderer({
-    antialias: !isMobile,          // antialias off on mobile
-    powerPreference: 'high-performance'
-  });
-  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
+  var renderer = new THREE.WebGLRenderer({ antialias:!isMobile, powerPreference:'high-performance' });
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio,1.5));
   renderer.setSize(W(), H());
-  renderer.shadowMap.enabled = !isMobile;  // no shadows on mobile
+  renderer.shadowMap.enabled = !isMobile;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.15;
   wrap.appendChild(renderer.domElement);
 
   var scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050507);
-  scene.fog = new THREE.FogExp2(0x050507, isMobile ? 0.008 : 0.016);
+  scene.background = new THREE.Color(0x030305);
+  scene.fog = new THREE.FogExp2(0x030305, isMobile ? 0.007 : 0.014);
 
-  // ── CAMERA ── lower angle to frame tyres better
-  var currentFOV = 45, targetFOV = 45;
-  var currentCamZ = 7,  targetCamZ = 7;
-  // Camera sits lower (y=1.1 instead of 1.8) and looks at y=0.1 to keep tyres in frame
-  var CAM_Y      = 1.4;
-  var CAM_LOOK_Y = -0.1;
+  /* ── CAMERA MODES ── */
+  var CAM_MODE = 'exterior'; // 'exterior' | 'interior'
+  var currentFOV=48, targetFOV=48;
+  var currentCamX=0,  targetCamX=0;
+  var currentCamY=1.4,targetCamY=1.4;
+  var currentCamZ=7,  targetCamZ=7;
+  var currentLookY=-.1,targetLookY=-.1;
+  var currentAngle=0,  targetAngle=0;
+  var safeZ=7.0;
 
-  var camera = new THREE.PerspectiveCamera(45, W()/H(), 0.1, 200);
-  camera.position.set(0, CAM_Y, 7);
-  camera.lookAt(0, CAM_LOOK_Y, 0);
+  var camera = new THREE.PerspectiveCamera(48, W()/H(), 0.05, 200);
+  camera.position.set(0,1.4,7);
+  camera.lookAt(0,-.1,0);
 
-  // Lights
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
+  /* ── LIGHTS ── */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.45));
   var key = new THREE.DirectionalLight(0xffffff, 2.5);
-  key.position.set(6, 8, 6); key.castShadow = !isMobile;
-  key.shadow.mapSize.set(1024, 1024);
-  key.shadow.camera.near = 0.5; key.shadow.camera.far = 30;
-  key.shadow.camera.left = key.shadow.camera.bottom = -6;
-  key.shadow.camera.right = key.shadow.camera.top = 6;
+  key.position.set(6,8,6); key.castShadow=!isMobile;
+  key.shadow.mapSize.set(1024,1024);
+  key.shadow.camera.left=key.shadow.camera.bottom=-6;
+  key.shadow.camera.right=key.shadow.camera.top=6;
+  key.shadow.camera.near=.5; key.shadow.camera.far=30;
   scene.add(key);
+  var fill = new THREE.DirectionalLight(0x2244aa, 0.5); fill.position.set(-5,3,-4); scene.add(fill);
+  var rim  = new THREE.DirectionalLight(0xff2244, 0.8); rim.position.set(-3,2,-6);  scene.add(rim);
+  var gold = new THREE.DirectionalLight(0xd4a800, 0.4); gold.position.set(4,1,3);   scene.add(gold);
+  var tyreL = new THREE.DirectionalLight(0xff3355,1.0); tyreL.position.set(0,.3,5); scene.add(tyreL);
+  var under = new THREE.PointLight(0xc8102e,.7,10); under.position.set(0,-.5,0);   scene.add(under);
 
-  var fill = new THREE.DirectionalLight(0x4488ff, 0.5); fill.position.set(-5, 3, -4); scene.add(fill);
-  var rim  = new THREE.DirectionalLight(0xff2244, 0.7); rim.position.set(-3, 2, -6);  scene.add(rim);
-
-  // Low-angle tyre-wash light — skims along the ground to pick out tyre detail
-  var tyreLight = new THREE.DirectionalLight(0xff3355, 1.2);
-  tyreLight.position.set(0, 0.3, 5);
-  scene.add(tyreLight);
-
-  // Underbody red glow (kept from original)
-  var under = new THREE.PointLight(0xc8102e, 0.6, 10);
-  under.position.set(0, -0.5, 0);
-  scene.add(under);
-
-  // ── GARAGE FLOOR (replaces plain dark ground) ──────────────────────────────
-  // Base slab — dark polished concrete
-  var floorMat = new THREE.MeshStandardMaterial({
-    color: 0x0a0a10,
-    roughness: 0.25,
-    metalness: 0.55,
-  });
-  var floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -0.002;
-  floor.receiveShadow = true;
+  /* ── FLOOR ── */
+  var floorMat = new THREE.MeshStandardMaterial({color:0x080810,roughness:.2,metalness:.6});
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(60,60), floorMat);
+  floor.rotation.x=-Math.PI/2; floor.position.y=-.002; floor.receiveShadow=true;
   scene.add(floor);
 
-  // Red grid lines on the floor via a canvas texture
-  (function buildFloorGrid() {
-    var size  = 1024;
-    var cells = 32;        // grid divisions
-    var c     = document.createElement('canvas');
-    c.width = c.height = size;
-    var ctx = c.getContext('2d');
-
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, size, size);
-
-    var step = size / cells;
-
-    // Outer glow pass (thicker, dimmer)
-    ctx.strokeStyle = 'rgba(200,16,46,0.18)';
-    ctx.lineWidth = 4;
-    for (var i = 0; i <= cells; i++) {
-      var p = i * step;
-      ctx.beginPath(); ctx.moveTo(p, 0);   ctx.lineTo(p, size); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, p);   ctx.lineTo(size, p); ctx.stroke();
-    }
-
-    // Core bright lines
-    ctx.strokeStyle = 'rgba(200,16,46,0.55)';
-    ctx.lineWidth = 1.5;
-    for (var j = 0; j <= cells; j++) {
-      var q = j * step;
-      ctx.beginPath(); ctx.moveTo(q, 0);   ctx.lineTo(q, size); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, q);   ctx.lineTo(size, q); ctx.stroke();
-    }
-
-    // Centre crosshair accent
-    var cx = size / 2;
-    ctx.strokeStyle = 'rgba(255,30,60,0.8)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(cx, 0);    ctx.lineTo(cx, size); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, cx);    ctx.lineTo(size, cx); ctx.stroke();
-
-    var tex = new THREE.CanvasTexture(c);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(3, 3);
-
-    var gridMat = new THREE.MeshBasicMaterial({
-      map: tex,
-      transparent: true,
-      opacity: 0.65,
-      depthWrite: false,
-    });
-    var grid = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), gridMat);
-    grid.rotation.x = -Math.PI / 2;
-    grid.position.y = 0.001;
-    scene.add(grid);
+  (function buildGrid(){
+    var sz=1024,cells=32;
+    var c=document.createElement('canvas'); c.width=c.height=sz;
+    var ctx=c.getContext('2d');
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,sz,sz);
+    var s=sz/cells;
+    ctx.strokeStyle='rgba(200,16,46,0.18)'; ctx.lineWidth=4;
+    for(var i=0;i<=cells;i++){var p=i*s;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();}
+    ctx.strokeStyle='rgba(200,16,46,0.55)'; ctx.lineWidth=1.5;
+    for(var j=0;j<=cells;j++){var q=j*s;ctx.beginPath();ctx.moveTo(q,0);ctx.lineTo(q,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,q);ctx.lineTo(sz,q);ctx.stroke();}
+    /* gold centre cross */
+    var cx=sz/2;
+    ctx.strokeStyle='rgba(212,168,0,0.7)'; ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,sz);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,cx);ctx.lineTo(sz,cx);ctx.stroke();
+    var tex=new THREE.CanvasTexture(c);
+    tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(3,3);
+    var gm=new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.6,depthWrite:false});
+    var g=new THREE.Mesh(new THREE.PlaneGeometry(60,60),gm);
+    g.rotation.x=-Math.PI/2; g.position.y=.001; scene.add(g);
   })();
 
-  // Red neon strip lights along floor edges (two glowing bars)
-  function makeNeonBar(x, z, len, axis) {
-    var geo = axis === 'x'
-      ? new THREE.BoxGeometry(len, 0.02, 0.04)
-      : new THREE.BoxGeometry(0.04, 0.02, len);
-    var mat = new THREE.MeshBasicMaterial({ color: 0xff1a3c });
-    var bar = new THREE.Mesh(geo, mat);
-    bar.position.set(x, 0.01, z);
-    scene.add(bar);
-    // Point light above bar
-    var pl = new THREE.PointLight(0xff1a3c, 0.8, 8);
-    pl.position.set(x, 0.25, z);
-    scene.add(pl);
-  }
-  if (!isMobile) {
-    makeNeonBar(0,  -5, 14, 'x');
-    makeNeonBar(0,   5, 14, 'x');
-    makeNeonBar(-7,  0, 10, 'z');
-    makeNeonBar( 7,  0, 10, 'z');
-  }
-
-  // Loader UI
-  var lbar     = document.getElementById('lbar');
-  var lstatus  = document.getElementById('lstatus');
-  var loaderEl = document.getElementById('loader');
-  function setLoad(pct, txt) { lbar.style.width = pct+'%'; if(txt) lstatus.textContent = txt; }
-  setLoad(5, 'CONNECTING...');
-
-  var car = null;
-  var clock = new THREE.Clock();
-
-  // ── SAFE FRAMING ────────────────────────────────────────────────────────────
-  // Computed after model loads — ensures no tyre cropping at any zoom level.
-  // safeZ = minimum camera Z that keeps the full car height in frame.
-  var safeZ   = 7.0;   // updated after load
-  var safeFOV = 45;    // updated after load
-
-  function computeSafeFrame(carBox, fov) {
-    // Full height of the car (wheels to roof) in world units
-    var h   = (carBox.max.y - carBox.min.y);
-    // Add 15% breathing room top and bottom
-    var pad = h * 1.15;
-    // Distance needed so pad/2 fits within half-FOV at current aspect
-    var aspect  = W() / H();
-    var vFovRad = (fov * Math.PI / 180);
-    // Vertical fit distance
-    var distV = (pad / 2) / Math.tan(vFovRad / 2);
-    // Horizontal fit distance (car width * 1.05 padding)
-    var w     = (carBox.max.x - carBox.min.x) * 1.05;
-    var hFovRad = 2 * Math.atan(Math.tan(vFovRad / 2) * aspect);
-    var distH = (w / 2) / Math.tan(hFovRad / 2);
-    return Math.max(distV, distH) + 0.5; // +0.5 extra margin
-  }
-
-  // ── ZOOM KEYFRAMES ──────────────────────────────────────────────────────────
-  // [scrollPct, fov, zMultiplier]  — zMultiplier * safeZ gives actual camZ
-  // FOV floor raised to 38 (was 28) and z-multipliers kept ≥ 1.0 so we never
-  // get closer than the safe framing distance calculated from the bounding box.
-  var ZK = [
-    [0.00, 48, 1.55],
-    [0.08, 40, 1.20],
-    [0.16, 54, 1.90],
-    [0.24, 38, 1.05],
-    [0.32, 52, 1.75],
-    [0.40, 38, 1.05],
-    [0.50, 55, 2.00],
-    [0.60, 40, 1.20],
-    [0.70, 48, 1.55],
-    [0.80, 38, 1.05],
-    [0.90, 52, 1.80],
-    [1.00, 38, 1.05],
-  ];
-
-  function smoothStep(t){ return t*t*(3-2*t); }
-
-  function getZoom(pct) {
-    for (var i = 0; i < ZK.length - 1; i++) {
-      if (pct >= ZK[i][0] && pct <= ZK[i+1][0]) {
-        var t = (pct - ZK[i][0]) / (ZK[i+1][0] - ZK[i][0]);
-        t = smoothStep(t);
-        var fov  = ZK[i][1] + (ZK[i+1][1] - ZK[i][1]) * t;
-        var zMul = ZK[i][2] + (ZK[i+1][2] - ZK[i][2]) * t;
-        return { fov: fov, z: safeZ * zMul };
-      }
+  if(!isMobile){
+    function neonBar(x,z,len,axis){
+      var geo=axis==='x'?new THREE.BoxGeometry(len,.02,.04):new THREE.BoxGeometry(.04,.02,len);
+      var mat=new THREE.MeshBasicMaterial({color:0xff1a3c});
+      var b=new THREE.Mesh(geo,mat); b.position.set(x,.01,z); scene.add(b);
+      var pl=new THREE.PointLight(0xff1a3c,.9,9); pl.position.set(x,.25,z); scene.add(pl);
     }
-    var last = ZK[ZK.length - 1];
-    return { fov: last[1], z: safeZ * last[2] };
+    neonBar(0,-5,14,'x'); neonBar(0,5,14,'x');
+    neonBar(-7,0,10,'z'); neonBar(7,0,10,'z');
+    /* gold accent bars */
+    function goldBar(x,z,len,axis){
+      var geo=axis==='x'?new THREE.BoxGeometry(len,.015,.03):new THREE.BoxGeometry(.03,.015,len);
+      var mat=new THREE.MeshBasicMaterial({color:0xd4a800});
+      var b=new THREE.Mesh(geo,mat); b.position.set(x,.005,z); scene.add(b);
+    }
+    goldBar(0,-6.5,20,'x'); goldBar(0,6.5,20,'x');
   }
 
-  // ── LOAD GLB ────────────────────────────────────────────────────────────────
-  var gltfLoader = new THREE.GLTFLoader();
-  gltfLoader.load(
-    '2013_nissan_gt-r_black_edition_coupe.glb',
-    function(gltf) {
-      setLoad(95, 'BUILDING SCENE...');
-      car = gltf.scene;
-      car.traverse(function(c){ if(c.isMesh){ c.castShadow=!isMobile; c.receiveShadow=!isMobile; } });
+  /* ── LOADER ── */
+  var lbar=document.getElementById('lbar'),lstatus=document.getElementById('lstatus');
+  var loaderEl=document.getElementById('loader');
+  function setLoad(p,t){lbar.style.width=p+'%';if(t)lstatus.textContent=t;}
+  setLoad(5,'CONNECTING...');
 
-      // Scale first, then measure world-space box so Y sits exactly on floor
-      var box  = new THREE.Box3().setFromObject(car);
-      var size = box.getSize(new THREE.Vector3());
-      var sc   = 3.8 / Math.max(size.x, size.y, size.z);
-      car.scale.setScalar(sc);
-      car.updateMatrixWorld(true);
+  var car=null, clock=new THREE.Clock();
 
-      // World-space box after scale — this is what we use for everything
-      var worldBox = new THREE.Box3().setFromObject(car);
-      var ctrW = worldBox.getCenter(new THREE.Vector3());
+  function computeSafeFrame(box,fov){
+    var h=(box.max.y-box.min.y)*1.15,aspect=W()/H();
+    var vRad=fov*Math.PI/180;
+    var distV=(h/2)/Math.tan(vRad/2);
+    var w=(box.max.x-box.min.x)*1.05;
+    var hRad=2*Math.atan(Math.tan(vRad/2)*aspect);
+    var distH=(w/2)/Math.tan(hRad/2);
+    return Math.max(distV,distH)+0.5;
+  }
 
-      // Sit wheels exactly on y=0, centre X/Z
-      car.position.set(
-        -ctrW.x,
-        -worldBox.min.y,   // lift so bottom of tyres = 0
-        -ctrW.z
-      );
-      car.updateMatrixWorld(true);
-
-      // Recompute box now that car is in final position
-      var worldBox = new THREE.Box3().setFromObject(car);
-      safeZ = computeSafeFrame(worldBox, safeFOV);
-      // Sync initial camera and scroll targets
-      currentCamZ = safeZ * ZK[0][2];
-      targetCamZ  = currentCamZ;
-      currentFOV  = ZK[0][1];
-      targetFOV   = currentFOV;
-
-      scene.add(car);
-      setLoad(100, 'READY');
-      setTimeout(function(){
-        loaderEl.classList.add('hide');
-        setTimeout(function(){ loaderEl.style.display='none'; }, 700);
-      }, 300);
-      animate();
-    },
-    function(xhr){ if(xhr.total){ var p=5+(xhr.loaded/xhr.total)*85; setLoad(p,'LOADING... '+Math.round(p)+'%'); } },
-    function(err){ console.error('GLB error:',err); lstatus.textContent='ERROR: '+(err.message||'Load failed'); }
-  );
-
-  // ── CAMERA ORBIT KEYFRAMES ──────────────────────────────────────────────────
-  // Car stays still. Camera orbits around it and zooms in/out per section.
-  // [scrollPct, orbitAngleDeg, zMultiplier, fov, label]
-  // 0=front, 90=driver side, 180=rear, 270=passenger side
-  var CK = [
-    [0.00,   0,  1.60, 48, 'FRONT'],
-    [0.10,   0,  1.08, 40, 'FRONT CLOSE'],
-    [0.18,  45,  1.40, 44, 'FRONT-SIDE'],
-    [0.26,  45,  1.05, 38, 'FRONT-SIDE CLOSE'],
-    [0.34,  90,  1.50, 46, 'SIDE'],
-    [0.42,  90,  1.05, 38, 'SIDE CLOSE'],
-    [0.50, 135,  1.45, 44, 'REAR-SIDE'],
-    [0.58, 135,  1.05, 38, 'REAR-SIDE CLOSE'],
-    [0.66, 180,  1.55, 46, 'REAR'],
-    [0.74, 180,  1.08, 38, 'REAR CLOSE'],
-    [0.82, 270,  1.45, 44, 'PASSENGER SIDE'],
-    [0.90, 270,  1.05, 38, 'SIDE CLOSE'],
-    [1.00, 360,  1.60, 48, 'FULL CIRCLE'],
+  /* ── CAMERA ORBIT KEYFRAMES (exterior) ── */
+  var CK=[
+    [0.00,   0, 1.60, 48,'FRONT'],
+    [0.10,   0, 1.05, 40,'FRONT CLOSE'],
+    [0.18,  45, 1.40, 44,'FRONT-SIDE'],
+    [0.26,  45, 1.05, 38,'SIDE CLOSE'],
+    [0.34,  90, 1.50, 46,'SIDE'],
+    [0.42,  90, 1.05, 38,'SIDE CLOSE'],
+    [0.50, 135, 1.45, 44,'REAR-SIDE'],
+    [0.58, 135, 1.05, 38,'REAR-SIDE CLOSE'],
+    [0.66, 180, 1.55, 46,'REAR'],
+    [0.74, 180, 1.05, 38,'REAR CLOSE'],
+    [0.82, 270, 1.45, 44,'PASSENGER'],
+    [0.90, 270, 1.05, 38,'SIDE CLOSE'],
+    [1.00, 360, 1.60, 48,'FULL CIRCLE'],
   ];
 
-  function getCameraOrbit(pct) {
-    for (var i = 0; i < CK.length - 1; i++) {
-      if (pct >= CK[i][0] && pct <= CK[i+1][0]) {
-        var t = (pct - CK[i][0]) / (CK[i+1][0] - CK[i][0]);
-        t = smoothStep(t);
-        return {
-          angle: (CK[i][1] + (CK[i+1][1] - CK[i][1]) * t) * Math.PI / 180,
-          z:     safeZ * (CK[i][2] + (CK[i+1][2] - CK[i][2]) * t),
-          fov:   CK[i][3] + (CK[i+1][3] - CK[i][3]) * t,
-          label: CK[i][4]
+  function smoothStep(t){return t*t*(3-2*t);}
+
+  function getCameraOrbit(pct){
+    for(var i=0;i<CK.length-1;i++){
+      if(pct>=CK[i][0]&&pct<=CK[i+1][0]){
+        var t=smoothStep((pct-CK[i][0])/(CK[i+1][0]-CK[i][0]));
+        return{
+          angle:(CK[i][1]+(CK[i+1][1]-CK[i][1])*t)*Math.PI/180,
+          z:safeZ*(CK[i][2]+(CK[i+1][2]-CK[i][2])*t),
+          fov:CK[i][3]+(CK[i+1][3]-CK[i][3])*t,
+          label:CK[i][4]
         };
       }
     }
-    var last = CK[CK.length - 1];
-    return { angle: last[1] * Math.PI / 180, z: safeZ * last[2], fov: last[3], label: last[4] };
+    var l=CK[CK.length-1];
+    return{angle:l[1]*Math.PI/180,z:safeZ*l[2],fov:l[3],label:l[4]};
   }
 
-  // Orbit state — camera angle around the car
-  var currentAngle = 0, targetAngle = 0;
+  /* ── INTERIOR CAMERA POSITIONS ── */
+  /* Driver POV: seated position looking forward through windscreen */
+  var INT_POS={
+    driver:{x:-.45, y:1.05, z:-.3},     /* driver seat eye point */
+    look:  {x:0,    y:.65,  z:-6},      /* looking toward hood/windscreen vanishing point */
+    fov:   62
+  };
+  /* We'll animate subtle head movement */
+  var intShakeAmp = 0.018;
 
-  // ── SCROLL ──────────────────────────────────────────────────────────────────
-  var progressBar = document.getElementById('progress');
-  var hudScroll   = document.getElementById('hud-scroll');
-  var zoomLabel   = document.getElementById('zoom-label');
-  var zoomBarEl   = document.getElementById('zoom-bar-inner');
+  /* ── COCKPIT HUD animation ── */
+  var rpmVal   = document.getElementById('rpm-val');
+  var spdVal   = document.getElementById('spd-val');
+  var boostVal = document.getElementById('boost-val');
+  var cockpitHud = document.getElementById('cockpit-hud');
 
-  window.addEventListener('scroll', function() {
-    var docH = document.body.scrollHeight - window.innerHeight;
-    var pct  = docH > 0 ? window.scrollY / docH : 0;
+  function updateCockpit(t){
+    var rpm   = (3200 + Math.sin(t*1.1)*900 + Math.sin(t*.37)*600).toFixed(0);
+    var spd   = (120  + Math.sin(t*.7 )*55  + Math.sin(t*.19)*30).toFixed(0);
+    var boost = (0.8  + Math.sin(t*.9 )*.35 + Math.sin(t*.41)*.15).toFixed(2);
+    rpmVal.textContent  = rpm;
+    spdVal.textContent  = spd;
+    boostVal.textContent= boost;
+  }
 
-    progressBar.style.width = (pct * 100) + '%';
-    hudScroll.textContent   = ('0' + Math.round(pct * 100)).slice(-2) + '%';
+  /* ── CAM SWITCH ── */
+  window.setCam = function(mode){
+    CAM_MODE = mode;
+    document.getElementById('btn-ext').classList.toggle('active', mode==='exterior');
+    document.getElementById('btn-int').classList.toggle('active', mode==='interior');
+    document.getElementById('interior-frame').classList.toggle('active', mode==='interior');
+    document.getElementById('interior-overlay').classList.toggle('active', mode==='interior');
+    cockpitHud.classList.toggle('visible', mode==='interior');
+  };
 
-    var orb = getCameraOrbit(pct);
-    targetAngle = orb.angle;
-    targetFOV   = orb.fov;
-    targetCamZ  = orb.z;
+  /* ── GLB LOAD ── */
+  var gltfLoader = new THREE.GLTFLoader();
+  gltfLoader.load(
+    '2013_nissan_gt-r_black_edition_coupe.glb',
+    function(gltf){
+      setLoad(95,'BUILDING SCENE...');
+      car=gltf.scene;
+      car.traverse(function(c){if(c.isMesh){c.castShadow=!isMobile;c.receiveShadow=!isMobile;}});
 
-    zoomLabel.textContent = orb.label;
-    zoomBarEl.style.width = Math.min(100, Math.max(10, (1 - (orb.fov - 36) / 14) * 100)) + '%';
+      var box=new THREE.Box3().setFromObject(car);
+      var sz=box.getSize(new THREE.Vector3());
+      var sc=3.8/Math.max(sz.x,sz.y,sz.z);
+      car.scale.setScalar(sc);
+      car.updateMatrixWorld(true);
 
+      var wb=new THREE.Box3().setFromObject(car);
+      var ctr=wb.getCenter(new THREE.Vector3());
+      car.position.set(-ctr.x, -wb.min.y, -ctr.z);
+      car.updateMatrixWorld(true);
+
+      var wb2=new THREE.Box3().setFromObject(car);
+      safeZ=computeSafeFrame(wb2,48);
+      currentCamZ=safeZ*CK[0][2];
+      targetCamZ=currentCamZ;
+      currentFOV=CK[0][3]; targetFOV=currentFOV;
+
+      scene.add(car);
+      setLoad(100,'READY');
+      setTimeout(function(){
+        loaderEl.classList.add('hide');
+        setTimeout(function(){loaderEl.style.display='none';},700);
+      },300);
+      animate();
+    },
+    function(xhr){if(xhr.total){var p=5+(xhr.loaded/xhr.total)*85;setLoad(p,'LOADING... '+Math.round(p)+'%');}},
+    function(err){console.error(err);lstatus.textContent='ERROR: '+(err.message||'Load failed');}
+  );
+
+  /* ── SCROLL ── */
+  var progressBar=document.getElementById('progress');
+  var hudScroll=document.getElementById('hud-scroll');
+  var scrollPct=0;
+
+  window.addEventListener('scroll', function(){
+    var docH=document.body.scrollHeight-window.innerHeight;
+    scrollPct=docH>0?window.scrollY/docH:0;
+    progressBar.style.width=(scrollPct*100)+'%';
+    hudScroll.textContent=('0'+Math.round(scrollPct*100)).slice(-2)+'%';
+
+    if(CAM_MODE==='exterior'){
+      var orb=getCameraOrbit(scrollPct);
+      targetAngle=orb.angle;
+      targetFOV=orb.fov;
+      targetCamZ=orb.z;
+    }
     checkBars(); checkOutro();
-  }, { passive: true });
+  },{passive:true});
 
-  // Panel visibility — IntersectionObserver with scroll fallback for mobile
-  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
-  var pendingPanels = panels.slice();
-
-  function revealPanels() {
-    pendingPanels = pendingPanels.filter(function(p) {
-      var r = p.getBoundingClientRect();
-      if (r.top < window.innerHeight * 0.88 && r.bottom > 0) {
-        p.classList.add('visible');
-        return false; // remove from pending
-      }
-      return true;
+  /* panels */
+  var rafPend=false;
+  function revealPanels(){
+    document.querySelectorAll('.panel:not(.visible)').forEach(function(p){
+      var r=p.getBoundingClientRect();
+      if(r.top<window.innerHeight*.88&&r.bottom>0) p.classList.add('visible');
     });
   }
+  setTimeout(revealPanels,100);
+  window.addEventListener('scroll',function(){
+    if(!rafPend){rafPend=true;requestAnimationFrame(function(){revealPanels();rafPend=false;});}
+  },{passive:true});
 
-  // Initial check (catches panels already in view on load)
-  setTimeout(revealPanels, 100);
-
-  // Attach to scroll — throttled with rAF
-  var rafPending = false;
-  window.addEventListener('scroll', function() {
-    if (!rafPending) {
-      rafPending = true;
-      requestAnimationFrame(function() { revealPanels(); rafPending = false; });
-    }
-  }, { passive: true });
-
-  function checkBars() {
-    var el = document.getElementById('stat-bars');
-    if (!el || el.classList.contains('visible')) return;
-    if (el.getBoundingClientRect().top < window.innerHeight * 0.85) {
+  function checkBars(){
+    var el=document.getElementById('stat-bars');
+    if(!el||el.classList.contains('visible'))return;
+    if(el.getBoundingClientRect().top<window.innerHeight*.85){
       el.classList.add('visible');
       el.querySelectorAll('.bar-fill').forEach(function(f,i){
-        setTimeout(function(){ f.classList.add('go'); }, i*150 + 400);
+        setTimeout(function(){f.classList.add('go');},i*150+400);
       });
     }
   }
-
-  function checkOutro() {
+  function checkOutro(){
     ['outro-title','outro-label','outro-sub'].forEach(function(id){
-      var el = document.getElementById(id);
-      if (el && el.getBoundingClientRect().top < window.innerHeight * 0.82) el.classList.add('visible');
+      var el=document.getElementById(id);
+      if(el&&el.getBoundingClientRect().top<window.innerHeight*.82) el.classList.add('visible');
     });
   }
 
-  // ── ANIMATE ─────────────────────────────────────────────────────────────────
-  var LERP = 0.06;
-  function animate() {
+  /* ── ANIMATE ── */
+  var LERP=0.06;
+  var LERP_INT=0.025; /* slower lerp for interior transitions */
+
+  function animate(){
     requestAnimationFrame(animate);
-    var t = clock.getElapsedTime();
+    var t=clock.getElapsedTime();
 
-    // Smoothly interpolate camera orbit angle, distance and FOV
-    currentAngle += (targetAngle - currentAngle) * LERP;
-    currentFOV   += (targetFOV   - currentFOV)   * LERP;
-    currentCamZ  += (targetCamZ  - currentCamZ)  * LERP;
+    if(CAM_MODE==='exterior'){
+      /* lerp orbit */
+      currentAngle+=(targetAngle-currentAngle)*LERP;
+      currentFOV  +=(targetFOV  -currentFOV  )*LERP;
+      currentCamZ +=(targetCamZ -currentCamZ )*LERP;
 
-    camera.fov = currentFOV;
-    camera.updateProjectionMatrix();
+      var d=currentCamZ;
+      camera.position.x=Math.sin(currentAngle)*d + Math.sin(t*.12)*.06;
+      camera.position.y=1.4 + Math.sin(t*.18)*.04;
+      camera.position.z=Math.cos(currentAngle)*d;
+      camera.fov=currentFOV;
+      camera.updateProjectionMatrix();
+      camera.lookAt(0, -.1, 0);
 
-    // Orbit camera around the car — car never rotates
-    var camDist = currentCamZ;
-    camera.position.x = Math.sin(currentAngle) * camDist + Math.sin(t * 0.12) * 0.06;
-    camera.position.y = CAM_Y + Math.sin(t * 0.18) * 0.04;
-    camera.position.z = Math.cos(currentAngle) * camDist;
-    camera.lookAt(0, CAM_LOOK_Y, 0);
+    } else {
+      /* interior driver POV */
+      /* Subtle head bob/sway */
+      var ip=INT_POS;
+      var bobX = ip.x + Math.sin(t*1.7)*intShakeAmp + Math.sin(t*.6)*.006;
+      var bobY = ip.y + Math.sin(t*2.3)*intShakeAmp*.5;
+      var bobZ = ip.z + Math.cos(t*1.3)*intShakeAmp*.3;
 
-    // Car stays completely still (no rotation, no lateral drift)
-    if (car) {
-      car.rotation.y = 0;
-      car.position.x = 0;
-      car.position.y = 0;
+      camera.position.x += (bobX - camera.position.x)*LERP_INT;
+      camera.position.y += (bobY - camera.position.y)*LERP_INT;
+      camera.position.z += (bobZ - camera.position.z)*LERP_INT;
+      camera.fov += (ip.fov - camera.fov)*LERP_INT;
+      camera.updateProjectionMatrix();
+
+      /* look forward with slight sway */
+      camera.lookAt(
+        ip.look.x + Math.sin(t*.8)*.03,
+        ip.look.y + Math.sin(t*1.1)*.02,
+        ip.look.z
+      );
+
+      updateCockpit(t);
     }
 
-    renderer.render(scene, camera);
+    if(car){ car.rotation.y=0; car.position.x=0; }
+    renderer.render(scene,camera);
   }
 
-  window.addEventListener('resize', function(){
-    camera.aspect = W()/H();
+  window.addEventListener('resize',function(){
+    camera.aspect=W()/H();
     camera.updateProjectionMatrix();
-    renderer.setSize(W(), H());
+    renderer.setSize(W(),H());
   });
-
 })();
 </script>
 </body>

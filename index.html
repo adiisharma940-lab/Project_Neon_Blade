@@ -15,13 +15,49 @@
   *{margin:0;padding:0;box-sizing:border-box;}
   *{cursor:none!important;}
 
-  #cursor-wheel{
-    position:fixed;width:52px;height:52px;pointer-events:none;z-index:99999;
+  /* ── CUSTOM CURSOR — targeting reticle ── */
+  #cursor-reticle{
+    position:fixed;width:48px;height:48px;pointer-events:none;z-index:99999;
     transform:translate(-50%,-50%);
+    transition:width .15s,height .15s;
   }
-  #cursor-wheel svg{width:100%;height:100%;animation:wheelSpin 1.8s linear infinite;}
-  #cursor-wheel.fast svg{animation-duration:.45s;}
-  @keyframes wheelSpin{to{transform:rotate(360deg);}}
+  #cursor-reticle.fast{width:60px;height:60px;}
+  #cursor-reticle .r-ring{
+    position:absolute;inset:0;border-radius:50%;
+    border:1.5px solid rgba(200,16,46,0.9);
+    animation:rPulse 2s ease-in-out infinite;
+  }
+  #cursor-reticle .r-ring2{
+    position:absolute;inset:8px;border-radius:50%;
+    border:1px solid rgba(212,168,0,0.45);
+  }
+  #cursor-reticle .r-dot{
+    position:absolute;top:50%;left:50%;
+    width:4px;height:4px;border-radius:50%;
+    background:var(--red);
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 6px 2px rgba(200,16,46,0.6);
+  }
+  #cursor-reticle .r-tick{position:absolute;background:var(--red);}
+  #cursor-reticle .r-tick.t{width:1px;height:8px;left:50%;top:2px;transform:translateX(-50%);}
+  #cursor-reticle .r-tick.b{width:1px;height:8px;left:50%;bottom:2px;transform:translateX(-50%);}
+  #cursor-reticle .r-tick.l{height:1px;width:8px;top:50%;left:2px;transform:translateY(-50%);}
+  #cursor-reticle .r-tick.r{height:1px;width:8px;top:50%;right:2px;transform:translateY(-50%);}
+  #cursor-reticle .r-arc{
+    position:absolute;inset:-5px;border-radius:50%;
+    border:1.5px solid transparent;
+    border-top-color:var(--gold);
+    border-right-color:rgba(212,168,0,0.25);
+    animation:rSpin 2.2s linear infinite;
+  }
+  #cursor-reticle .r-arc2{
+    position:absolute;inset:-5px;border-radius:50%;
+    border:1px solid transparent;
+    border-bottom-color:rgba(200,16,46,0.45);
+    animation:rSpin 2.2s linear infinite reverse;
+  }
+  @keyframes rPulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+  @keyframes rSpin{to{transform:rotate(360deg);}}
 
   body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;}
 
@@ -148,40 +184,239 @@
   #hud{position:fixed;top:24px;right:24px;z-index:100;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(200,16,46,0.6);text-align:right;line-height:2;pointer-events:none;}
   #vignette{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);}
 
-  #loader{position:fixed;inset:0;background:var(--darker);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s;}
-  #loader.hide{opacity:0;pointer-events:none;}
-  .loader-title{font-family:'Orbitron',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:.15em;color:var(--red);font-weight:900;}
-  .loader-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.4em;color:var(--gold);margin-top:-12px;}
-  .loader-bar-wrap{width:240px;height:2px;background:rgba(255,255,255,0.08);}
-  .loader-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));width:0%;transition:width .3s linear;}
-  .loader-status{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--muted);}
-  .loader-status.ready{color:var(--gold);animation:pulseReady 1.1s ease-in-out infinite;}
-  @keyframes pulseReady{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  /* ── LOADER ── */
+  #loader{
+    position:fixed;inset:0;z-index:999;overflow:hidden;
+    background:#000;
+    transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1);
+  }
+  #loader.hide{opacity:0;transform:scale(1.04);pointer-events:none;}
+
+  /* Animated hex grid background */
+  #loader-hex{position:absolute;inset:0;opacity:0.07;}
+  #loader-hex svg{width:100%;height:100%;}
+
+  /* Vertical scan beam */
+  #loader-scanbeam{
+    position:absolute;top:0;left:-100%;width:60%;height:100%;
+    background:linear-gradient(90deg,transparent 0%,rgba(200,16,46,0.08) 40%,rgba(200,16,46,0.18) 50%,rgba(200,16,46,0.08) 60%,transparent 100%);
+    animation:scanBeam 2.4s cubic-bezier(.4,0,.6,1) infinite;
+    pointer-events:none;
+  }
+  @keyframes scanBeam{0%{left:-60%;}100%{left:120%;}}
+
+  /* Horizontal CRT lines */
+  #loader-crt{
+    position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.22) 3px,rgba(0,0,0,0.22) 4px);
+  }
+
+  /* Corner bracket decorations */
+  .l-corner{position:absolute;width:40px;height:40px;pointer-events:none;}
+  .l-corner::before,.l-corner::after{content:'';position:absolute;background:var(--red);}
+  .l-corner::before{width:100%;height:2px;top:0;left:0;}
+  .l-corner::after{width:2px;height:100%;top:0;left:0;}
+  .l-corner.tr{top:24px;right:24px;transform:scaleX(-1);}
+  .l-corner.tl{top:24px;left:24px;}
+  .l-corner.br{bottom:24px;right:24px;transform:scale(-1);}
+  .l-corner.bl{bottom:24px;left:24px;transform:scaleY(-1);}
+
+  /* GT-R silhouette SVG */
+  #loader-car{
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:min(700px,90vw);opacity:0;
+    animation:carReveal 1.2s cubic-bezier(.16,1,.3,1) .3s forwards;
+  }
+  @keyframes carReveal{
+    0%{opacity:0;transform:translateX(-50%) translateY(40px);}
+    100%{opacity:1;transform:translateX(-50%) translateY(0);}
+  }
+
+  /* Glowing ground line under car */
+  #loader-glow{
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:min(600px,80vw);height:1px;
+    background:linear-gradient(90deg,transparent,var(--red) 30%,#ff6688 50%,var(--red) 70%,transparent);
+    box-shadow:0 0 18px 4px rgba(200,16,46,0.5);
+    animation:glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse{0%,100%{opacity:.7;}50%{opacity:1;}}
+
+  /* Central content */
+  #loader-content{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:0;
+    padding-bottom:min(200px,28vh);
+  }
+
+  .l-eyebrow{
+    font-family:'Space Mono',monospace;font-size:clamp(7px,1vw,10px);
+    letter-spacing:.55em;color:var(--gold);margin-bottom:18px;
+    opacity:0;animation:lFadeUp .6s ease .1s forwards;
+  }
+  .l-title{
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(64px,12vw,160px);
+    line-height:.85;font-weight:900;letter-spacing:.05em;
+    color:#fff;position:relative;
+    opacity:0;animation:lFadeUp .7s cubic-bezier(.16,1,.3,1) .25s forwards;
+  }
+  .l-title span{color:var(--red);}
+  .l-title::after{
+    content:'GT‑R';position:absolute;inset:0;
+    color:transparent;-webkit-text-stroke:1px rgba(200,16,46,0.25);
+    transform:translate(3px,3px);pointer-events:none;
+  }
+  .l-model{
+    font-family:'Space Mono',monospace;font-size:clamp(8px,1.1vw,11px);
+    letter-spacing:.6em;color:var(--muted);margin-top:10px;
+    opacity:0;animation:lFadeUp .6s ease .4s forwards;
+  }
+
+  /* Progress block */
+  #loader-prog{
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    margin-top:36px;
+    opacity:0;animation:lFadeUp .6s ease .6s forwards;
+  }
+  .l-bar-outer{
+    width:min(320px,70vw);height:2px;
+    background:rgba(255,255,255,0.06);position:relative;overflow:visible;
+  }
+  .l-bar-outer::before,.l-bar-outer::after{
+    content:'';position:absolute;top:-3px;width:6px;height:8px;
+    background:var(--red);
+  }
+  .l-bar-outer::before{left:0;}
+  .l-bar-outer::after{right:0;}
+  #lbar{
+    height:100%;width:0%;
+    background:linear-gradient(90deg,var(--red),#ff4466 60%,var(--gold));
+    transition:width .35s linear;position:relative;
+  }
+  #lbar::after{
+    content:'';position:absolute;right:-1px;top:-2px;
+    width:4px;height:6px;background:#fff;
+    box-shadow:0 0 6px 2px rgba(255,255,255,0.7);
+  }
+  .l-meta{
+    display:flex;justify-content:space-between;
+    width:min(320px,70vw);
+  }
+  #lstatus{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--muted);}
+  #lpct{font-family:'Orbitron',monospace;font-size:10px;color:var(--red);font-weight:700;}
+
+  /* Data readouts on the sides */
+  .l-readout{
+    position:absolute;top:50%;transform:translateY(-50%);
+    font-family:'Space Mono',monospace;font-size:8px;
+    letter-spacing:.2em;color:rgba(200,16,46,0.4);
+    line-height:2.4;
+    opacity:0;animation:lFadeUp .6s ease .5s forwards;
+  }
+  .l-readout.left{left:clamp(16px,3vw,48px);text-align:left;}
+  .l-readout.right{right:clamp(16px,3vw,48px);text-align:right;}
+  .l-readout span{color:rgba(212,168,0,0.5);}
+
+  @keyframes lFadeUp{0%{opacity:0;transform:translateY(14px);}100%{opacity:1;transform:translateY(0);}}
+
   .encrypting{color:var(--red)!important;}
 </style>
 </head>
 <body>
 
-<div id="cursor-wheel">
-  <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="26" cy="26" r="23" stroke="#c8102e" stroke-width="5.5"/>
-    <circle cx="26" cy="26" r="17.5" stroke="#d4a800" stroke-width="1.2" opacity="0.6"/>
-    <line x1="26" y1="8.5" x2="26" y2="20" stroke="#c8102e" stroke-width="4.5" stroke-linecap="round"/>
-    <line x1="26" y1="26" x2="12" y2="38" stroke="#c8102e" stroke-width="4.5" stroke-linecap="round"/>
-    <line x1="26" y1="26" x2="40" y2="38" stroke="#c8102e" stroke-width="4.5" stroke-linecap="round"/>
-    <circle cx="26" cy="26" r="6.5" fill="#d4a800" opacity="0.9"/>
-    <circle cx="26" cy="26" r="3.5" fill="#c8102e"/>
-    <line x1="23.5" y1="12" x2="28.5" y2="12" stroke="#d4a800" stroke-width="1" opacity="0.5"/>
-    <line x1="23.5" y1="15" x2="28.5" y2="15" stroke="#d4a800" stroke-width="1" opacity="0.5"/>
-    <rect x="24.5" y="1" width="3" height="5" rx="1.5" fill="#d4a800" opacity="0.9"/>
-  </svg>
+<div id="cursor-reticle">
+  <div class="r-arc"></div>
+  <div class="r-arc2"></div>
+  <div class="r-ring"></div>
+  <div class="r-ring2"></div>
+  <div class="r-tick t"></div>
+  <div class="r-tick b"></div>
+  <div class="r-tick l"></div>
+  <div class="r-tick r"></div>
+  <div class="r-dot"></div>
 </div>
 
 <div id="loader">
-  <div class="loader-title">GT&#8209;R</div>
-  <div class="loader-sub">BLACK EDITION // R35</div>
-  <div class="loader-bar-wrap"><div class="loader-bar" id="lbar"></div></div>
-  <div class="loader-status" id="lstatus">INITIALISING...</div>
+  <!-- Hex grid bg -->
+  <div id="loader-hex">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <defs>
+        <pattern id="hex" x="0" y="0" width="56" height="48" patternUnits="userSpaceOnUse">
+          <polygon points="28,2 54,14 54,34 28,46 2,34 2,14" fill="none" stroke="#c8102e" stroke-width="0.8"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hex)"/>
+    </svg>
+  </div>
+  <div id="loader-scanbeam"></div>
+  <div id="loader-crt"></div>
+
+  <!-- Corner brackets -->
+  <div class="l-corner tl"></div>
+  <div class="l-corner tr"></div>
+  <div class="l-corner bl"></div>
+  <div class="l-corner br"></div>
+
+  <!-- Side data readouts -->
+  <div class="l-readout left">
+    ENGINE<br><span>VR38DETT</span><br><br>
+    DISPLACEMENT<br><span>3,799 CC</span><br><br>
+    POWER<br><span>545 HP</span><br><br>
+    TORQUE<br><span>463 LB·FT</span>
+  </div>
+  <div class="l-readout right">
+    0–60 MPH<br><span>2.7 SEC</span><br><br>
+    TOP SPEED<br><span>196 MPH</span><br><br>
+    DRIVE<br><span>ATTESA AWD</span><br><br>
+    YEAR<br><span>2013</span>
+  </div>
+
+  <!-- Main title block -->
+  <div id="loader-content">
+    <div class="l-eyebrow">NISSAN MOTOR CO. &nbsp;·&nbsp; R35 PLATFORM</div>
+    <div class="l-title">GT<span>&#8209;R</span></div>
+    <div class="l-model">BLACK EDITION &nbsp;//&nbsp; VR38DETT &nbsp;//&nbsp; AWD</div>
+    <div id="loader-prog">
+      <div class="l-bar-outer"><div id="lbar"></div></div>
+      <div class="l-meta">
+        <div id="lstatus">INITIALISING...</div>
+        <div id="lpct">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GT-R silhouette -->
+  <svg id="loader-car" viewBox="0 0 800 220" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+    <!-- Body outline — GT-R R35 side profile -->
+    <path d="M60,180 L60,150 Q80,100 130,85 L200,75 Q240,60 290,52 Q340,44 380,44 Q430,42 470,46 Q530,50 570,62 L640,80 Q680,92 710,115 L730,140 L740,160 L740,180 Z"
+      fill="rgba(200,16,46,0.08)" stroke="rgba(200,16,46,0.7)" stroke-width="1.5"/>
+    <!-- Roof -->
+    <path d="M200,75 Q250,40 320,34 Q390,28 460,34 Q510,38 545,54 L570,62"
+      fill="none" stroke="rgba(200,16,46,0.5)" stroke-width="1"/>
+    <!-- Window -->
+    <path d="M215,72 Q260,40 330,32 Q395,26 455,33 Q500,38 530,55 L510,68 Q470,58 390,54 Q310,50 240,65 Z"
+      fill="rgba(100,160,255,0.06)" stroke="rgba(100,160,255,0.3)" stroke-width="1"/>
+    <!-- Rear wing -->
+    <path d="M610,62 L660,50 L665,56 L618,70 Z" fill="rgba(200,16,46,0.4)" stroke="rgba(200,16,46,0.8)" stroke-width="1"/>
+    <!-- Front wheel arch -->
+    <circle cx="190" cy="180" r="42" fill="rgba(0,0,0,0.6)" stroke="rgba(200,16,46,0.6)" stroke-width="1.5"/>
+    <circle cx="190" cy="180" r="28" fill="rgba(20,20,20,0.8)" stroke="rgba(212,168,0,0.5)" stroke-width="1"/>
+    <circle cx="190" cy="180" r="10" fill="rgba(212,168,0,0.3)" stroke="rgba(212,168,0,0.8)" stroke-width="1.5"/>
+    <!-- Rear wheel arch -->
+    <circle cx="610" cy="180" r="42" fill="rgba(0,0,0,0.6)" stroke="rgba(200,16,46,0.6)" stroke-width="1.5"/>
+    <circle cx="610" cy="180" r="28" fill="rgba(20,20,20,0.8)" stroke="rgba(212,168,0,0.5)" stroke-width="1"/>
+    <circle cx="610" cy="180" r="10" fill="rgba(212,168,0,0.3)" stroke="rgba(212,168,0,0.8)" stroke-width="1.5"/>
+    <!-- Headlight -->
+    <path d="M68,130 L95,118 L105,128 L80,142 Z" fill="rgba(200,220,255,0.15)" stroke="rgba(180,210,255,0.8)" stroke-width="1"/>
+    <line x1="68" y1="130" x2="10" y2="110" stroke="rgba(180,210,255,0.25)" stroke-width="1"/>
+    <line x1="80" y1="142" x2="20" y2="155" stroke="rgba(180,210,255,0.15)" stroke-width="1"/>
+    <!-- Brakelight -->
+    <rect x="718" y="120" width="16" height="28" rx="2" fill="rgba(255,10,10,0.25)" stroke="rgba(255,30,30,0.9)" stroke-width="1.2"/>
+    <!-- Ground reflection line -->
+    <line x1="60" y1="180" x2="740" y2="180" stroke="rgba(200,16,46,0.3)" stroke-width="1"/>
+  </svg>
+  <div id="loader-glow"></div>
 </div>
 
 <div id="progress"></div>
@@ -352,13 +587,13 @@
 (function(){
 
   /* ── CURSOR ── */
-  var cursorEl = document.getElementById('cursor-wheel');
+  var cursorEl = document.getElementById('cursor-reticle');
   var lastX=0,lastY=0;
   document.addEventListener('mousemove',function(e){
     cursorEl.style.left=e.clientX+'px';
     cursorEl.style.top=e.clientY+'px';
     var dx=e.clientX-lastX,dy=e.clientY-lastY;
-    cursorEl.classList.toggle('fast',Math.sqrt(dx*dx+dy*dy)>8);
+    cursorEl.classList.toggle('fast',Math.sqrt(dx*dx+dy*dy)>10);
     lastX=e.clientX;lastY=e.clientY;
   });
 
@@ -578,7 +813,11 @@
 
   /* ── LOADER ── */
   var lbar=document.getElementById('lbar'),lstatus=document.getElementById('lstatus'),loaderEl=document.getElementById('loader');
-  function setLoad(p,t){lbar.style.width=p+'%';if(t)lstatus.textContent=t;}
+  function setLoad(p,t){
+    lbar.style.width=p+'%';
+    document.getElementById('lpct').textContent=Math.round(p)+'%';
+    if(t)lstatus.textContent=t;
+  }
   setLoad(5,'CONNECTING...');
 
   /* Auto-dismiss loader — no click required */
@@ -680,6 +919,90 @@
 
       scene.add(car);
       turntable.add(car);
+
+      /* ── HEADLIGHTS & BRAKE LIGHTS ── */
+      /* Use the car's world bounding box to place lights at correct positions */
+      var lb = new THREE.Box3().setFromObject(car);
+      var carCX = (lb.min.x + lb.max.x) * 0.5;
+      var carCZ = (lb.min.z + lb.max.z) * 0.5;
+      var carW2 = (lb.max.x - lb.min.x) * 0.5;
+      var headY  = lb.min.y + (lb.max.y - lb.min.y) * 0.30;  /* ~lower-third height */
+      var brakeY = lb.min.y + (lb.max.y - lb.min.y) * 0.32;
+
+      /* Headlight lens meshes — small emissive ellipsoids at front corners */
+      var hlGeo = new THREE.SphereGeometry(0.09, 12, 8);
+      var hlMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xd0e8ff,
+        emissiveIntensity: 6.0,
+        roughness: 0.1,
+        metalness: 0.0
+      });
+      var hlOffX = carW2 * 0.72;   /* left/right spread */
+      var hlZ    = lb.max.z + 0.04; /* front face */
+
+      [-hlOffX, hlOffX].forEach(function(ox){
+        var m = new THREE.Mesh(hlGeo, hlMat);
+        m.position.set(carCX + ox, headY, hlZ);
+        turntable.add(m);
+      });
+
+      /* Headlight SpotLights — beam forward (+Z in scene) */
+      if(!isMobile){
+        [-hlOffX, hlOffX].forEach(function(ox){
+          var sp = new THREE.SpotLight(0xd0e8ff, 3.5, 28, Math.PI / 8, 0.35, 1.5);
+          sp.position.set(carCX + ox, headY, hlZ);
+          sp.target.position.set(carCX + ox, headY - 0.5, hlZ + 14);
+          turntable.add(sp);
+          turntable.add(sp.target);
+          /* Subtle floor cone glow */
+          var fp = new THREE.PointLight(0xc8d8ff, 0.6, 7, 2.0);
+          fp.position.set(carCX + ox, headY * 0.3, hlZ + 3);
+          turntable.add(fp);
+        });
+      } else {
+        /* Mobile: cheaper point lights */
+        var mHL = new THREE.PointLight(0xd0e8ff, 1.8, 10, 2.0);
+        mHL.position.set(carCX, headY, hlZ + 1);
+        turntable.add(mHL);
+      }
+
+      /* Brake light lens meshes — glowing red strips at rear corners */
+      var blGeo = new THREE.BoxGeometry(0.28, 0.06, 0.04);
+      var blMat = new THREE.MeshStandardMaterial({
+        color: 0xff0000,
+        emissive: 0xff1100,
+        emissiveIntensity: 8.0,
+        roughness: 0.15,
+        metalness: 0.0
+      });
+      var blOffX = carW2 * 0.68;
+      var blZ    = lb.min.z - 0.04; /* rear face */
+
+      [-blOffX, blOffX].forEach(function(ox){
+        var bm = new THREE.Mesh(blGeo, blMat);
+        bm.position.set(carCX + ox, brakeY, blZ);
+        turntable.add(bm);
+        /* Inner centre strip — GT-R has a thin centre bar */
+        var bm2 = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 0.035, 0.04),
+          blMat
+        );
+        bm2.position.set(carCX + ox, brakeY - 0.07, blZ);
+        turntable.add(bm2);
+      });
+
+      /* Brake light point lights — red glow behind the car */
+      var blPL1 = new THREE.PointLight(0xff1100, isMobile ? 1.2 : 2.0, isMobile ? 4 : 6, 2.0);
+      blPL1.position.set(carCX - blOffX, brakeY, blZ - 0.3);
+      turntable.add(blPL1);
+      var blPL2 = new THREE.PointLight(0xff1100, isMobile ? 1.2 : 2.0, isMobile ? 4 : 6, 2.0);
+      blPL2.position.set(carCX + blOffX, brakeY, blZ - 0.3);
+      turntable.add(blPL2);
+      /* Centre rear diffuser glow */
+      var blPLC = new THREE.PointLight(0xff2200, isMobile ? 0.6 : 1.0, isMobile ? 3 : 5, 2.0);
+      blPLC.position.set(carCX, brakeY * 0.6, blZ - 0.2);
+      turntable.add(blPLC);
 
       setLoad(100,'LOADING COMPLETE');
       /* Auto-dismiss after a brief pause so the user sees 100% */

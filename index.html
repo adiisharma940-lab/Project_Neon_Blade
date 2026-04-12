@@ -9,25 +9,21 @@
 <style>
 :root{
   --dark:#06060a; --panel:rgba(6,6,12,0.92); --text:#eeeef0; --muted:#555566;
-  /* Active car colours — swapped by JS */
   --acc:#c8102e; --acc2:#d4a800; --border:rgba(200,16,46,0.22);
 }
 *{margin:0;padding:0;box-sizing:border-box;cursor:none!important;}
 
-/* ── CURSOR ── */
 #cur{position:fixed;width:40px;height:40px;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);}
 #cur svg{width:100%;height:100%;}
 #cur.fast{width:52px;height:52px;transition:width .1s,height .1s;}
 
 body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;}
 
-/* ── CANVAS ── */
 #cv{position:fixed;inset:0;z-index:0;}
 #cv canvas{width:100%!important;height:100%!important;display:block;}
 #vign{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.65) 100%);}
 #scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);}
 
-/* ── LOADER — BIG & SIMPLE ── */
 #loader{position:fixed;inset:0;z-index:999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity .7s ease,transform .7s ease;}
 #loader.hide{opacity:0;transform:scale(1.03);pointer-events:none;}
 
@@ -46,18 +42,15 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
 
 @keyframes lUp{0%{opacity:0;transform:translateY(16px);}100%{opacity:1;transform:translateY(0);}}
 
-/* ── CAR SWITCHER ── */
 #switcher{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:2px;opacity:0;transition:opacity .5s;}
 #switcher.show{opacity:1;}
 .sw-btn{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.3em;padding:9px 22px;background:rgba(6,6,12,0.8);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);transition:all .25s;backdrop-filter:blur(8px);}
 .sw-btn:hover{color:#fff;border-color:rgba(255,255,255,0.3);}
 .sw-btn.active{color:#fff;border-color:var(--acc);background:rgba(6,6,12,0.95);}
 
-/* ── HUD ── */
 #hud{position:fixed;top:24px;right:28px;z-index:100;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,0.3);text-align:right;line-height:2.2;pointer-events:none;}
 #progress{position:fixed;top:0;left:0;height:1px;background:rgba(255,255,255,0.4);z-index:100;width:0%;transition:width .05s linear;}
 
-/* ── SCROLL SECTIONS ── */
 #scroll-wrap{position:relative;z-index:10;pointer-events:none;}
 #hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 9vh;}
 
@@ -150,7 +143,6 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
 .os{color:var(--muted);font-size:clamp(9px,1.1vw,12px);letter-spacing:.2em;font-family:'Space Mono',monospace;line-height:2.2;opacity:0;transform:translateY(14px);transition:opacity .6s .55s,transform .6s .55s;}
 .os.vis{opacity:1;transform:none;}
 
-/* audio btn */
 #abtn{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;align-items:center;gap:9px;padding:10px 18px;background:rgba(6,6,12,0.88);border:1px solid rgba(255,255,255,0.14);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,0.5);transition:all .2s;backdrop-filter:blur(8px);}
 #abtn:hover{color:#fff;border-color:rgba(255,255,255,0.3);}
 #abtn.on{border-color:var(--acc);}
@@ -160,7 +152,6 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
 </head>
 <body>
 
-<!-- CURSOR -->
 <div id="cur">
   <svg viewBox="0 0 40 40" fill="none">
     <circle cx="20" cy="20" r="18" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
@@ -176,7 +167,6 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
   </svg>
 </div>
 
-<!-- LOADER -->
 <div id="loader">
   <div class="l-brand">THE GARAGE &nbsp;·&nbsp; TWO ICONS</div>
   <div class="l-title" id="l-title">GT<span>&#8209;</span>R</div>
@@ -190,23 +180,19 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
   </div>
 </div>
 
-<!-- HUD & UI -->
 <div id="progress"></div>
 <div id="hud">THE GARAGE<br><span id="hud-car">NISSAN GT-R</span><br><span id="hud-view">FRONT</span></div>
 <div id="vign"></div>
 <div id="scan"></div>
 <div id="cv"></div>
 
-<!-- CAR SWITCHER -->
 <div id="switcher">
   <div class="sw-btn active" data-car="0">GT&#8209;R</div>
   <div class="sw-btn" data-car="1">CHALLENGER</div>
 </div>
 
-<!-- SCROLL CONTENT — shown/hidden by JS per car -->
 <div id="scroll-wrap">
 
-  <!-- ═══ GT-R SECTIONS ═══ -->
   <div id="car0-content">
     <section id="hero">
       <div class="hero-eye">2013 // BLACK EDITION // R35 // VR38DETT</div>
@@ -291,7 +277,6 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
     </div></section>
   </div>
 
-  <!-- ═══ CHALLENGER SECTIONS ═══ -->
   <div id="car1-content" style="display:none;">
     <section id="hero">
       <div class="hero-eye">SRT HELLCAT // 717 HP // SUPERCHARGED // RWD</div>
@@ -376,7 +361,6 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
     </div></section>
   </div>
 
-  <!-- OUTRO -->
   <section id="outro">
     <div class="ol" id="ol">THE LAST OF THE LEGENDS</div>
     <h2 class="ot" id="ot">
@@ -388,16 +372,12 @@ body{background:var(--dark);color:var(--text);font-family:'Exo 2',sans-serif;ove
   </section>
 </div>
 
-<!-- AUDIO -->
 <div id="abtn"><span id="ai">&#9654;</span><span id="al">PLAY</span></div>
 <div id="avol">VOL <input id="avs" type="range" min="0" max="100" value="70" style="width:64px;accent-color:#fff;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
-/* ═══════════════════════════════════════════════
-   CURSOR
-═══════════════════════════════════════════════ */
 var curEl=document.getElementById('cur'),lx=0,ly=0;
 document.addEventListener('mousemove',function(e){
   curEl.style.left=e.clientX+'px';curEl.style.top=e.clientY+'px';
@@ -406,14 +386,13 @@ document.addEventListener('mousemove',function(e){
   lx=e.clientX;ly=e.clientY;
 });
 
-/* ═══════════════════════════════════════════════
-   CAR CONFIG
-═══════════════════════════════════════════════ */
 var CARS=[
   {file:'2013_nissan_gt-r_black_edition_coupe.glb', scale:3.2,
-   acc:'#c8102e', acc2:'#d4a800', name:'NISSAN GT-R', border:'rgba(200,16,46,0.22)'},
+   acc:'#c8102e', acc2:'#d4a800', name:'NISSAN GT-R', border:'rgba(200,16,46,0.22)',
+   shotScale:1.0},  /* GT-R: normal distance */
   {file:'dodge_challenger.glb', scale:2.8,
-   acc:'#ff6a00', acc2:'#ffaa00', name:'DODGE CHALLENGER', border:'rgba(255,106,0,0.22)'}
+   acc:'#ff6a00', acc2:'#ffaa00', name:'DODGE CHALLENGER', border:'rgba(255,106,0,0.22)',
+   shotScale:0.52}  /* Challenger: much tighter — 52% of safeZ */
 ];
 var activeCar=0;
 
@@ -423,18 +402,13 @@ function applyTheme(i){
   document.documentElement.style.setProperty('--acc2',c.acc2);
   document.documentElement.style.setProperty('--border',c.border);
   document.getElementById('hud-car').textContent=c.name;
-  /* update switcher */
   document.querySelectorAll('.sw-btn').forEach(function(b){b.classList.toggle('active',+b.dataset.car===i);});
-  /* swap content */
   document.getElementById('car0-content').style.display=i===0?'':'none';
   document.getElementById('car1-content').style.display=i===1?'':'none';
   window.scrollTo(0,0);
   setTimeout(revealPanels,80);
 }
 
-/* ═══════════════════════════════════════════════
-   THREE.JS
-═══════════════════════════════════════════════ */
 var isMob=window.innerWidth<768||/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 var wrap=document.getElementById('cv');
 var W=function(){return wrap.clientWidth;};
@@ -457,7 +431,6 @@ if(!isMob) scene.fog=new THREE.FogExp2(0x06060a,0.012);
 var camera=new THREE.PerspectiveCamera(46,W()/H(),0.01,300);
 camera.position.set(0,2.5,12);camera.lookAt(0,0,0);
 
-/* Lights */
 scene.add(new THREE.AmbientLight(0xfff8f0,isMob?0.6:0.4));
 var keyL=new THREE.DirectionalLight(0xffffff,isMob?1.8:2.2);
 keyL.position.set(5,8,5);
@@ -466,16 +439,15 @@ scene.add(keyL);
 var fillL=new THREE.DirectionalLight(0xaabbcc,isMob?0.2:0.38);fillL.position.set(-4,3,-4);scene.add(fillL);
 var rearL=new THREE.DirectionalLight(0xffeedd,isMob?0.35:0.5);rearL.position.set(0,9,-7);scene.add(rearL);
 
-/* Ceiling spots */
 [[0,18,0],[-4,18,3],[4,18,3]].forEach(function(pos){
   if(!isMob){var s=new THREE.SpotLight(0xffe8c0,1.8,38,Math.PI/5.5,0.45,1.2);s.position.set(pos[0],pos[1],pos[2]);s.target.position.set(pos[0],0,pos[2]);scene.add(s);scene.add(s.target);}
   else{var p=new THREE.PointLight(0xffe8c0,1.0,20,1.5);p.position.set(pos[0],pos[1],pos[2]);scene.add(p);}
 });
+var ugl=null;
 if(!isMob){
-  var ac=new THREE.PointLight(0xffffff,0.2,8);ac.position.set(0,-.3,0);scene.add(ac);
+  var ac2=new THREE.PointLight(0xffffff,0.2,8);ac2.position.set(0,-.3,0);scene.add(ac2);
 }
 
-/* Turntable + floor */
 var turntable=new THREE.Group();scene.add(turntable);
 
 var floorMat=new THREE.MeshStandardMaterial({color:0x050508,roughness:isMob?0.2:0.1,metalness:isMob?0.55:0.8});
@@ -487,7 +459,6 @@ var floorMat=new THREE.MeshStandardMaterial({color:0x050508,roughness:isMob?0.2:
     ctx.fillStyle=(row+col)%2===0?'rgba(255,255,255,0.012)':'rgba(0,0,0,0)';
     ctx.fillRect(col*ts+1,row*ts+1,ts-2,ts-2);
   }
-  /* Very subtle grid — no visible lines */
   ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
   for(var i=0;i<=tc;i++){var p=i*ts;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,sz);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(sz,p);ctx.stroke();}
   var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(8,8);floorMat.map=t;
@@ -496,19 +467,16 @@ var floorMat=new THREE.MeshStandardMaterial({color:0x050508,roughness:isMob?0.2:
 var disc=new THREE.Mesh(new THREE.CylinderGeometry(9,9,0.07,96,1),floorMat);
 disc.position.y=-0.035;if(!isMob) disc.receiveShadow=true;turntable.add(disc);
 
-/* Rim — very subtle, thin */
 var rimM=new THREE.Mesh(new THREE.TorusGeometry(9,0.025,6,96),new THREE.MeshBasicMaterial({color:0x222222}));
 rimM.rotation.x=Math.PI/2;rimM.position.y=0;turntable.add(rimM);
 
 var sFloor=new THREE.Mesh(new THREE.PlaneGeometry(150,150),new THREE.MeshStandardMaterial({color:0x040407,roughness:0.6,metalness:0.25}));
 sFloor.rotation.x=-Math.PI/2;sFloor.position.y=-0.08;if(!isMob) sFloor.receiveShadow=true;scene.add(sFloor);
 
-/* Very subtle under-glow — no neon bars */
 if(!isMob){
-  var ugl=new THREE.PointLight(0x888899,0.15,8);ugl.position.set(0,0.1,0);turntable.add(ugl);
+  ugl=new THREE.PointLight(0x888899,0.15,8);ugl.position.set(0,0.1,0);turntable.add(ugl);
 }
 
-/* ─── Model management ─── */
 var models=[null,null];
 var loaded=[false,false];
 var clock=new THREE.Clock(),safeZ=12;
@@ -516,7 +484,6 @@ var EXT=[],extPx=0,extPy=2.5,extPz=12,extLx=0,extLy=0,extLz=0,extFov=46;
 var tPx=0,tPy=2.5,tPz=12,tLx=0,tLy=0,tLz=0,tFov=46;
 var totalProgress=[0,0];
 
-/* Loader DOM */
 var lbarEl=document.getElementById('lbar'),lstatEl=document.getElementById('lstatus'),loaderEl=document.getElementById('loader');
 function setLoad(p,t){
   lbarEl.style.width=p+'%';
@@ -525,7 +492,8 @@ function setLoad(p,t){
 }
 setLoad(2,'INITIALISING...');
 
-function buildShots(box,S){
+/* ─── Per-car shot builders ─── */
+function buildShotsGTR(box,S){
   var cx=(box.min.x+box.max.x)*.5,cz=(box.min.z+box.max.z)*.5;
   var top=box.max.y,mid=top*.5;
   return[
@@ -540,6 +508,37 @@ function buildShots(box,S){
     [0.80,[cx-S*.4,top*1.2,S*.7],[cx,mid*.3,cz],50,'OVERHEAD'],
     [0.90,[cx,top*.8,S*.7],[cx,top*.1,cz],36,'BONNET'],
     [1.00,[cx,top*.85,S*2.0],[cx,mid*.5,cz],42,'WIDE'],
+  ];
+}
+
+/* Challenger: close-up, dramatic shots — tight to the body */
+function buildShotsChallenger(box,S){
+  var cx=(box.min.x+box.max.x)*.5,cz=(box.min.z+box.max.z)*.5;
+  var top=box.max.y,mid=top*.5;
+  /* S is already scaled by shotScale (0.52) so distances are ~half */
+  return[
+    /* Hero front — fill the frame */
+    [0.00,[cx,top*.45,S*1.1],[cx,mid*.6,cz],54,'FRONT HERO'],
+    /* Ground-level front grille */
+    [0.10,[cx,top*.05,S*0.75],[cx,top*.3,cz],62,'GRILLE LOW'],
+    /* Driver door / window line tight */
+    [0.20,[cx-S*1.1,top*.55,S*.3],[cx,mid*.75,cz],50,'DOOR PANEL'],
+    /* Front wheel arch */
+    [0.30,[cx-S*.85,top*.12,S*.65],[cx,top*.2,cz],58,'FRONT ARCH'],
+    /* Front 3/4 beauty shot */
+    [0.40,[cx-S*.9,top*.5,S*.85],[cx,mid*.6,cz],52,'FRONT 3/4'],
+    /* Rear haunch / fender */
+    [0.50,[cx-S*.8,top*.35,-S*.75],[cx,mid*.5,cz],56,'REAR HAUNCH'],
+    /* Tight rear — taillights */
+    [0.60,[cx,top*.38,-S*0.9],[cx,mid*.5,cz],50,'TAILLIGHTS'],
+    /* Passenger 3/4 rear */
+    [0.70,[cx+S*.9,top*.4,-S*.7],[cx,mid*.55,cz],50,'REAR 3/4 P'],
+    /* Bonnet bulge from front */
+    [0.80,[cx,top*.7,S*.7],[cx,top*.05,cz],46,'HOOD SCOOP'],
+    /* Side profile wide but close */
+    [0.90,[cx-S*1.2,top*.5,cz],[cx,mid*.6,cz],46,'PROFILE'],
+    /* Final pull-back reveal */
+    [1.00,[cx,top*.6,S*1.35],[cx,mid*.5,cz],48,'REVEAL'],
   ];
 }
 
@@ -571,7 +570,6 @@ function loadModel(i){
       updateLoadBar();
       if(loaded[0]&&loaded[1]) onAllLoaded();
       else if(i===0){
-        /* First model loaded — dismiss loader and start render, load second in BG */
         startScene(0);
         dismissLoader();
         loadModel(1);
@@ -590,7 +588,6 @@ function updateLoadBar(){
 }
 
 function onAllLoaded(){
-  /* Both done — ensure correct visibility */
   if(models[0]) models[0].visible=(activeCar===0);
   if(models[1]) models[1].visible=(activeCar===1);
 }
@@ -603,8 +600,13 @@ function startScene(i){
   var dV=(cH*1.25/2)/Math.tan(fovR/2);
   var hFov=2*Math.atan(Math.tan(fovR/2)*asp);
   var dH=(cW*1.15/2)/Math.tan(hFov/2);
-  safeZ=Math.max(dV,dH)+1.0;
-  EXT=buildShots(wb,safeZ);
+  /* Base safe distance — full model just fits */
+  var baseSafeZ=Math.max(dV,dH)+1.0;
+  /* Apply per-car shot scale to bring Challenger shots much closer */
+  safeZ=baseSafeZ*CARS[i].shotScale;
+  
+  EXT=(i===1)?buildShotsChallenger(wb,safeZ):buildShotsGTR(wb,safeZ);
+  
   var s0=EXT[0];
   extPx=tPx=s0[1][0];extPy=tPy=s0[1][1];extPz=tPz=s0[1][2];
   extLx=tLx=s0[2][0];extLy=tLy=s0[2][1];extLz=tLz=s0[2][2];extFov=tFov=s0[3];
@@ -618,7 +620,6 @@ function dismissLoader(){
   document.getElementById('switcher').classList.add('show');
 }
 
-/* Switcher */
 document.querySelectorAll('.sw-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
     var i=+this.dataset.car;
@@ -628,13 +629,11 @@ document.querySelectorAll('.sw-btn').forEach(function(btn){
     if(models[1]) models[1].visible=(i===1);
     applyTheme(i);
     if(models[i]) startScene(i);
-    /* reset accent on floor rim */
     rimM.material.color.setHex(i===0?0x1a0208:0x1a0a00);
     if(ugl) ugl.color.setHex(i===0?0x8888aa:0xaa8866);
   });
 });
 
-/* Scroll camera */
 var progBar=document.getElementById('progress');
 function setTarget(pct){
   if(!EXT.length) return;
@@ -678,7 +677,6 @@ function checkOutro(){
   });
 }
 
-/* Render loop */
 var lastF=0,fb=isMob?33:0;
 function animate(now){
   requestAnimationFrame(animate);
@@ -697,7 +695,6 @@ function animate(now){
 }
 animate();
 
-/* start loading */
 loadModel(0);
 
 window.addEventListener('resize',function(){
@@ -706,12 +703,6 @@ window.addEventListener('resize',function(){
 
 applyTheme(0);
 
-/* ═══════════════════════════════════════════════
-   AUDIO ENGINE — Stable ambient electronic
-   No web audio scheduler drift, no flicker.
-   Uses a single looping LFO-modulated drone
-   + layered percussion via fixed interval.
-═══════════════════════════════════════════════ */
 (function(){
   var AC=null,master=null,playing=false,nodes=[];
   var btn=document.getElementById('abtn'),
@@ -732,14 +723,12 @@ applyTheme(0);
     lim.threshold.value=-8;lim.knee.value=4;lim.ratio.value=6;lim.attack.value=0.005;lim.release.value=0.15;
     master.connect(lim);lim.connect(AC.destination);
 
-    /* ── REVERB ── */
     var revLen=AC.sampleRate*2.5;
     var revBuf=AC.createBuffer(2,revLen,AC.sampleRate);
     for(var c2=0;c2<2;c2++){var rd=revBuf.getChannelData(c2);for(var ri=0;ri<revLen;ri++) rd[ri]=(Math.random()*2-1)*Math.pow(1-ri/revLen,2.5);}
     var rev=n(AC.createConvolver());rev.buffer=revBuf;
     var revG=n(AC.createGain());revG.gain.value=0.18;rev.connect(revG);revG.connect(lim);
 
-    /* ── SUB DRONE ── (continuous, no scheduling) */
     var subFreqs=[55,55*1.5,55*2,55*2.5];
     subFreqs.forEach(function(f,fi){
       var osc=n(AC.createOscillator()),g=n(AC.createGain());
@@ -754,7 +743,6 @@ applyTheme(0);
       osc.start();lfo.start();
     });
 
-    /* ── ATMOSPHERE — noise filtered ── */
     var aNoise=n(AC.createBufferSource());
     var aBuf=AC.createBuffer(1,AC.sampleRate*4,AC.sampleRate);
     var ad=aBuf.getChannelData(0);for(var i=0;i<ad.length;i++) ad[i]=Math.random()*2-1;
@@ -768,7 +756,6 @@ applyTheme(0);
     aNoise.connect(aFilt);aFilt.connect(aFilt2);aFilt2.connect(aG);aG.connect(master);aG.connect(revG);
     aNoise.start();aLfo.start();
 
-    /* ── PAD — slowly evolving chord ── */
     var padNotes=[110,138.6,165,220,261.6];
     padNotes.forEach(function(f,pi){
       var oA=n(AC.createOscillator()),oB=n(AC.createOscillator());
@@ -777,7 +764,6 @@ applyTheme(0);
       oA.type='sawtooth';oA.frequency.value=f;oA.detune.value=-5;
       oB.type='sawtooth';oB.frequency.value=f;oB.detune.value=6;
       pg.gain.value=0.018;
-      /* Slow vibrato */
       var vl=n(AC.createOscillator()),vg=n(AC.createGain());
       vl.frequency.value=0.3+pi*0.05;vg.gain.value=1.5;
       vl.connect(vg);vg.connect(oA.detune);vl.connect(vg);
@@ -785,19 +771,16 @@ applyTheme(0);
       oA.start();oB.start();vl.start();
     });
 
-    /* ── RHYTHM — simple stable interval-based, no scheduler ── */
     var BPM=124,beatMs=60000/BPM;
     var step=0;
     function tick(){
       if(!playing) return;
       var t=AC.currentTime+0.01;
-      /* Kick every beat */
       var ko=n(AC.createOscillator()),kg=n(AC.createGain());
       ko.type='sine';ko.frequency.setValueAtTime(140,t);ko.frequency.exponentialRampToValueAtTime(30,t+0.14);
       kg.gain.setValueAtTime(0,t);kg.gain.linearRampToValueAtTime(1.2,t+0.003);kg.gain.exponentialRampToValueAtTime(0.001,t+0.28);
       ko.connect(kg);kg.connect(lim);ko.start(t);ko.stop(t+0.32);
 
-      /* Hi-hat every beat */
       var hbuf=AC.createBuffer(1,Math.ceil(AC.sampleRate*0.06),AC.sampleRate);
       var hd=hbuf.getChannelData(0);for(var i=0;i<hd.length;i++) hd[i]=Math.random()*2-1;
       var hs=n(AC.createBufferSource()),hf=n(AC.createBiquadFilter()),hg=n(AC.createGain());
@@ -805,7 +788,6 @@ applyTheme(0);
       hg.gain.setValueAtTime(0,t);hg.gain.linearRampToValueAtTime(0.08,t+0.001);hg.gain.exponentialRampToValueAtTime(0.001,t+0.05);
       hs.connect(hf);hf.connect(hg);hg.connect(lim);hs.start(t);hs.stop(t+0.065);
 
-      /* Clap on 2 and 4 */
       if(step%4===1||step%4===3){
         for(var d=0;d<3;d++){
           var cbuf=AC.createBuffer(1,Math.ceil(AC.sampleRate*0.12),AC.sampleRate);
@@ -817,7 +799,6 @@ applyTheme(0);
           cs.connect(cf);cf.connect(cg);cg.connect(lim);cg.connect(revG);cs.start(ct);cs.stop(ct+0.13);
         }
       }
-      /* Bass note every 2 beats */
       if(step%2===0){
         var bRoots=[55,41.2,65.4,49.0];
         var bf2=bRoots[Math.floor(step/2)%bRoots.length];
@@ -832,9 +813,9 @@ applyTheme(0);
         bo.start(t);bo.stop(t+beatMs*2/1000);
       }
       step++;
-      setTimeout(tick,beatMs-8); /* 8ms compensates for setup time */
+      setTimeout(tick,beatMs-8);
     }
-    setTimeout(tick,200);/* short startup delay */
+    setTimeout(tick,200);
 
     return{
       setVol:function(v){master.gain.linearRampToValueAtTime(v,AC.currentTime+0.1);},

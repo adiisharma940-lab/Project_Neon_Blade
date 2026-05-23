@@ -379,103 +379,88 @@ onResize();
 window.addEventListener('resize', onResize, {passive:true});
 
 // ─────────────────────────────────
-// ENV MAP — key fix for black metallic body
-// Build a synthetic cube-map from coloured lights so metalness
-// has something to reflect instead of rendering pure black.
+// ENV MAP — neutral dark scene so metallic parts reflect
+// without colour-casting the entire model cyan/magenta.
+// The trick: very dark background + tiny dim accent lights
+// so chrome catches glints but body panels stay their real colour.
 // ─────────────────────────────────
 function buildEnvMap(){
   const pmrem = new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
 
-  // Create a small scene with coloured spheres that become the env map
   const envScene = new THREE.Scene();
+  // Near-black background — metallic surfaces reflect dark = stay true colour
+  envScene.background = new THREE.Color(0x000005);
 
-  // Background — deep dark blue like the main scene
-  envScene.background = new THREE.Color(0x000018);
+  // Very dim hemisphere — just enough to prevent pure-black on underside
+  envScene.add(new THREE.HemisphereLight(0x111122, 0x000000, 0.4));
 
-  // Hemisphere: warm cyan from top, magenta from bottom — mimics the ceiling lights
-  envScene.add(new THREE.HemisphereLight(0x00ffff, 0xff00ff, 2.0));
-
-  // Key punch: bright cyan from upper-right
-  const k1 = new THREE.DirectionalLight(0x00eeff, 3.0);
-  k1.position.set(4, 6, 3);
-  envScene.add(k1);
-
-  // Fill: magenta from lower-left
-  const k2 = new THREE.DirectionalLight(0xff00cc, 1.5);
-  k2.position.set(-4, 2, -2);
-  envScene.add(k2);
-
-  // Rim: deep blue from behind
-  const k3 = new THREE.DirectionalLight(0x0033ff, 1.0);
-  k3.position.set(0, 1, -6);
-  envScene.add(k3);
-
-  // Floor bounce: dark teal from below
-  const k4 = new THREE.DirectionalLight(0x003344, 0.8);
-  k4.position.set(0, -3, 0);
-  envScene.add(k4);
-
-  // Neon accent spheres that appear in reflections
-  const addGlow = (color, x, y, z, intensity) => {
+  // Tiny accent point lights — appear as small glints in reflections
+  // kept dim so they don't flood the whole surface
+  const addAccent = (color, x, y, z, intensity) => {
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.5, 8, 8),
+      new THREE.SphereGeometry(0.3, 6, 6),
       new THREE.MeshBasicMaterial({ color })
     );
     mesh.position.set(x, y, z);
     envScene.add(mesh);
-    const pt = new THREE.PointLight(color, intensity, 20);
+    const pt = new THREE.PointLight(color, intensity, 30);
     pt.position.set(x, y, z);
     envScene.add(pt);
   };
-  addGlow(0x00ffff, -5,  3, -5, 2);
-  addGlow(0xff00ff,  5,  3,  5, 2);
-  addGlow(0x00ffff,  5,  2, -5, 1.5);
-  addGlow(0xff00ff, -5,  2,  5, 1.5);
-  addGlow(0x0055ff,  0,  6,  0, 1);
-  addGlow(0x00ffff,  0, -4,  0, 0.5);
+  // Distant small accents — reflect as tiny coloured glints
+  addAccent(0x00ffff, -8,  4, -8, 0.6);
+  addAccent(0xff00ff,  8,  4,  8, 0.6);
+  addAccent(0x0044ff,  8,  3, -8, 0.4);
+  addAccent(0xff44ff, -8,  3,  8, 0.4);
+  addAccent(0x003333,  0,  8,  0, 0.3);  // cool top
+  addAccent(0x000011,  0, -6,  0, 0.2);  // floor
 
-  const envRT = pmrem.fromScene(envScene, 0.04);
+  const envRT = pmrem.fromScene(envScene, 0.0);
   pmrem.dispose();
   return envRT.texture;
 }
 
-// Build env map immediately (renderer is ready)
 const envMap = buildEnvMap();
-scene.environment = envMap; // applies to all PBR materials automatically
+scene.environment = envMap;
 
 // ─────────────────────────────────
 // LIGHTING — main scene
 // ─────────────────────────────────
-scene.add(new THREE.AmbientLight(0x001840, 1.5));
+scene.add(new THREE.AmbientLight(0x0a0a14, 2.5)); // near-white dark, not blue
 
-const keyLight = new THREE.DirectionalLight(0x00ffff, 2.5);
+const keyLight = new THREE.DirectionalLight(0x00ffff, 1.8);
 keyLight.position.set(3, 5, 3);
 scene.add(keyLight);
 
-const fillLight = new THREE.DirectionalLight(0xff00ff, 1.2);
+const fillLight = new THREE.DirectionalLight(0xff00ff, 0.7);
 fillLight.position.set(-4, 3, -2);
 scene.add(fillLight);
 
-const rimLight = new THREE.DirectionalLight(0x0055ff, 0.8);
+const rimLight = new THREE.DirectionalLight(0x4488ff, 0.5);
 rimLight.position.set(0, 2, -5);
 scene.add(rimLight);
 
-// Strong top light to prevent top surfaces going black on mobile
-const topLight = new THREE.DirectionalLight(0xffffff, 0.6);
-topLight.position.set(0, 8, 0);
+// Neutral white-ish top light — prevents top surfaces going black
+const topLight = new THREE.DirectionalLight(0xccddff, 1.2);
+topLight.position.set(0, 8, 2);
 scene.add(topLight);
 
-const underglow = new THREE.PointLight(0x00ffff, 3, 5);
+// Neutral front fill — ensures body panels catch some diffuse light
+const frontLight = new THREE.DirectionalLight(0xffffff, 0.6);
+frontLight.position.set(0, 1, 8);
+scene.add(frontLight);
+
+const underglow = new THREE.PointLight(0x00ffff, 2.5, 5);
 underglow.position.set(0, -0.3, 0);
 scene.add(underglow);
 
-// Extra point lights close to bike for guaranteed bounce
-const nearCyan = new THREE.PointLight(0x00ffff, 2, 6);
+// Near-bike accent lights — animate in reflections, kept moderate intensity
+const nearCyan = new THREE.PointLight(0x00ffff, 1.2, 5);
 nearCyan.position.set(2.5, 1.5, 2);
 scene.add(nearCyan);
 
-const nearMag = new THREE.PointLight(0xff00ff, 2, 6);
+const nearMag = new THREE.PointLight(0xff00ff, 1.2, 5);
 nearMag.position.set(-2.5, 1.5, -1);
 scene.add(nearMag);
 
@@ -596,45 +581,35 @@ gltfScript.onload = () => {
       bikeModel.position.y -= box2.min.y + 0.85;
 
       // ── MATERIAL FIX ──
-      // The core reason for the black body:
-      // High metalness + no env map = total black (no light to reflect).
-      // Solution: assign the env map, set envMapIntensity high,
-      // add emissive so surfaces glow even in shadow, and
-      // keep roughness moderate so highlights are visible.
+      // Preserve original colours. Only add env map for reflections
+      // and a tiny emissive lift so dark panels aren't pure black.
       bikeModel.traverse(c => {
         if(!c.isMesh) return;
-
         const mats = Array.isArray(c.material) ? c.material : [c.material];
         mats.forEach(m => {
           if(!m) return;
 
-          // Assign env map for reflections
+          // Assign env map — this is the main fix (was missing before)
           m.envMap = envMap;
-          m.envMapIntensity = 2.0;
+          m.envMapIntensity = 0.8; // subtle — glints not colour flooding
           m.needsUpdate = true;
 
-          // Detect very dark / black materials (the body panels) and fix them
-          const isDark = m.color && (m.color.r + m.color.g + m.color.b) < 0.15;
-
           if(m.metalness !== undefined){
-            if(isDark){
-              // Body panels: keep dark but NOT pitch black
-              // Lower metalness slightly so ambient light can touch them
-              m.metalness = 0.75;
-              m.roughness = Math.max(m.roughness !== undefined ? m.roughness : 0.3, 0.2);
-              // Add subtle cyan emissive so dark areas glow faintly
-              m.emissive = new THREE.Color(0x001a1a);
-              m.emissiveIntensity = 0.4;
-            } else {
-              // Bright / chrome / coloured parts
-              m.metalness = Math.max(m.metalness, 0.55);
-              m.roughness = m.roughness !== undefined ? Math.min(m.roughness, 0.45) : 0.35;
-            }
+            // Slightly reduce extreme metalness so diffuse lighting shows through
+            m.metalness = Math.min(m.metalness, 0.85);
+            // Ensure roughness isn't 0 (mirror = reflections dominate)
+            if(m.roughness !== undefined && m.roughness < 0.15) m.roughness = 0.15;
           }
 
-          // Emissive materials (logos, lights) — boost them
-          if(m.emissiveMap || (m.emissive && (m.emissive.r + m.emissive.g + m.emissive.b) > 0.05)){
-            m.emissiveIntensity = Math.max(m.emissiveIntensity || 1, 1.5);
+          // For very dark/black panels: add a tiny emissive so they catch
+          // the scene colour without changing their hue
+          if(m.color){
+            const brightness = m.color.r + m.color.g + m.color.b;
+            if(brightness < 0.1 && m.emissive){
+              // Pure black → faint dark cyan glow so it's not void-black
+              m.emissive.set(0x000d0d);
+              m.emissiveIntensity = 1.0;
+            }
           }
         });
       });

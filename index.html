@@ -367,8 +367,8 @@ renderer.toneMappingExposure = 1.0;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050000);
-scene.fog = new THREE.FogExp2(0x0a0000, isMobile?0.055:0.038);
+scene.background = new THREE.Color(0x080808);
+scene.fog = new THREE.FogExp2(0x080808, isMobile?0.04:0.028);
 
 const camera = new THREE.PerspectiveCamera(isMobile?55:45, innerWidth/innerHeight, 0.01, 100);
 camera.position.set(0,1.5,5); camera.lookAt(0,0.5,0);
@@ -383,28 +383,24 @@ onResize();
 window.addEventListener('resize',onResize,{passive:true});
 
 // ─────────────────────────────────
-// ENV MAP — CRITICAL FIX
-// Near-black scene: metallic parts reflect dark environment
-// so their base colour shows through. Only tiny accent glints.
-// ─────────────────────────────────
+// ENV MAP — near-black neutral so metallic reflects without colour cast
 function buildEnvMap(){
-  const pmrem = new THREE.PMREMGenerator(renderer);
+  const pmrem=new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
-  const env = new THREE.Scene();
-  env.background = new THREE.Color(0x020000);
-  // Tiny dim hemisphere — just prevents absolute black on underside
-  env.add(new THREE.HemisphereLight(0x110000, 0x000000, 0.3));
-  // Small red/warm accent spheres — glints in chrome, not colour flood
+  const env=new THREE.Scene();
+  env.background=new THREE.Color(0x030303); // near neutral dark
+  env.add(new THREE.HemisphereLight(0x111111,0x000000,0.25)); // neutral grey
+  // Tiny grey-white glint sources — chrome gets highlights not colour cast
   const add=(col,x,y,z,i)=>{
-    const m=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,6),new THREE.MeshBasicMaterial({color:col}));
-    m.position.set(x,y,z); env.add(m);
-    const p=new THREE.PointLight(col,i,30); p.position.set(x,y,z); env.add(p);
+    const m=new THREE.Mesh(new THREE.SphereGeometry(0.15,6,6),new THREE.MeshBasicMaterial({color:col}));
+    m.position.set(x,y,z);env.add(m);
+    const p=new THREE.PointLight(col,i,30);p.position.set(x,y,z);env.add(p);
   };
-  add(0xff1100,-10,5,-10,0.4);
-  add(0xff2200, 10,5, 10,0.4);
-  add(0x330000, 10,3,-10,0.2);
-  add(0x220000,-10,3, 10,0.2);
-  add(0x111111,  0,10,  0,0.15);
+  add(0xffffff,-10, 6,-10,0.3);
+  add(0xffffff, 10, 6, 10,0.3);
+  add(0xddcccc, 10, 4,-10,0.15);
+  add(0xddcccc,-10, 4, 10,0.15);
+  add(0x111111,  0,-5,  0,0.05); // neutral dark below
   const rt=pmrem.fromScene(env,0.0);
   pmrem.dispose();
   return rt.texture;
@@ -421,12 +417,12 @@ const keyLight=new THREE.DirectionalLight(0xffffff,1.8);
 keyLight.position.set(3,5,4); scene.add(keyLight);
 const fillLight=new THREE.DirectionalLight(0xffffff,0.7);
 fillLight.position.set(-4,3,1); scene.add(fillLight);
-const rimLight=new THREE.DirectionalLight(0xffd0c0,1.1);
+const rimLight=new THREE.DirectionalLight(0xffffff,1.0);
 rimLight.position.set(1,3,-5); scene.add(rimLight);
 const topLight=new THREE.DirectionalLight(0xffffff,0.8);
 topLight.position.set(0,8,0); scene.add(topLight);
-// Underglow: red, very short range — only belly/wheels, not whole bike
-const underglow=new THREE.PointLight(0xff1100,1.2,2.0);
+// Underglow: removed — was casting red onto bike belly
+const underglow=new THREE.PointLight(0xff2200,0.0,1.0);
 underglow.position.set(0,-0.65,0); scene.add(underglow);
 
 // ─────────────────────────────────
@@ -438,7 +434,7 @@ const fSize=isMobile?20:40;
 
 const floor=new THREE.Mesh(
   new THREE.PlaneGeometry(fSize,fSize),
-  new THREE.MeshStandardMaterial({color:0x0a0000,metalness:0.7,roughness:0.3,envMap,envMapIntensity:0.5})
+  new THREE.MeshStandardMaterial({color:0x0d0000,metalness:0.0,roughness:1.0})
 );
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.85;
 floorGroup.add(floor);
@@ -466,7 +462,7 @@ function makeCeilingLight(x,z,color){
   const stripMat=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.5,transparent:true,opacity:0.85});
   const strip=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.02,0.6),stripMat);
   strip.position.y=-0.04; g.add(strip);
-  const pt=new THREE.PointLight(color,isMobile?2:2.5,isMobile?6:8);
+  const pt=new THREE.PointLight(color,isMobile?0.6:0.8,isMobile?4:5);
   pt.position.y=-0.3; g.add(pt);
   g.position.set(x,4,z);
   return {group:g,light:pt,stripMat};
@@ -641,10 +637,9 @@ function animate(ts){
   if(!isMobile||pFrame%2===0){
     ceilingLights.forEach((cl,i)=>{
       const f=0.82+Math.sin(flickerT*2.5+i*1.4)*0.18;
-      cl.light.intensity=(isMobile?2:2.5)*f;
+      cl.light.intensity=(isMobile?0.6:0.8)*f;
       cl.stripMat.emissiveIntensity=2.5*f;
     });
-    underglow.intensity=1.5+Math.sin(flickerT*1.8)*0.7;
   }
 
   if(!isMobile||pFrame%2===0){

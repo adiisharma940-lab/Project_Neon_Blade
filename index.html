@@ -421,6 +421,9 @@ const rimLight=new THREE.DirectionalLight(0xffffff,1.0);
 rimLight.position.set(1,3,-5); scene.add(rimLight);
 const topLight=new THREE.DirectionalLight(0xffffff,0.8);
 topLight.position.set(0,8,0); scene.add(topLight);
+// Subtle red rim — behind-right, weak, just for silhouette edge glow
+const redRim=new THREE.DirectionalLight(0xff1100,0.5);
+redRim.position.set(3,2,-6); scene.add(redRim);
 // Underglow: removed — was casting red onto bike belly
 const underglow=new THREE.PointLight(0xff2200,0.0,1.0);
 underglow.position.set(0,-0.65,0); scene.add(underglow);
@@ -434,7 +437,7 @@ const fSize=isMobile?20:40;
 
 const floor=new THREE.Mesh(
   new THREE.PlaneGeometry(fSize,fSize),
-  new THREE.MeshStandardMaterial({color:0x0d0000,metalness:0.0,roughness:1.0})
+  new THREE.MeshStandardMaterial({color:0x050505,metalness:0.0,roughness:1.0})
 );
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.85;
 floorGroup.add(floor);
@@ -462,7 +465,7 @@ function makeCeilingLight(x,z,color){
   const stripMat=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.5,transparent:true,opacity:0.85});
   const strip=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.02,0.6),stripMat);
   strip.position.y=-0.04; g.add(strip);
-  const pt=new THREE.PointLight(color,isMobile?0.6:0.8,isMobile?4:5);
+  const pt=new THREE.PointLight(color,isMobile?0.3:0.4,isMobile?3:4);
   pt.position.y=-0.3; g.add(pt);
   g.position.set(x,4,z);
   return {group:g,light:pt,stripMat};
@@ -516,26 +519,46 @@ gltfScript.onload=()=>{
       const box2=new THREE.Box3().setFromObject(bikeModel);
       bikeModel.position.y-=box2.min.y+0.85;
 
-      // ── MATERIAL: minimal safe overrides ──
-      // ONLY add env map + tiny emissive lift on pitch-black panels.
-      // Do NOT touch metalness/roughness/color — preserve the GLB's look.
+      // ── MATERIAL OVERRIDES ──
+      // GLB materials are light grey/white — darken them to black/dark.
+      // Multiply each material's color toward dark, preserve hue.
       bikeModel.traverse(c=>{
         if(!c.isMesh||!c.material) return;
         const mats=Array.isArray(c.material)?c.material:[c.material];
         mats.forEach(m=>{
           if(!m) return;
-          // Assign env map so metallic parts have glints (not black)
           m.envMap=envMap;
-          m.envMapIntensity=0.6; // conservative — glint, not colour flood
+          m.envMapIntensity=0.5;
           m.needsUpdate=true;
-          // Pitch-black panels: add faint red emissive so they're visible
+
           if(m.color){
-            const b=m.color.r+m.color.g+m.color.b;
-            if(b<0.08&&m.emissive){
-              m.emissive.setRGB(0.04,0.0,0.0);
-              m.emissiveIntensity=1.0;
+            const r=m.color.r, g=m.color.g, b=m.color.b;
+            const brightness=r+g+b;
+            const isGreen=(g>r*1.5&&g>b*1.5); // keep green frame
+            const isRed=(r>g*2&&r>b*2);       // keep red accents
+
+            if(!isGreen&&!isRed){
+              // Crush brightness to dark: white(1,1,1)->near black, grey->very dark
+              // Use a power curve: newVal = val^3 * 0.15 (aggressive darkening)
+              m.color.setRGB(
+                Math.pow(r,3)*0.12,
+                Math.pow(g,3)*0.12,
+                Math.pow(b,3)*0.12
+              );
+            }
+            if(isGreen){
+              m.color.setRGB(0.04,0.65,0.08);
+              if(m.emissive){m.emissive.setRGB(0,0.12,0.01);m.emissiveIntensity=0.6;}
+            }
+            if(isRed){
+              // Keep reds vivid — rare on this bike but preserve
+              m.color.setRGB(r*0.8,g*0.1,b*0.1);
             }
           }
+
+          // Metalness tweak — keep specularity on dark panels
+          if(m.metalness!==undefined) m.metalness=Math.max(m.metalness,0.5);
+          if(m.roughness!==undefined) m.roughness=Math.min(m.roughness,0.5);
         });
       });
 
@@ -637,7 +660,7 @@ function animate(ts){
   if(!isMobile||pFrame%2===0){
     ceilingLights.forEach((cl,i)=>{
       const f=0.82+Math.sin(flickerT*2.5+i*1.4)*0.18;
-      cl.light.intensity=(isMobile?0.6:0.8)*f;
+      cl.light.intensity=(isMobile?0.3:0.4)*f;
       cl.stripMat.emissiveIntensity=2.5*f;
     });
   }

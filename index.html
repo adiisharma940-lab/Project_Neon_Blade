@@ -410,11 +410,13 @@ topSpot.position.set(0, 7, 0);
 scene.add(topSpot);
 scene.add(topSpot.target); // target stays at origin
 
-// Lily accent ring lights
-[ [4,0.3,4],[-4,0.3,4],[4,0.3,-4],[-4,0.3,-4],
-  [6,0.3,0],[-6,0.3,0],[0,0.3,6],[0,0.3,-6] ]
+// Lily accent ring lights — more, closer, brighter for the dense field
+[ [5,0.4,5],[-5,0.4,5],[5,0.4,-5],[-5,0.4,-5],
+  [7,0.4,0],[-7,0.4,0],[0,0.4,7],[0,0.4,-7],
+  [9,0.4,9],[-9,0.4,9],[9,0.4,-9],[-9,0.4,-9],
+  [12,0.4,0],[-12,0.4,0],[0,0.4,12],[0,0.4,-12] ]
 .forEach(([x,y,z]) => {
-  const l = new THREE.PointLight(0xff3366, 3.0, 8);
+  const l = new THREE.PointLight(0xff2255, 4.5, 11);
   l.position.set(x, y, z);
   scene.add(l);
 });
@@ -518,25 +520,32 @@ e => { console.error('Bike:',e); done++; tryFinish(); });
 loader.load('spider_lily_lycoris_radiata.glb', gltf => {
   lilyTemplate = gltf.scene;
 
-  // Scale template to ~0.6 units
+  // Scale template to 0.9 units — bigger base before per-instance scale
   const box = new THREE.Box3().setFromObject(lilyTemplate);
   const sz  = box.getSize(new THREE.Vector3());
-  lilyTemplate.scale.setScalar(0.6 / Math.max(sz.x, sz.y, sz.z));
+  lilyTemplate.scale.setScalar(0.9 / Math.max(sz.x, sz.y, sz.z));
 
-  // Emissive glow on every material
+  // Vivid, sharp materials — strong emissive so they pop even at distance
   lilyTemplate.traverse(c => {
     if (!c.isMesh || !c.material) return;
     const mats = Array.isArray(c.material) ? c.material : [c.material];
     mats.forEach(m => {
-      m.envMapIntensity = 1.8;
+      m.envMapIntensity = 2.2;
+      m.roughness = Math.min(m.roughness ?? 0.8, 0.55); // less rough = crisper
       if (!m.emissive) m.emissive = new THREE.Color(0);
-      const r = m.color?.r ?? 1, g = m.color?.g ?? 1;
-      if (r > g + 0.15) {
-        m.emissive.setHex(0x8b0025); m.emissiveIntensity = 0.65; // red petals
-      } else if (g > r + 0.05) {
-        m.emissive.setHex(0x0a2008); m.emissiveIntensity = 0.3;  // green stems
+      const r = m.color?.r ?? 1, g = m.color?.g ?? 1, b2 = m.color?.b ?? 1;
+      if (r > g + 0.12) {
+        // Red petals — saturate colour, strong emissive
+        m.color.setHex(0xff1a3a);
+        m.emissive.setHex(0xcc0022); m.emissiveIntensity = 1.0;
+      } else if (g > r + 0.04) {
+        // Green stems — brighten, slight glow
+        m.color.setHex(0x22aa44);
+        m.emissive.setHex(0x115522); m.emissiveIntensity = 0.5;
       } else {
-        m.emissive.setHex(0x3a0010); m.emissiveIntensity = 0.45;
+        // Anything else (stamens, etc) — warm orange glow
+        m.color.setHex(0xff6600);
+        m.emissive.setHex(0x882200); m.emissiveIntensity = 0.7;
       }
       m.needsUpdate = true;
     });
@@ -548,33 +557,45 @@ loader.load('spider_lily_lycoris_radiata.glb', gltf => {
 p => { if (p.total) setLoad(50 + p.loaded/p.total*50,'Loading Lilies…'); },
 e => { console.error('Lily:',e); done++; tryFinish(); });
 
-function spawnLilies() {
-  const innerN = isMobile ? 30 : 60;
-  const outerN = isMobile ? 80 : 200;
+const DISC_R     = 4.2;   // must match disc geometry radius — no lilies inside
+const FIELD_R    = 55;    // how far the field extends
+const GRID_STEP  = isMobile ? 1.6 : 1.1;   // spacing between grid slots (smaller = denser)
+const JITTER     = GRID_STEP * 0.45;        // random offset per slot so it looks natural
 
-  // Inner ring — always visible around the bike
-  for (let i = 0; i < innerN; i++) {
-    const a = (i/innerN)*Math.PI*2;
-    const r = 3.2 + Math.random()*2.8;
-    placeLily(Math.cos(a)*r, Math.sin(a)*r);
-  }
-  // Outer field
-  for (let i = 0; i < outerN; i++) {
-    let x, z;
-    do { x=(Math.random()-.5)*60; z=(Math.random()-.5)*60; }
-    while (Math.sqrt(x*x+z*z) < 6);
-    placeLily(x, z);
+function spawnLilies() {
+  const half = Math.ceil(FIELD_R / GRID_STEP);
+  for (let ix = -half; ix <= half; ix++) {
+    for (let iz = -half; iz <= half; iz++) {
+      // Jitter each grid slot
+      const x = ix * GRID_STEP + (Math.random() - .5) * 2 * JITTER;
+      const z = iz * GRID_STEP + (Math.random() - .5) * 2 * JITTER;
+      const dist = Math.sqrt(x*x + z*z);
+
+      // Skip inside the reflective black disc (+ small buffer)
+      if (dist < DISC_R + 0.3) continue;
+      // Skip beyond field radius
+      if (dist > FIELD_R) continue;
+
+      placeLily(x, z);
+    }
   }
 }
 
 function placeLily(x, z) {
   const lily = lilyTemplate.clone(true);
-  // Clone materials so emissive works independently
-  lily.traverse(c => { if (c.isMesh && c.material) c.material = c.material.clone(); });
+  // Clone materials per instance so emissive/colour is independent
+  lily.traverse(c => {
+    if (c.isMesh && c.material) {
+      c.material = Array.isArray(c.material)
+        ? c.material.map(m => m.clone())
+        : c.material.clone();
+    }
+  });
   const b = new THREE.Box3().setFromObject(lily);
   lily.position.set(x, -1.05 - b.min.y, z);
-  lily.rotation.y = Math.random()*Math.PI*2;
-  lily.scale.multiplyScalar(0.8 + Math.random()*.9);
+  lily.rotation.y = Math.random() * Math.PI * 2;
+  // Bigger, more consistent size — 1.4 base with ±30% variation
+  lily.scale.multiplyScalar(1.4 + Math.random() * 0.6);
   lily.traverse(c => { if (c.isMesh) c.receiveShadow = true; });
   scene.add(lily);
   lilyInstances.push({ mesh:lily, ox:x, oz:z, phase:Math.random()*Math.PI*2 });
@@ -716,12 +737,12 @@ function animate() {
     });
   }
 
-  // Bike idle animation
+  // Bike idle animation — faster rotation speed (was .35, now 1.2)
   if (bikeModel) {
     if (!started || smoothScroll < 0.02) {
-      bikeModel.rotation.y = Math.sin(t*.35)*.09;
+      bikeModel.rotation.y = Math.sin(t * 1.2) * 0.35;   // faster oscillation, bigger arc
     } else {
-      bikeModel.rotation.y *= .96;
+      bikeModel.rotation.y *= .94;  // faster settle when scrolling
     }
   }
 

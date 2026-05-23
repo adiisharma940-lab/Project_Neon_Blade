@@ -13,19 +13,16 @@ body{
   background:#000;color:#fff;
   font-family:'Orbitron',monospace;
   overflow-x:hidden;
-  /* prevent iOS bounce lag */
   -webkit-overflow-scrolling:touch;
   overscroll-behavior-y:none;
 }
 #canvas-container{
   position:fixed;top:0;left:0;
   width:100%;height:100vh;z-index:1;
-  /* GPU compositing layer */
   will-change:transform;
   transform:translateZ(0);
 }
 canvas{display:block;width:100%!important;height:100%!important;}
-
 .scroll-space{height:900vh;position:relative;z-index:2;pointer-events:none;}
 
 /* ── PROGRESS ── */
@@ -48,7 +45,6 @@ canvas{display:block;width:100%!important;height:100%!important;}
   cursor:pointer;transition:background 0.3s;
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
-  /* desktop */
   bottom:24px;right:24px;
 }
 @media(max-width:600px){
@@ -78,10 +74,8 @@ canvas{display:block;width:100%!important;height:100%!important;}
   opacity:0;
   transition:opacity 0.6s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1);
   will-change:opacity,transform;
-  /* prevent GPU layer bloat on mobile */
   backface-visibility:hidden;
 }
-/* Desktop */
 .panel.from-left{
   left:4%;top:50%;
   transform:translateY(-50%) translateX(-60px);
@@ -104,7 +98,6 @@ canvas{display:block;width:100%!important;height:100%!important;}
 .panel.from-right.visible{transform:translateY(-50%) translateX(0);}
 .panel.from-bottom.visible{transform:translateX(-50%) translateY(0);}
 
-/* Mobile — panels stack at bottom */
 @media(max-width:700px){
   .panel.from-left,
   .panel.from-right{
@@ -117,9 +110,7 @@ canvas{display:block;width:100%!important;height:100%!important;}
     transform:translateY(40px)!important;
   }
   .panel.from-left.visible,
-  .panel.from-right.visible{
-    transform:translateY(0)!important;
-  }
+  .panel.from-right.visible{transform:translateY(0)!important;}
   .panel.from-right .panel-stats{justify-content:flex-start!important;}
   .panel.from-right .panel-body{margin-left:0!important;}
   .panel.from-right .stat-box{
@@ -242,7 +233,6 @@ canvas{display:block;width:100%!important;height:100%!important;}
   animation:scrollpulse 1.8s ease-in-out infinite;
 }
 
-/* ── FX overlays — disabled on mobile for perf ── */
 .scanlines{
   position:fixed;inset:0;z-index:100;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);
@@ -251,9 +241,7 @@ canvas{display:block;width:100%!important;height:100%!important;}
   position:fixed;inset:0;z-index:99;pointer-events:none;
   background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.65) 100%);
 }
-@media(max-width:700px){
-  .scanlines{display:none;} /* saves fillrate on mobile GPUs */
-}
+@media(max-width:700px){.scanlines{display:none;}}
 
 /* ── LOADING SCREEN ── */
 #loader{
@@ -293,7 +281,6 @@ canvas{display:block;width:100%!important;height:100%!important;}
   <p class="hero-sub">// SCROLL TO ENGAGE //</p>
 </div>
 
-<!-- Panels -->
 <div class="panel from-left" id="p1">
   <div class="panel-eyebrow">// SUPERCHARGER</div>
   <div class="panel-divider"></div>
@@ -357,36 +344,34 @@ const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
 const isLowEnd  = isMobile && (navigator.hardwareConcurrency || 4) <= 4;
 
 // ─────────────────────────────────
-// RENDERER — mobile-optimised
+// RENDERER
 // ─────────────────────────────────
 const renderer = new THREE.WebGLRenderer({
-  antialias: !isMobile,   // no AA on mobile (big perf win)
+  antialias: !isMobile,
   alpha: false,
   powerPreference: 'high-performance',
 });
-// Clamp pixel ratio: 1 on low-end mobile, 1.5 mid, 2 desktop
-const dpr = isMobile ? (isLowEnd ? 1 : Math.min(window.devicePixelRatio,1.5))
-                     : Math.min(window.devicePixelRatio,2);
+const dpr = isMobile ? (isLowEnd ? 1 : Math.min(window.devicePixelRatio, 1.5))
+                     : Math.min(window.devicePixelRatio, 2);
 renderer.setPixelRatio(dpr);
-renderer.shadowMap.enabled = !isMobile;   // shadows off on mobile
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = false; // OFF — saves GPU, env map provides visual depth
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = isMobile ? 0.9 : 0.8;
+renderer.toneMappingExposure = 1.2; // brighter exposure so bike isn't dark
 
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000005);
+scene.background = new THREE.Color(0x000008);
 scene.fog = new THREE.FogExp2(0x000010, isMobile ? 0.05 : 0.035);
 
 const camera = new THREE.PerspectiveCamera(isMobile ? 55 : 45, innerWidth/innerHeight, 0.01, 100);
-camera.position.set(0,1.5,5);
-camera.lookAt(0,0.5,0);
+camera.position.set(0, 1.5, 5);
+camera.lookAt(0, 0.5, 0);
 
 function onResize(){
-  renderer.setSize(innerWidth,innerHeight);
-  camera.aspect = innerWidth/innerHeight;
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
   camera.fov = innerWidth < 500 ? 60 : (innerWidth < 700 ? 55 : 45);
   camera.updateProjectionMatrix();
 }
@@ -394,31 +379,105 @@ onResize();
 window.addEventListener('resize', onResize, {passive:true});
 
 // ─────────────────────────────────
-// LIGHTING
+// ENV MAP — key fix for black metallic body
+// Build a synthetic cube-map from coloured lights so metalness
+// has something to reflect instead of rendering pure black.
 // ─────────────────────────────────
-scene.add(new THREE.AmbientLight(0x001030, isMobile ? 1.2 : 0.8));
+function buildEnvMap(){
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileEquirectangularShader();
 
-const keyLight = new THREE.DirectionalLight(0x00ffff, isMobile ? 2.0 : 1.5);
-keyLight.position.set(3,5,3);
-if(!isMobile){
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(1024,1024);
-  keyLight.shadow.camera.left=-4;keyLight.shadow.camera.right=4;
-  keyLight.shadow.camera.top=4;keyLight.shadow.camera.bottom=-4;
+  // Create a small scene with coloured spheres that become the env map
+  const envScene = new THREE.Scene();
+
+  // Background — deep dark blue like the main scene
+  envScene.background = new THREE.Color(0x000018);
+
+  // Hemisphere: warm cyan from top, magenta from bottom — mimics the ceiling lights
+  envScene.add(new THREE.HemisphereLight(0x00ffff, 0xff00ff, 2.0));
+
+  // Key punch: bright cyan from upper-right
+  const k1 = new THREE.DirectionalLight(0x00eeff, 3.0);
+  k1.position.set(4, 6, 3);
+  envScene.add(k1);
+
+  // Fill: magenta from lower-left
+  const k2 = new THREE.DirectionalLight(0xff00cc, 1.5);
+  k2.position.set(-4, 2, -2);
+  envScene.add(k2);
+
+  // Rim: deep blue from behind
+  const k3 = new THREE.DirectionalLight(0x0033ff, 1.0);
+  k3.position.set(0, 1, -6);
+  envScene.add(k3);
+
+  // Floor bounce: dark teal from below
+  const k4 = new THREE.DirectionalLight(0x003344, 0.8);
+  k4.position.set(0, -3, 0);
+  envScene.add(k4);
+
+  // Neon accent spheres that appear in reflections
+  const addGlow = (color, x, y, z, intensity) => {
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 8, 8),
+      new THREE.MeshBasicMaterial({ color })
+    );
+    mesh.position.set(x, y, z);
+    envScene.add(mesh);
+    const pt = new THREE.PointLight(color, intensity, 20);
+    pt.position.set(x, y, z);
+    envScene.add(pt);
+  };
+  addGlow(0x00ffff, -5,  3, -5, 2);
+  addGlow(0xff00ff,  5,  3,  5, 2);
+  addGlow(0x00ffff,  5,  2, -5, 1.5);
+  addGlow(0xff00ff, -5,  2,  5, 1.5);
+  addGlow(0x0055ff,  0,  6,  0, 1);
+  addGlow(0x00ffff,  0, -4,  0, 0.5);
+
+  const envRT = pmrem.fromScene(envScene, 0.04);
+  pmrem.dispose();
+  return envRT.texture;
 }
+
+// Build env map immediately (renderer is ready)
+const envMap = buildEnvMap();
+scene.environment = envMap; // applies to all PBR materials automatically
+
+// ─────────────────────────────────
+// LIGHTING — main scene
+// ─────────────────────────────────
+scene.add(new THREE.AmbientLight(0x001840, 1.5));
+
+const keyLight = new THREE.DirectionalLight(0x00ffff, 2.5);
+keyLight.position.set(3, 5, 3);
 scene.add(keyLight);
 
-const fillLight = new THREE.DirectionalLight(0xff00ff, 0.8);
-fillLight.position.set(-4,3,-2);
+const fillLight = new THREE.DirectionalLight(0xff00ff, 1.2);
+fillLight.position.set(-4, 3, -2);
 scene.add(fillLight);
 
-const rimLight = new THREE.DirectionalLight(0x0044ff, 0.5);
-rimLight.position.set(0,2,-5);
+const rimLight = new THREE.DirectionalLight(0x0055ff, 0.8);
+rimLight.position.set(0, 2, -5);
 scene.add(rimLight);
 
-const underglow = new THREE.PointLight(0x00ffff, 2, 4);
-underglow.position.set(0,-0.3,0);
+// Strong top light to prevent top surfaces going black on mobile
+const topLight = new THREE.DirectionalLight(0xffffff, 0.6);
+topLight.position.set(0, 8, 0);
+scene.add(topLight);
+
+const underglow = new THREE.PointLight(0x00ffff, 3, 5);
+underglow.position.set(0, -0.3, 0);
 scene.add(underglow);
+
+// Extra point lights close to bike for guaranteed bounce
+const nearCyan = new THREE.PointLight(0x00ffff, 2, 6);
+nearCyan.position.set(2.5, 1.5, 2);
+scene.add(nearCyan);
+
+const nearMag = new THREE.PointLight(0xff00ff, 2, 6);
+nearMag.position.set(-2.5, 1.5, -1);
+scene.add(nearMag);
 
 // ─────────────────────────────────
 // FLOOR — rotating grid
@@ -428,125 +487,168 @@ scene.add(floorGroup);
 
 const floorSize = isMobile ? 20 : 40;
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(floorSize,floorSize),
-  new THREE.MeshStandardMaterial({color:0x000810,metalness:0.9,roughness:0.1,transparent:true,opacity:0.95})
+  new THREE.PlaneGeometry(floorSize, floorSize),
+  new THREE.MeshStandardMaterial({
+    color: 0x000810,
+    metalness: 0.9,
+    roughness: 0.1,
+    transparent: true,
+    opacity: 0.95,
+    envMap: envMap,
+    envMapIntensity: 1.0,
+  })
 );
-floor.rotation.x=-Math.PI/2;
-floor.position.y=-0.85;
-if(!isMobile) floor.receiveShadow=true;
+floor.rotation.x = -Math.PI/2;
+floor.position.y = -0.85;
 floorGroup.add(floor);
 
-function makeGrid(size,divs,color){
-  const geo=new THREE.BufferGeometry();
-  const v=[];const s=size/divs;const h=size/2;
-  for(let i=0;i<=divs;i++){
-    const x=-h+i*s;
-    v.push(x,0,-h, x,0,h, -h,0,x, h,0,x);
+function makeGrid(size, divs, color){
+  const geo = new THREE.BufferGeometry();
+  const v = []; const s = size/divs; const h = size/2;
+  for(let i = 0; i <= divs; i++){
+    const x = -h + i*s;
+    v.push(x, 0, -h,  x, 0, h,  -h, 0, x,  h, 0, x);
   }
-  geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(v),3));
-  return new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:0.35}));
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(v), 3));
+  return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({color, transparent:true, opacity:0.35}));
 }
-const gridDivs1 = isMobile ? 20 : 40;
-const gridDivs2 = isMobile ? 5  : 8;
-const grid1=makeGrid(floorSize,gridDivs1,0x00ffff); grid1.position.y=-0.849; floorGroup.add(grid1);
-const grid2=makeGrid(floorSize,gridDivs2,0xff00ff); grid2.position.y=-0.848; floorGroup.add(grid2);
+const gd1 = isMobile ? 20 : 40, gd2 = isMobile ? 5 : 8;
+const grid1 = makeGrid(floorSize, gd1, 0x00ffff); grid1.position.y = -0.849; floorGroup.add(grid1);
+const grid2 = makeGrid(floorSize, gd2, 0xff00ff); grid2.position.y = -0.848; floorGroup.add(grid2);
 
 // ─────────────────────────────────
-// CEILING LIGHTS — fewer on mobile
+// CEILING LIGHTS
 // ─────────────────────────────────
-function makeCeilingLight(x,z,color){
-  const g=new THREE.Group();
-  const housing=new THREE.Mesh(
-    new THREE.BoxGeometry(0.28,0.06,0.75),
-    new THREE.MeshStandardMaterial({color:0x111111,metalness:0.9,roughness:0.2})
+function makeCeilingLight(x, z, color){
+  const g = new THREE.Group();
+  const housing = new THREE.Mesh(
+    new THREE.BoxGeometry(0.28, 0.06, 0.75),
+    new THREE.MeshStandardMaterial({color:0x111111, metalness:0.9, roughness:0.2})
   );
   g.add(housing);
-  const stripMat=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:3,transparent:true,opacity:0.9});
-  const strip=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.02,0.65),stripMat);
-  strip.position.y=-0.04; g.add(strip);
-  const range = isMobile ? 6 : 8;
-  const intensity = isMobile ? 2 : 3;
-  const pt=new THREE.PointLight(color,intensity,range);
-  pt.position.y=-0.3; g.add(pt);
-  g.position.set(x,4,z);
-  return {group:g,light:pt,strip,stripMat};
+  const stripMat = new THREE.MeshStandardMaterial({
+    color, emissive:color, emissiveIntensity:3,
+    transparent:true, opacity:0.9
+  });
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.02, 0.65), stripMat);
+  strip.position.y = -0.04; g.add(strip);
+  const pt = new THREE.PointLight(color, isMobile ? 2.5 : 3.5, isMobile ? 7 : 10);
+  pt.position.y = -0.3; g.add(pt);
+  g.position.set(x, 4, z);
+  return {group:g, light:pt, stripMat};
 }
 
-const ceilingLights=[];
-// desktop: 8 lights | mobile: 4 lights
+const ceilingLights = [];
 const lightPositions = isMobile
   ? [[-2,0,0x00ffff],[2,0,0xff00ff],[0,-2.5,0x0088ff],[0,2.5,0xff44ff]]
   : [[-2,0,0x00ffff],[-2,-2,0xff00ff],[-2,2,0x0088ff],[2,0,0xff00ff],[2,-2,0x00ffff],[2,2,0xff44ff],[0,-3,0x00ffff],[0,3,0xff00ff]];
 
 lightPositions.forEach(([x,z,col])=>{
-  const cl=makeCeilingLight(x,z,col);
+  const cl = makeCeilingLight(x, z, col);
   scene.add(cl.group);
   ceilingLights.push(cl);
 });
 
 // ─────────────────────────────────
-// PARTICLES — fewer on mobile
+// PARTICLES
 // ─────────────────────────────────
 const particleCount = isMobile ? (isLowEnd ? 150 : 250) : 600;
-const pGeo=new THREE.BufferGeometry();
-const pPos=new Float32Array(particleCount*3);
-const pCol=new Float32Array(particleCount*3);
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(particleCount * 3);
+const pCol = new Float32Array(particleCount * 3);
 const spread = isMobile ? 16 : 30;
-for(let i=0;i<particleCount;i++){
-  pPos[i*3]=(Math.random()-0.5)*spread;
-  pPos[i*3+1]=Math.random()*8-1;
-  pPos[i*3+2]=(Math.random()-0.5)*spread;
-  const c=Math.random()>0.5;
-  pCol[i*3]=c?0:1;pCol[i*3+1]=c?1:0;pCol[i*3+2]=c?1:1;
+for(let i = 0; i < particleCount; i++){
+  pPos[i*3]   = (Math.random()-0.5)*spread;
+  pPos[i*3+1] = Math.random()*8 - 1;
+  pPos[i*3+2] = (Math.random()-0.5)*spread;
+  const c = Math.random() > 0.5;
+  pCol[i*3] = c?0:1; pCol[i*3+1] = c?1:0; pCol[i*3+2] = c?1:1;
 }
-pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
-pGeo.setAttribute('color',new THREE.BufferAttribute(pCol,3));
-const particles=new THREE.Points(pGeo,new THREE.PointsMaterial({size:isMobile?0.06:0.04,vertexColors:true,transparent:true,opacity:0.5}));
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
+  size: isMobile ? 0.07 : 0.05, vertexColors:true, transparent:true, opacity:0.55
+}));
 scene.add(particles);
 
 // ─────────────────────────────────
 // LOAD GLB
 // ─────────────────────────────────
-let bikeModel=null,bikeLoaded=false;
-const ldBar=document.getElementById('ld-bar');
+let bikeModel = null, bikeLoaded = false;
+const ldBar = document.getElementById('ld-bar');
 
-const gltfScript=document.createElement('script');
-gltfScript.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-gltfScript.onload=()=>{
-  const loader=new THREE.GLTFLoader();
+const gltfScript = document.createElement('script');
+gltfScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+gltfScript.onload = () => {
+  const loader = new THREE.GLTFLoader();
   loader.load('kawasaki-ninja-h2r-super-bike.glb',
-    (gltf)=>{
-      bikeModel=gltf.scene;
-      const box=new THREE.Box3().setFromObject(bikeModel);
-      const size=box.getSize(new THREE.Vector3());
-      const center=box.getCenter(new THREE.Vector3());
-      const scale=2.8/Math.max(size.x,size.y,size.z);
+    (gltf) => {
+      bikeModel = gltf.scene;
+
+      // Normalize scale / position
+      const box  = new THREE.Box3().setFromObject(bikeModel);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const scale = 2.8 / Math.max(size.x, size.y, size.z);
       bikeModel.scale.setScalar(scale);
       bikeModel.position.sub(center.multiplyScalar(scale));
-      const box2=new THREE.Box3().setFromObject(bikeModel);
-      bikeModel.position.y-=box2.min.y+0.85;
-      bikeModel.traverse(c=>{
-        if(c.isMesh){
-          if(!isMobile){c.castShadow=true;c.receiveShadow=true;}
-          if(c.material){
-            const mats=Array.isArray(c.material)?c.material:[c.material];
-            mats.forEach(m=>{
-              m.envMapIntensity=1.5;
-              if(m.metalness!==undefined) m.metalness=Math.max(m.metalness,0.6);
-            });
+      const box2 = new THREE.Box3().setFromObject(bikeModel);
+      bikeModel.position.y -= box2.min.y + 0.85;
+
+      // ── MATERIAL FIX ──
+      // The core reason for the black body:
+      // High metalness + no env map = total black (no light to reflect).
+      // Solution: assign the env map, set envMapIntensity high,
+      // add emissive so surfaces glow even in shadow, and
+      // keep roughness moderate so highlights are visible.
+      bikeModel.traverse(c => {
+        if(!c.isMesh) return;
+
+        const mats = Array.isArray(c.material) ? c.material : [c.material];
+        mats.forEach(m => {
+          if(!m) return;
+
+          // Assign env map for reflections
+          m.envMap = envMap;
+          m.envMapIntensity = 2.0;
+          m.needsUpdate = true;
+
+          // Detect very dark / black materials (the body panels) and fix them
+          const isDark = m.color && (m.color.r + m.color.g + m.color.b) < 0.15;
+
+          if(m.metalness !== undefined){
+            if(isDark){
+              // Body panels: keep dark but NOT pitch black
+              // Lower metalness slightly so ambient light can touch them
+              m.metalness = 0.75;
+              m.roughness = Math.max(m.roughness !== undefined ? m.roughness : 0.3, 0.2);
+              // Add subtle cyan emissive so dark areas glow faintly
+              m.emissive = new THREE.Color(0x001a1a);
+              m.emissiveIntensity = 0.4;
+            } else {
+              // Bright / chrome / coloured parts
+              m.metalness = Math.max(m.metalness, 0.55);
+              m.roughness = m.roughness !== undefined ? Math.min(m.roughness, 0.45) : 0.35;
+            }
           }
-        }
+
+          // Emissive materials (logos, lights) — boost them
+          if(m.emissiveMap || (m.emissive && (m.emissive.r + m.emissive.g + m.emissive.b) > 0.05)){
+            m.emissiveIntensity = Math.max(m.emissiveIntensity || 1, 1.5);
+          }
+        });
       });
+
       scene.add(bikeModel);
-      bikeLoaded=true;
-      // hide loader
-      const loaderEl=document.getElementById('loader');
+      bikeLoaded = true;
+
+      const loaderEl = document.getElementById('loader');
       loaderEl.classList.add('done');
-      setTimeout(()=>loaderEl.style.display='none',900);
+      setTimeout(() => loaderEl.style.display='none', 900);
     },
-    (xhr)=>{ if(xhr.total) ldBar.style.width=(xhr.loaded/xhr.total*100)+'%'; },
-    (err)=>{
-      console.error('GLB load error:',err);
+    (xhr) => { if(xhr.total) ldBar.style.width = (xhr.loaded/xhr.total*100)+'%'; },
+    (err) => {
+      console.error('GLB load error:', err);
       document.getElementById('loader').classList.add('done');
     }
   );
@@ -555,151 +657,143 @@ document.head.appendChild(gltfScript);
 
 // ─────────────────────────────────
 // CAMERA WAYPOINTS
-// mobile: pull camera back slightly for portrait ratio
 // ─────────────────────────────────
-const mob=isMobile;
-const waypoints=[
-  {px:0,     py:mob?1.8:1.5, pz:mob?6:5,    lx:0,ly:0.3,lz:0},
-  {px:mob?1.5:1.2, py:0.2,   pz:mob?3:2.5,  lx:0,ly:0.4,lz:0},
-  {px:mob?-5:-4,   py:1,     pz:0,           lx:0,ly:0.5,lz:0},
-  {px:mob?2.5:2,   py:0.8,   pz:mob?-3.5:-3,lx:0,ly:0.4,lz:0},
-  {px:0,     py:mob?5.5:4.5, pz:1,           lx:0,ly:0,  lz:0},
-  {px:0,     py:0.9,         pz:mob?4:3.2,   lx:0,ly:0.5,lz:0},
-  {px:mob?5:4,     py:1.2,   pz:0.5,         lx:0,ly:0.5,lz:0},
-  {px:0,     py:mob?2.5:2,   pz:mob?8:7,     lx:0,ly:0.4,lz:0},
+const mob = isMobile;
+const waypoints = [
+  {px:0,       py:mob?1.8:1.5, pz:mob?6:5,    lx:0, ly:0.3, lz:0},
+  {px:mob?1.5:1.2, py:0.2,    pz:mob?3:2.5,   lx:0, ly:0.4, lz:0},
+  {px:mob?-5:-4,   py:1,      pz:0,            lx:0, ly:0.5, lz:0},
+  {px:mob?2.5:2,   py:0.8,    pz:mob?-3.5:-3,  lx:0, ly:0.4, lz:0},
+  {px:0,       py:mob?5.5:4.5, pz:1,           lx:0, ly:0,   lz:0},
+  {px:0,       py:0.9,         pz:mob?4:3.2,   lx:0, ly:0.5, lz:0},
+  {px:mob?5:4, py:1.2,         pz:0.5,         lx:0, ly:0.5, lz:0},
+  {px:0,       py:mob?2.5:2,   pz:mob?8:7,     lx:0, ly:0.4, lz:0},
 ];
 
-const panels=[
-  {el:document.getElementById('p1'),start:0.08,end:0.22},
-  {el:document.getElementById('p2'),start:0.26,end:0.40},
-  {el:document.getElementById('p3'),start:0.44,end:0.57},
-  {el:document.getElementById('p4'),start:0.61,end:0.74},
-  {el:document.getElementById('p5'),start:0.84,end:0.97},
+const panels = [
+  {el:document.getElementById('p1'), start:0.08, end:0.22},
+  {el:document.getElementById('p2'), start:0.26, end:0.40},
+  {el:document.getElementById('p3'), start:0.44, end:0.57},
+  {el:document.getElementById('p4'), start:0.61, end:0.74},
+  {el:document.getElementById('p5'), start:0.84, end:0.97},
 ];
 
 // ─────────────────────────────────
-// SCROLL — touch + mouse
+// SCROLL
 // ─────────────────────────────────
-let targetScroll=0,smoothScroll=0;
-const progressEl=document.getElementById('progress');
+let targetScroll = 0, smoothScroll = 0;
+const progressEl = document.getElementById('progress');
 
 function onScroll(){
-  const max=document.body.scrollHeight-innerHeight;
-  targetScroll=max>0?window.scrollY/max:0;
-  progressEl.style.width=(targetScroll*100)+'%';
+  const max = document.body.scrollHeight - innerHeight;
+  targetScroll = max > 0 ? window.scrollY/max : 0;
+  progressEl.style.width = (targetScroll*100)+'%';
 }
-window.addEventListener('scroll',onScroll,{passive:true});
+window.addEventListener('scroll', onScroll, {passive:true});
 
-// Touch swipe → scroll on mobile
-let touchStartY=0;
-window.addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY;},{passive:true});
-
-function lerp(a,b,t){return a+(b-a)*t;}
-function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function lerp(a, b, t){ return a + (b-a)*t; }
+function easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
 
 function getCamWP(t){
-  const n=waypoints.length;
-  const raw=t*(n-1);
-  const idx=Math.min(Math.floor(raw),n-2);
-  const ef=easeInOut(raw-idx);
-  const a=waypoints[idx],b=waypoints[idx+1];
-  return{
-    px:lerp(a.px,b.px,ef),py:lerp(a.py,b.py,ef),pz:lerp(a.pz,b.pz,ef),
-    lx:lerp(a.lx,b.lx,ef),ly:lerp(a.ly,b.ly,ef),lz:lerp(a.lz,b.lz,ef),
+  const n = waypoints.length;
+  const raw = t*(n-1);
+  const idx = Math.min(Math.floor(raw), n-2);
+  const ef  = easeInOut(raw - idx);
+  const a = waypoints[idx], b = waypoints[idx+1];
+  return {
+    px:lerp(a.px,b.px,ef), py:lerp(a.py,b.py,ef), pz:lerp(a.pz,b.pz,ef),
+    lx:lerp(a.lx,b.lx,ef), ly:lerp(a.ly,b.ly,ef), lz:lerp(a.lz,b.lz,ef),
   };
 }
 
-const camS={px:0,py:1.5,pz:5,lx:0,ly:0.3,lz:0};
-const camT=new THREE.Vector3();
+const camS = {px:0, py:1.5, pz:5, lx:0, ly:0.3, lz:0};
+const camT  = new THREE.Vector3();
 
 // ─────────────────────────────────
 // AUDIO
 // ─────────────────────────────────
-const audio=new Audio('sunflower.mp3');
-audio.loop=true;audio.volume=0.4;
-let playing=false;
-const audioBtn=document.getElementById('audio-btn');
-audioBtn.addEventListener('click',()=>{
-  if(playing){audio.pause();audioBtn.textContent='♪ MUSIC OFF';playing=false;}
-  else{audio.play().then(()=>{audioBtn.textContent='♪ MUSIC ON';playing=true;}).catch(()=>{});}
+const audio = new Audio('sunflower.mp3');
+audio.loop = true; audio.volume = 0.4;
+let playing = false;
+const audioBtn = document.getElementById('audio-btn');
+audioBtn.addEventListener('click', () => {
+  if(playing){ audio.pause(); audioBtn.textContent='♪ MUSIC OFF'; playing=false; }
+  else{ audio.play().then(()=>{ audioBtn.textContent='♪ MUSIC ON'; playing=true; }).catch(()=>{}); }
 });
-audio.play().then(()=>{playing=true;audioBtn.textContent='♪ MUSIC ON';}).catch(()=>{});
+audio.play().then(()=>{ playing=true; audioBtn.textContent='♪ MUSIC ON'; }).catch(()=>{});
 
 // ─────────────────────────────────
-// ANIMATE — FPS throttle on mobile
+// ANIMATE
 // ─────────────────────────────────
 const TARGET_FPS = isMobile ? 40 : 60;
 const FRAME_MIN  = 1000/TARGET_FPS;
-let lt=0, flickerT=0;
-
-// Particle update: skip every other frame on mobile
-let pFrame=0;
+let lt = 0, flickerT = 0, pFrame = 0;
 
 function animate(ts){
   requestAnimationFrame(animate);
-  const dt=Math.min((ts-lt)/1000,0.06);
-  // FPS throttle
-  if(ts-lt<FRAME_MIN){return;}
-  lt=ts;
-  flickerT+=dt;
+  if(ts - lt < FRAME_MIN) return;
+  const dt = Math.min((ts-lt)/1000, 0.06);
+  lt = ts;
+  flickerT += dt;
 
   // Smooth scroll
-  const scrollEase=isMobile?6:4;
-  smoothScroll+=(targetScroll-smoothScroll)*Math.min(1,dt*scrollEase);
+  const se = isMobile ? 6 : 4;
+  smoothScroll += (targetScroll - smoothScroll) * Math.min(1, dt*se);
 
   // Camera
-  const wp=getCamWP(smoothScroll);
-  const ce=Math.min(1,dt*(isMobile?5:3.5));
-  camS.px+=(wp.px-camS.px)*ce;camS.py+=(wp.py-camS.py)*ce;camS.pz+=(wp.pz-camS.pz)*ce;
-  camS.lx+=(wp.lx-camS.lx)*ce;camS.ly+=(wp.ly-camS.ly)*ce;camS.lz+=(wp.lz-camS.lz)*ce;
-  camera.position.set(camS.px,camS.py,camS.pz);
-  camT.set(camS.lx,camS.ly,camS.lz);
+  const wp = getCamWP(smoothScroll);
+  const ce = Math.min(1, dt*(isMobile ? 5 : 3.5));
+  camS.px+=(wp.px-camS.px)*ce; camS.py+=(wp.py-camS.py)*ce; camS.pz+=(wp.pz-camS.pz)*ce;
+  camS.lx+=(wp.lx-camS.lx)*ce; camS.ly+=(wp.ly-camS.ly)*ce; camS.lz+=(wp.lz-camS.lz)*ce;
+  camera.position.set(camS.px, camS.py, camS.pz);
+  camT.set(camS.lx, camS.ly, camS.lz);
   camera.lookAt(camT);
 
-  // Floor spin — slower on mobile
-  floorGroup.rotation.y+=isMobile?0.0006:0.001;
+  floorGroup.rotation.y += isMobile ? 0.0006 : 0.001;
 
-  // Bike idle
-  if(bikeLoaded&&bikeModel){
-    bikeModel.position.y+=Math.sin(ts*0.001)*0.0002;
+  if(bikeLoaded && bikeModel){
+    bikeModel.position.y += Math.sin(ts*0.001)*0.0002;
   }
 
-  // Ceiling flicker — every frame desktop, every 2 frames mobile
-  if(!isMobile||pFrame%2===0){
-    ceilingLights.forEach((cl,i)=>{
-      const f=0.85+Math.sin(flickerT*3+i*1.3)*0.15;
-      cl.light.intensity=(isMobile?2:3)*f;
-      cl.stripMat.emissiveIntensity=3*f;
+  // Ceiling flicker
+  if(!isMobile || pFrame%2===0){
+    ceilingLights.forEach((cl, i)=>{
+      const f = 0.85 + Math.sin(flickerT*3 + i*1.3)*0.15;
+      cl.light.intensity = (isMobile ? 2.5 : 3.5)*f;
+      cl.stripMat.emissiveIntensity = 3*f;
     });
-    underglow.intensity=1.5+Math.sin(flickerT*2)*0.6;
+    underglow.intensity = 2 + Math.sin(flickerT*2)*0.8;
+    // Pulse near lights so they animate in reflections
+    nearCyan.intensity = 1.5 + Math.sin(flickerT*1.7)*0.8;
+    nearMag.intensity  = 1.5 + Math.sin(flickerT*2.1)*0.8;
   }
 
-  // Particles — update every 2 frames on mobile
-  if(!isMobile||pFrame%2===0){
-    const pa=pGeo.attributes.position.array;
-    for(let i=0;i<particleCount;i++){
-      pa[i*3+1]+=0.005;
-      if(pa[i*3+1]>7) pa[i*3+1]=-1;
+  // Particles
+  if(!isMobile || pFrame%2===0){
+    const pa = pGeo.attributes.position.array;
+    for(let i = 0; i < particleCount; i++){
+      pa[i*3+1] += 0.005;
+      if(pa[i*3+1] > 7) pa[i*3+1] = -1;
     }
-    pGeo.attributes.position.needsUpdate=true;
+    pGeo.attributes.position.needsUpdate = true;
   }
   pFrame++;
 
   // Panels
-  panels.forEach(p=>{
-    const mid=(p.start+p.end)/2,hw=(p.end-p.start)/2;
-    const d=Math.abs(smoothScroll-mid)/hw;
-    if(d<1.05) p.el.classList.add('visible');
+  panels.forEach(p => {
+    const mid = (p.start+p.end)/2, hw = (p.end-p.start)/2;
+    const d = Math.abs(smoothScroll-mid)/hw;
+    if(d < 1.05) p.el.classList.add('visible');
     else p.el.classList.remove('visible');
   });
 
   // Hero
-  const heroEl=document.getElementById('hero');
-  const scEl=document.getElementById('scrollcue');
-  if(smoothScroll<0.05){heroEl.classList.remove('hidden');scEl.classList.remove('hidden');}
-  else{heroEl.classList.add('hidden');scEl.classList.add('hidden');}
+  const heroEl = document.getElementById('hero');
+  const scEl   = document.getElementById('scrollcue');
+  if(smoothScroll < 0.05){ heroEl.classList.remove('hidden'); scEl.classList.remove('hidden'); }
+  else{ heroEl.classList.add('hidden'); scEl.classList.add('hidden'); }
 
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 requestAnimationFrame(animate);
 </script>

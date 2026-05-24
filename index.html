@@ -10,68 +10,120 @@
 <style>
 :root{--g:#00ff88;--d:#030309;--s:#8fa0b0;--w:#f0f4f8;--gold:#c9a84c;}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;}
-body{background:var(--d);color:var(--w);font-family:'Cormorant Garamond',serif;overflow-x:hidden;overflow-y:scroll;-webkit-overflow-scrolling:touch;}
+html{height:100%;}
+body{
+  background:var(--d);color:var(--w);
+  font-family:'Cormorant Garamond',serif;
+  overflow:hidden;          /* NO native scroll — we handle it */
+  height:100%;
+  touch-action:none;        /* we'll handle touch manually */
+}
+
+/* canvas fills viewport */
 #cv{position:fixed;inset:0;z-index:0;}
 #cv canvas{display:block;width:100%!important;height:100%!important;}
-#nav{position:fixed;top:0;left:0;right:0;z-index:25;padding:clamp(.7rem,2vw,1.2rem) clamp(1rem,4vw,2.5rem);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(3,3,9,.75),transparent);}
+
+/* nav */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:25;
+  padding:clamp(.7rem,2vw,1.2rem) clamp(1rem,4vw,2.5rem);
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(to bottom,rgba(3,3,9,.8),transparent);
+}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.9rem,3vw,1.3rem);letter-spacing:.25em;color:var(--w);}
 .logo span{color:var(--g);}
-#snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--s);font-family:'Cinzel',serif;font-size:clamp(.45rem,1.5vw,.6rem);letter-spacing:.2em;padding:.38rem .9rem;text-transform:uppercase;transition:border-color .3s,color .3s;-webkit-tap-highlight-color:transparent;}
+#snd{
+  cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.2);
+  color:var(--s);font-family:'Cinzel',serif;font-size:clamp(.45rem,1.5vw,.6rem);
+  letter-spacing:.2em;padding:.38rem .9rem;text-transform:uppercase;
+  transition:border-color .3s,color .3s;-webkit-tap-highlight-color:transparent;
+}
 #snd.on{border-color:var(--g);color:var(--g);}
-#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--g),var(--gold));width:0%;z-index:30;}
-#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(3,3,9,.72) 100%);}
-#sd{position:relative;z-index:1;pointer-events:none;}
-.ss{height:100svh;display:flex;align-items:center;justify-content:center;pointer-events:none;position:relative;}
-.tp{position:absolute;opacity:0;pointer-events:none;width:min(380px,38vw);padding:1.4rem;transition:opacity .65s ease,transform .65s ease;}
-@media(max-width:640px){.tp{width:calc(100% - 1.6rem)!important;left:.8rem!important;right:auto!important;top:auto!important;bottom:4vh!important;text-align:center!important;transform:translateY(18px)!important;background:linear-gradient(to top,rgba(3,3,9,.9),transparent);padding:.9rem;}}
-@media(max-width:640px){.tp.vis{transform:translateY(0)!important;opacity:1!important;}}
-.tp.L{left:3vw;top:50%;transform:translateY(calc(-50% + 22px));}
+
+/* progress bar */
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--g),var(--gold));width:0%;z-index:30;transition:width .06s linear;}
+
+/* vignette */
+#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(3,3,9,.7) 100%);}
+
+/* text panels — absolutely positioned over canvas */
+.tp{
+  position:fixed;opacity:0;pointer-events:none;
+  width:min(360px,36vw);padding:1.4rem;
+  transition:opacity .6s ease, transform .6s ease;
+  z-index:20;
+}
+.tp.L {left:4vw; top:50%; transform:translateY(calc(-50% + 20px));}
 .tp.L.vis{opacity:1;transform:translateY(-50%);}
-.tp.R{right:3vw;top:50%;text-align:right;transform:translateY(calc(-50% + 22px));}
+.tp.R {right:4vw;top:50%;text-align:right;transform:translateY(calc(-50% + 20px));}
 .tp.R.vis{opacity:1;transform:translateY(-50%);}
-.tp.C{left:50%;width:min(460px,86vw)!important;top:20%;transform:translateX(-50%) translateY(22px);text-align:center;}
+.tp.C {left:50%;width:min(440px,84vw)!important;top:18%;transform:translateX(-50%) translateY(20px);text-align:center;}
 .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
-.ey{font-family:'Cinzel',serif;font-size:clamp(.46rem,1.4vw,.58rem);letter-spacing:.48em;color:var(--g);text-transform:uppercase;margin-bottom:.5rem;display:block;}
+
+@media(max-width:640px){
+  .tp{
+    width:calc(100% - 1.6rem)!important;left:.8rem!important;
+    right:auto!important;top:auto!important;bottom:5vh!important;
+    text-align:center!important;transform:translateY(16px)!important;
+    background:linear-gradient(to top,rgba(3,3,9,.92) 0%,transparent 100%);
+    padding:.9rem .9rem 1.2rem;
+  }
+  .tp.vis{opacity:1!important;transform:translateY(0)!important;}
+}
+
+.ey{font-family:'Cinzel',serif;font-size:clamp(.45rem,1.4vw,.57rem);letter-spacing:.46em;color:var(--g);text-transform:uppercase;margin-bottom:.5rem;display:block;}
 .hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,4.5rem);line-height:.9;letter-spacing:.04em;color:var(--w);margin-bottom:.7rem;}
 .hd em{color:var(--g);font-style:normal;}
-.bd{font-size:clamp(.8rem,1.2vw,.98rem);line-height:1.7;color:var(--s);font-weight:300;}
-.st{margin-top:1rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.5rem,2.8vw,2.6rem);color:var(--gold);letter-spacing:.1em;}
+.bd{font-size:clamp(.78rem,1.2vw,.96rem);line-height:1.7;color:var(--s);font-weight:300;}
+.st{margin-top:1rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.4rem,2.8vw,2.5rem);color:var(--gold);letter-spacing:.1em;}
 .st small{font-family:'Cormorant Garamond',serif;font-size:.5em;color:var(--s);letter-spacing:.18em;display:block;}
-#cta{position:absolute;bottom:9vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .8s ease .2s;pointer-events:all;white-space:nowrap;}
+
+/* CTA */
+#cta{
+  position:fixed;bottom:9vh;left:50%;transform:translateX(-50%);
+  text-align:center;opacity:0;transition:opacity .8s ease .15s;
+  pointer-events:none;white-space:nowrap;z-index:20;
+}
 #cta.vis{opacity:1;}
-.cl{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.5vw,.65rem);letter-spacing:.4em;color:var(--s);text-transform:uppercase;margin-bottom:.9rem;}
-.cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,7.5vw,6.5rem);letter-spacing:.1em;line-height:.88;background:linear-gradient(135deg,var(--g),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.cl{font-family:'Cinzel',serif;font-size:clamp(.46rem,1.4vw,.62rem);letter-spacing:.4em;color:var(--s);text-transform:uppercase;margin-bottom:.9rem;}
+.cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,7vw,6rem);letter-spacing:.1em;line-height:.88;background:linear-gradient(135deg,var(--g),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* scroll hint */
 #sh{position:fixed;bottom:1.8rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;z-index:20;opacity:0;transition:opacity .7s;}
 #sh.show{opacity:1;}
-.sht{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.38em;color:var(--s);text-transform:uppercase;}
-.sha{width:1px;height:28px;background:linear-gradient(to bottom,var(--g),transparent);animation:ap 1.6s ease-in-out infinite;}
-@keyframes ap{0%,100%{opacity:.2;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+.sht{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.36em;color:var(--s);text-transform:uppercase;}
+.sha{width:1px;height:26px;background:linear-gradient(to bottom,var(--g),transparent);animation:ap 1.6s ease-in-out infinite;}
+@keyframes ap{0%,100%{opacity:.2;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+
+/* loading */
 #ld{position:fixed;inset:0;z-index:50;background:var(--d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.3rem;transition:opacity .6s ease .1s,visibility .6s ease .1s;}
 #ld.done{opacity:0;visibility:hidden;}
 .ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,6vw,2.8rem);letter-spacing:.4em;color:var(--g);}
 .lbw{width:min(240px,70vw);height:1px;background:rgba(255,255,255,.1);}
-.lb{height:100%;background:var(--g);width:0%;transition:width .22s;}
-.lt{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.32em;color:var(--s);}
+.lb{height:100%;background:var(--g);width:0%;transition:width .2s;}
+.lt{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.3em;color:var(--s);}
 </style>
 </head>
 <body>
+
 <div id="ld"><div class="ll">H2R</div><div class="lbw"><div class="lb" id="lb"></div></div><div class="lt" id="lt">Loading…</div></div>
+
 <div id="nav"><div class="logo">NINJA <span>H2R</span></div><button id="snd">♪ Sound</button></div>
 <div id="pb"></div>
 <div id="vig"></div>
 <div id="sh"><div class="sht">Scroll</div><div class="sha"></div></div>
 <div id="cv"></div>
-<div id="sd">
-  <div class="ss" style="height:100svh"></div>
-  <div class="ss"><div class="tp L" id="p1"><span class="ey">Aerodynamic Mastery</span><div class="hd">BORN FROM<br/><em>WIND</em></div><div class="bd">The H2R's ram-air supercharger forces atmosphere into six compression stages. At 200+ km/h the intake becomes a weapon.</div><div class="st">310<small>PS @ 13,000 RPM</small></div></div></div>
-  <div class="ss"><div class="tp R" id="p2"><span class="ey">Supercharged Legacy</span><div class="hd">FORCED<br/><em>INDUCTION</em></div><div class="bd">A centrifugal supercharger built entirely in-house. No turbo lag — pure mechanical fury feeding a screaming 998cc inline-four.</div><div class="st">326<small>km/h · Top Speed</small></div></div></div>
-  <div class="ss"><div class="tp L" id="p3"><span class="ey">Track Dominance</span><div class="hd">ZERO<br/>MERCY<br/><em>GIVEN</em></div><div class="bd">Carbon-fibre bodywork, winglets generating true downforce, OHLINS suspension calibrated for one purpose — the perfect lap.</div><div class="st">216<small>kg · Dry Weight</small></div></div></div>
-  <div class="ss"><div class="tp R" id="p4"><span class="ey">Wing Technology</span><div class="hd">LIFT IS<br/><em>THE ENEMY</em></div><div class="bd">Dual winglets suppress front-wheel lift under savage acceleration. Borrowed from MotoGP, evolved for the H2R's unbridled power.</div><div class="st">2.0<small>sec · 0–100 km/h</small></div></div></div>
-  <div class="ss"><div class="tp C" id="p5"><span class="ey">The Legend</span><div class="hd"><em>H2R</em> FOREVER</div><div class="bd">Not street legal. Not for the timid. The Ninja H2R exists at the absolute edge of what engineering can achieve for two wheels.</div></div><div id="cta"><div class="cl">The Ultimate Track Machine</div><div class="cb">RIDE<br/>BEYOND</div></div></div>
-  <div style="height:40svh"></div>
-</div>
+
+<!-- fixed text panels -->
+<div class="tp L" id="p1"><span class="ey">Aerodynamic Mastery</span><div class="hd">BORN FROM<br/><em>WIND</em></div><div class="bd">The H2R's ram-air supercharger forces atmosphere into six compression stages. At 200+ km/h the intake becomes a weapon.</div><div class="st">310<small>PS @ 13,000 RPM</small></div></div>
+<div class="tp R" id="p2"><span class="ey">Supercharged Legacy</span><div class="hd">FORCED<br/><em>INDUCTION</em></div><div class="bd">A centrifugal supercharger built entirely in-house. No turbo lag — pure mechanical fury feeding a screaming 998cc inline-four.</div><div class="st">326<small>km/h · Top Speed</small></div></div>
+<div class="tp L" id="p3"><span class="ey">Track Dominance</span><div class="hd">ZERO<br/>MERCY<br/><em>GIVEN</em></div><div class="bd">Carbon-fibre bodywork, winglets generating true downforce, OHLINS suspension calibrated for one purpose — the perfect lap.</div><div class="st">216<small>kg · Dry Weight</small></div></div>
+<div class="tp R" id="p4"><span class="ey">Wing Technology</span><div class="hd">LIFT IS<br/><em>THE ENEMY</em></div><div class="bd">Dual winglets suppress front-wheel lift under savage acceleration. Borrowed from MotoGP, evolved for the H2R's unbridled power.</div><div class="st">2.0<small>sec · 0–100 km/h</small></div></div>
+<div class="tp C" id="p5"><span class="ey">The Legend</span><div class="hd"><em>H2R</em> FOREVER</div><div class="bd">Not street legal. Not for the timid. The Ninja H2R exists at the absolute edge of what engineering can achieve for two wheels.</div></div>
+<div id="cta"><div class="cl">The Ultimate Track Machine</div><div class="cb">RIDE<br/>BEYOND</div></div>
+
 <audio id="aud" loop preload="none"><source src="sunflower.mp3" type="audio/mpeg"/></audio>
+
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -81,364 +133,396 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const MOB = innerWidth < 768;
 
-/* ── RENDERER ── */
-const renderer = new THREE.WebGLRenderer({antialias:!MOB,powerPreference:'high-performance',stencil:false});
-renderer.setPixelRatio(Math.min(devicePixelRatio, MOB?1.5:2));
-renderer.setSize(innerWidth,innerHeight);
+/* ────────────────────────────────────────────
+   VIRTUAL SCROLL
+   No native scrollbar. We track wheel/touch
+   and lerp a progress value 0→1 ourselves.
+   This is the only way to get truly smooth,
+   jank-free scroll on all devices.
+──────────────────────────────────────────── */
+const SECTIONS = 6;           // number of "pages"
+const TOTAL    = SECTIONS * 1; // virtual scroll units
+
+let targetS  = 0;   // where we want to be (0–1)
+let currentS = 0;   // smoothly lerped value
+let isDragging = false;
+let touchStartY = 0;
+let lastTouchY  = 0;
+let touchVelY   = 0;
+const SCROLL_SPEED = MOB ? 0.0012 : 0.0008;  // wheel units → progress
+const LERP_FACTOR  = MOB ? 0.09   : 0.07;    // camera smoothing
+
+// Wheel
+window.addEventListener('wheel', e=>{
+  e.preventDefault();
+  targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED));
+}, {passive:false});
+
+// Touch
+window.addEventListener('touchstart', e=>{
+  touchStartY = e.touches[0].clientY;
+  lastTouchY  = touchStartY;
+  touchVelY   = 0;
+  isDragging  = true;
+},{passive:true});
+window.addEventListener('touchmove', e=>{
+  if(!isDragging) return;
+  const y    = e.touches[0].clientY;
+  const dy   = lastTouchY - y;          // positive = scrolling down
+  touchVelY  = dy;
+  lastTouchY = y;
+  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED * 1.8));
+},{passive:true});
+window.addEventListener('touchend', ()=>{
+  isDragging = false;
+  // momentum: keep applying velocity, decays each frame
+});
+
+/* ────────────────────────────────────────────
+   RENDERER
+──────────────────────────────────────────── */
+const renderer = new THREE.WebGLRenderer({
+  antialias: !MOB,
+  powerPreference: 'high-performance',
+  stencil: false,
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2));
+renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = false;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 2.1;
+renderer.toneMappingExposure = 1.6;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.getElementById('cv').appendChild(renderer.domElement);
 
-/* ── SCENE ── */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x03040c);
-scene.fog = new THREE.FogExp2(0x03040c, MOB?0.02:0.014);
+/* ────────────────────────────────────────────
+   SCENE
+──────────────────────────────────────────── */
+const scene  = new THREE.Scene();
+scene.background = new THREE.Color(0x03040d);
+scene.fog = new THREE.FogExp2(0x03040d, MOB ? 0.018 : 0.012);
 
-/* ── CAMERA ── */
-const camera = new THREE.PerspectiveCamera(MOB?62:50, innerWidth/innerHeight, 0.05, 180);
-camera.position.set(0,1.6,MOB?6.5:5.5);
-camera.lookAt(0,.5,0);
+const camera = new THREE.PerspectiveCamera(MOB ? 60 : 48, innerWidth/innerHeight, 0.05, 160);
+camera.position.set(0, 1.4, MOB ? 6.8 : 5.8);
+camera.lookAt(0, .5, 0);
 
-/* ── ENV ── */
+/* ── ENV (IBL for accurate reflections) ── */
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(),.04).texture;
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-/* ── LIGHTS ── */
-scene.add(new THREE.AmbientLight(0xffffff,4.5));
+/* ────────────────────────────────────────────
+   LIGHTS
+   H2R real colours:
+   • Body panels: mirror-black with green metallic flake (#0d1a0f base)
+   • Supercharger cover: brushed silver/aluminium
+   • Frame: silver/grey steel
+   • Accent lines: Kawasaki green (#00a550) + lime highlight
+   • Brake calipers: silver
+   • Exhaust: brushed titanium with heat gold tint
+   
+   Lighting strategy:
+   - Strong cool-white key from upper-front-right (reveals body panel sheen)
+   - Warm fill from left (brings out the green metallic)
+   - Blue-white rim from behind (separates bike from background)
+   - Tight top spot (chrome/aluminium pops)
+   - Subtle green bounce from below (Kawasaki brand colour)
+──────────────────────────────────────────── */
+scene.add(new THREE.AmbientLight(0xd0e0ff, 2.0));
 
-const key = new THREE.DirectionalLight(0xffffff,10);
-key.position.set(5,10,7); scene.add(key);
+// KEY — bright cool white, upper front-right
+const key = new THREE.DirectionalLight(0xffffff, 8.0);
+key.position.set(4, 9, 6); scene.add(key);
 
-const f1=new THREE.DirectionalLight(0x88ffcc,4); f1.position.set(-6,4,3); scene.add(f1);
-const f2=new THREE.DirectionalLight(0xaaddff,5); f2.position.set(0,5,-6); scene.add(f2);
-const f3=new THREE.DirectionalLight(0xffffff,5); f3.position.set(0,3,10); scene.add(f3);
+// FILL — warm from left, brings out metallic green flake
+const fill = new THREE.DirectionalLight(0xc8ffcc, 3.5);
+fill.position.set(-5, 3, 4); scene.add(fill);
 
-const groundGlow=new THREE.PointLight(0xff1111,7,10);
-groundGlow.position.set(0,-0.3,1); scene.add(groundGlow);
+// RIM — cold blue-white from behind, separates silhouette
+const rim = new THREE.DirectionalLight(0xb0ccff, 6.0);
+rim.position.set(0, 4, -7); scene.add(rim);
 
-const topSpot=new THREE.SpotLight(0xffffff,22,18,Math.PI/4,.6,2);
-topSpot.position.set(0,8,0); scene.add(topSpot,topSpot.target);
+// FRONT ACCENT — ensures fairing colours read correctly
+const front = new THREE.DirectionalLight(0xffffff, 4.0);
+front.position.set(0, 2, 9); scene.add(front);
 
-// Field illumination — 8 red point lights in a ring, sufficient for instanced field
-[[6,.4,0],[-6,.4,0],[0,.4,6],[0,.4,-6],
- [10,.4,10],[-10,.4,10],[10,.4,-10],[-10,.4,-10]].forEach(([x,y,z])=>{
-  const l=new THREE.PointLight(0xcc0010,6,18); l.position.set(x,y,z); scene.add(l);
-});
+// TOP SPOT — reveals chrome/aluminium supercharger & frame
+const top = new THREE.SpotLight(0xffffff, 18, 15, Math.PI/5, 0.5, 1.8);
+top.position.set(0, 8, 0); scene.add(top, top.target);
 
-/* ── GROUND ── */
-const ground=new THREE.Mesh(
-  new THREE.PlaneGeometry(300,300),
-  new THREE.MeshStandardMaterial({color:0x04080a,roughness:.96,metalness:.02})
+// KAWASAKI GREEN BOUNCE from below — subtle brand colour on underside
+const green = new THREE.PointLight(0x00ff55, 2.5, 7);
+green.position.set(0, -0.8, 0); scene.add(green);
+
+// EXHAUST GLOW — warm gold/orange from right rear (titanium exhaust)
+const exhaust = new THREE.PointLight(0xff9922, 2.0, 4);
+exhaust.position.set(1.2, -0.4, -1.5); scene.add(exhaust);
+
+/* ────────────────────────────────────────────
+   FLOOR — polished dark showroom
+──────────────────────────────────────────── */
+// Wide dark floor
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshStandardMaterial({ color: 0x04060a, roughness: .9, metalness: .05 })
 );
-ground.rotation.x=-Math.PI/2; ground.position.y=-1.05; scene.add(ground);
+floor.rotation.x = -Math.PI/2; floor.position.y = -1.05; scene.add(floor);
 
-const DISC_R=4.4;
-const disc=new THREE.Mesh(
-  new THREE.CircleGeometry(DISC_R,80),
-  new THREE.MeshStandardMaterial({color:0x07090e,roughness:.1,metalness:.95,envMapIntensity:3})
+// Inner gloss disc (mirror under bike)
+const disc = new THREE.Mesh(
+  new THREE.CircleGeometry(4.2, 96),
+  new THREE.MeshStandardMaterial({ color: 0x070a0f, roughness: .05, metalness: .98, envMapIntensity: 3.5 })
 );
-disc.rotation.x=-Math.PI/2; disc.position.y=-1.03; scene.add(disc);
+disc.rotation.x = -Math.PI/2; disc.position.y = -1.03; scene.add(disc);
 
-/* ── PARTICLES ── */
-const PC=MOB?500:1000;
-const pp=new Float32Array(PC*3),pv=new Float32Array(PC*3);
-for(let i=0;i<PC;i++){
-  pp[i*3]=(Math.random()-.5)*80;pp[i*3+1]=Math.random()*12-.5;pp[i*3+2]=(Math.random()-.5)*80;
-  pv[i*3]=(Math.random()-.5)*.004;pv[i*3+1]=Math.random()*.003+.001;pv[i*3+2]=(Math.random()-.5)*.004;
+// Subtle outer ring glow on floor
+const ring = new THREE.Mesh(
+  new THREE.RingGeometry(4.2, 5.2, 96),
+  new THREE.MeshBasicMaterial({ color: 0x003311, transparent: true, opacity: .25, side: THREE.DoubleSide })
+);
+ring.rotation.x = -Math.PI/2; ring.position.y = -1.02; scene.add(ring);
+
+/* ────────────────────────────────────────────
+   PARTICLES — sparse, subtle
+──────────────────────────────────────────── */
+const PC = MOB ? 400 : 800;
+const pp = new Float32Array(PC*3), pv = new Float32Array(PC*3);
+for(let i = 0; i < PC; i++){
+  pp[i*3]   = (Math.random()-.5)*60;
+  pp[i*3+1] = Math.random()*10;
+  pp[i*3+2] = (Math.random()-.5)*60;
+  pv[i*3]   = (Math.random()-.5)*.003;
+  pv[i*3+1] = Math.random()*.0025+.0005;
+  pv[i*3+2] = (Math.random()-.5)*.003;
 }
-const pGeo=new THREE.BufferGeometry();
-pGeo.setAttribute('position',new THREE.BufferAttribute(pp,3));
-scene.add(new THREE.Points(pGeo,new THREE.PointsMaterial({size:.05,color:0xff0011,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false})));
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+  size:.04, color:0x44ff88, transparent:true, opacity:.5,
+  blending:THREE.AdditiveBlending, depthWrite:false
+})));
 
-/* ── LOADERS ── */
-const draco=new DRACOLoader();
+/* ────────────────────────────────────────────
+   LOAD BIKE
+──────────────────────────────────────────── */
+const draco = new DRACOLoader();
 draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
-const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
+const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
 
-const lb=document.getElementById('lb'),lt=document.getElementById('lt');
-const setP=(p,t)=>{lb.style.width=p+'%';lt.textContent=t;};
+const lb = document.getElementById('lb'), lt = document.getElementById('lt');
+const setP = (p, t) => { lb.style.width = p+'%'; lt.textContent = t; };
 
-let bike=null, doneCount=0;
+let bike = null;
 
-/* ── INSTANCED LILY FIELD ──
-   Instead of cloning thousands of meshes we build InstancedMesh —
-   one draw call for petals, one for stems. Zero per-frame overhead.   */
+loader.load('kawasaki-ninja-h2r-super-bike.glb', gltf => {
+  bike = gltf.scene;
 
-// Placeholder geometry/material — replaced when GLB loads
-let petalIM=null, stemIM=null;
-
-const DISC_CLEAR = DISC_R+0.7;
-const EXTENT     = MOB?45:58;
-const STEP       = MOB?1.4:0.9;   // grid spacing — tight for overlap
-const JITTER     = STEP*0.6;
-
-// Pre-compute all valid positions
-function buildPositions(){
-  const pos=[];
-  const half=Math.ceil(EXTENT/STEP);
-  for(let ix=-half;ix<=half;ix++){
-    for(let iz=-half;iz<=half;iz++){
-      // Each slot → 1 or 2 lilies clustered together for overlap
-      const n=Math.random()<0.5?2:1;
-      for(let k=0;k<n;k++){
-        const x=ix*STEP+(Math.random()-.5)*2*JITTER;
-        const z=iz*STEP+(Math.random()-.5)*2*JITTER;
-        const d=Math.sqrt(x*x+z*z);
-        if(d<DISC_CLEAR||d>EXTENT) continue;
-        pos.push({x,z,ry:Math.random()*Math.PI*2, sc:0.6+Math.random()*0.8});
-      }
-    }
-  }
-  return pos;
-}
-
-function buildInstanced(petalGeo, stemGeo, positions){
-  // BLOOD RED petals
-  const petalMat=new THREE.MeshStandardMaterial({
-    color:0x8b0000,        // dark blood red base
-    emissive:new THREE.Color(0x6b0000),
-    emissiveIntensity:1.0,
-    roughness:0.38,
-    metalness:0.05,
-  });
-  // Short vivid green stems
-  const stemMat=new THREE.MeshStandardMaterial({
-    color:0x176b28,
-    emissive:new THREE.Color(0x062e0c),
-    emissiveIntensity:0.5,
-    roughness:0.6,
-    metalness:0.0,
-  });
-
-  const N=positions.length;
-  petalIM=new THREE.InstancedMesh(petalGeo,petalMat,N);
-  stemIM =new THREE.InstancedMesh(stemGeo, stemMat, N);
-  petalIM.frustumCulled=false;
-  stemIM.frustumCulled=false;
-
-  const dummy=new THREE.Object3D();
-  const gBox=new THREE.Box3().setFromBufferAttribute(stemGeo.attributes.position);
-  const stemH=gBox.max.y-gBox.min.y;
-
-  positions.forEach(({x,z,ry,sc},i)=>{
-    // Stems — scaled down in Y so they're short
-    dummy.position.set(x,-1.05,z);
-    dummy.rotation.set(0,ry,0);
-    // sc controls width; Y scale halved → short stems
-    dummy.scale.set(sc, sc*0.45, sc);
-    dummy.updateMatrix();
-    stemIM.setMatrixAt(i,dummy.matrix);
-
-    // Petals sit just above stem top
-    const stemTop=-1.05+(stemH*sc*0.45);
-    dummy.position.set(x, stemTop, z);
-    dummy.rotation.set(0,ry,0);
-    dummy.scale.set(sc,sc,sc);
-    dummy.updateMatrix();
-    petalIM.setMatrixAt(i,dummy.matrix);
-  });
-
-  petalIM.instanceMatrix.needsUpdate=true;
-  stemIM.instanceMatrix.needsUpdate=true;
-  scene.add(petalIM, stemIM);
-}
-
-/* ── BIKE ── */
-loader.load('kawasaki-ninja-h2r-super-bike.glb', gltf=>{
-  bike=gltf.scene;
-  const box=new THREE.Box3().setFromObject(bike);
-  const sz=box.getSize(new THREE.Vector3()),cn=box.getCenter(new THREE.Vector3());
-  const s=3.6/Math.max(sz.x,sz.y,sz.z);
+  // Scale + ground placement
+  const box  = new THREE.Box3().setFromObject(bike);
+  const sz   = box.getSize(new THREE.Vector3());
+  const cn   = box.getCenter(new THREE.Vector3());
+  const s    = 3.8 / Math.max(sz.x, sz.y, sz.z);
   bike.scale.setScalar(s);
-  const box2=new THREE.Box3().setFromObject(bike);
-  bike.position.set(-cn.x*s,-box2.min.y-1.05,-cn.z*s);
-  bike.traverse(c=>{
-    if(!c.isMesh||!c.material) return;
-    const ms=Array.isArray(c.material)?c.material:[c.material];
-    ms.forEach(m=>{
-      if(!m) return;
-      m.wireframe=false;
-      if(m.isMeshStandardMaterial||m.isMeshPhysicalMaterial){
-        m.envMapIntensity=4;
-        if(m.color){const lm=m.color.r*.3+m.color.g*.59+m.color.b*.11;if(lm<.04)m.color.setHex(0x1a1a22);}
+  const box2 = new THREE.Box3().setFromObject(bike);
+  bike.position.set(-cn.x*s, -box2.min.y - 1.05, -cn.z*s);
+
+  /* ── MATERIAL PASS ──────────────────────────────────────────
+     H2R real paint:
+     • Mirror-black fairing panels with deep green metallic flake
+     • Exposed frame rails: medium grey steel
+     • Supercharger cover: satin silver / aluminium
+     • Exhaust pipes: dark with gold/titanium heat tint
+     • Calipers / engine cases: silver-grey cast aluminium
+     • Tyres: matte black rubber
+     • Rims: gloss black
+     • Kawasaki green accent stripes: #00a550
+  ──────────────────────────────────────────────────────────── */
+  bike.traverse(c => {
+    if(!c.isMesh || !c.material) return;
+    c.frustumCulled = false;
+    const mats = Array.isArray(c.material) ? c.material : [c.material];
+    mats.forEach(m => {
+      if(!m || !m.isMaterial) return;
+      m.wireframe = false;
+      m.needsUpdate = true;
+
+      if(!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
+
+      // Boost env so reflections show
+      m.envMapIntensity = 4.0;
+
+      const r = m.color.r, g = m.color.g, b = m.color.b;
+      const lum = r*.299 + g*.587 + b*.114;
+      const isGreen  = g > r + 0.06 && g > b + 0.04;
+      const isSilver = lum > 0.35 && Math.abs(r-g)<0.12 && Math.abs(g-b)<0.12;
+      const isBlack  = lum < 0.06;
+      const isRed    = r > 0.35 && r > g*1.8;
+
+      if(isGreen){
+        // Kawasaki green accent — vivid #00a550
+        m.color.setHex(0x00a550);
+        m.emissive?.setHex(0x003318); if(m.emissive) m.emissiveIntensity = 0.25;
+        m.roughness  = 0.25; m.metalness = 0.4;
+      } else if(isBlack){
+        // Mirror-black panels with green metallic depth
+        m.color.setHex(0x0a0e0c);
+        m.roughness  = 0.08; m.metalness = 0.92;
+        m.envMapIntensity = 5.0;
+      } else if(isSilver){
+        // Aluminium / supercharger / frame
+        m.color.setHex(0xb8bfc4);
+        m.roughness  = 0.22; m.metalness = 0.88;
+      } else if(isRed){
+        // Brake calipers — keep red but make it metallic
+        m.color.setHex(0xcc1111);
+        m.roughness  = 0.35; m.metalness = 0.6;
+      } else if(lum < 0.15){
+        // Very dark (tyres, etc) — matte black rubber
+        m.color.setHex(0x080808);
+        m.roughness  = 0.92; m.metalness = 0.0;
+      } else {
+        // Everything else — neutral grey, slightly metallic
+        m.color.multiplyScalar(1.4);   // brighten so it reads
+        m.roughness  = Math.min(m.roughness, 0.5);
+        m.metalness  = Math.max(m.metalness, 0.3);
       }
-      m.needsUpdate=true;
     });
   });
+
   scene.add(bike);
-  doneCount++; setP(50,'Loading Spider Lilies…'); tryFinish();
-},p=>{if(p.total)setP(p.loaded/p.total*50,'Loading H2R…');},
-e=>{console.error('Bike:',e);doneCount++;tryFinish();});
-
-/* ── LILY MODEL → extract geometries ── */
-loader.load('spider_lily_lycoris_radiata.glb', gltf=>{
-  // Walk the GLB and collect all meshes
-  // Heuristic: meshes with green-ish colour = stem, else = petal
-  let petalGeo=null, stemGeo=null;
-  let petalArea=0, stemArea=0;
-
-  gltf.scene.traverse(c=>{
-    if(!c.isMesh) return;
-    const geo=c.geometry.clone();
-    // Apply the node's local transform into the geometry so shape is correct
-    geo.applyMatrix4(c.matrixWorld);
-    const m=Array.isArray(c.material)?c.material[0]:c.material;
-    const isGreen=m&&m.color&&(m.color.g>m.color.r+0.06);
-    const box=new THREE.Box3().setFromBufferAttribute(geo.attributes.position);
-    const vol=(box.max.x-box.min.x)*(box.max.y-box.min.y)*(box.max.z-box.min.z);
-    if(isGreen){
-      if(!stemGeo||vol>stemArea){stemGeo=geo;stemArea=vol;}
-    } else {
-      if(!petalGeo||vol>petalArea){petalGeo=geo;petalArea=vol;}
-    }
-  });
-
-  // Fallback: if only one type found, use it for both
-  if(!petalGeo&&stemGeo) petalGeo=stemGeo.clone();
-  if(!stemGeo&&petalGeo) stemGeo=petalGeo.clone();
-  if(!petalGeo){
-    // absolute fallback: cone for petal, cylinder for stem
-    petalGeo=new THREE.ConeGeometry(.15,.4,8);
-    stemGeo =new THREE.CylinderGeometry(.02,.02,.3,6);
-  }
-
-  // Normalise geometry to unit size, centred at base
-  function normaliseGeo(geo,targetH){
-    geo.computeBoundingBox();
-    const b=geo.boundingBox;
-    const h=b.max.y-b.min.y;
-    const sc=targetH/h;
-    geo.scale(sc,sc,sc);
-    geo.computeBoundingBox();
-    // Translate so min-y = 0
-    geo.translate(-(b.min.x+b.max.x)/2*sc,-geo.boundingBox.min.y,-(b.min.z+b.max.z)/2*sc);
-    return geo;
-  }
-  normaliseGeo(petalGeo,0.42);  // petal cluster height
-  normaliseGeo(stemGeo, 0.20);  // stems SHORT — 0.20 units
-
-  const positions=buildPositions();
-  buildInstanced(petalGeo,stemGeo,positions);
-
-  doneCount++; setP(100,'Ready'); tryFinish();
-},p=>{if(p.total)setP(50+p.loaded/p.total*50,'Loading Lilies…');},
-e=>{console.error('Lily:',e);doneCount++;tryFinish();});
-
-function tryFinish(){
-  if(doneCount>=2) setTimeout(()=>{
+  setP(100, 'Ready');
+  setTimeout(()=>{
     document.getElementById('ld').classList.add('done');
     document.getElementById('sh').classList.add('show');
     startAudio();
-  },350);
+  }, 350);
+
+}, p=>{ if(p.total) setP(p.loaded/p.total*100, 'Loading H2R…'); },
+   e=>{ console.error('Bike load error:', e); });
+
+/* ────────────────────────────────────────────
+   AUDIO
+──────────────────────────────────────────── */
+const aud = document.getElementById('aud');
+let audOn = false;
+function startAudio(){ aud.volume=.28; aud.play().then(()=>{audOn=true;updSnd();}).catch(()=>{}); }
+const sndBtn = document.getElementById('snd');
+function updSnd(){ sndBtn.textContent=audOn?'♪ Sound On':'♫ Muted'; sndBtn.classList.toggle('on',audOn); }
+sndBtn.addEventListener('click',()=>{ audOn?(aud.pause(),audOn=false):(aud.play().catch(()=>{}),audOn=true); updSnd(); });
+
+/* ────────────────────────────────────────────
+   CAMERA KEYFRAMES
+──────────────────────────────────────────── */
+const mZ = MOB ? 1.5 : 0;
+const KF = [
+  {p:0.00, pos:new THREE.Vector3(0,    1.4,  5.8+mZ), tar:new THREE.Vector3(0,.4,0)},
+  {p:0.12, pos:new THREE.Vector3(0,    0.9,  3.8+mZ), tar:new THREE.Vector3(0,.3,0)},  // close front
+  {p:0.25, pos:new THREE.Vector3(2.6,  1.1,  3.2+mZ), tar:new THREE.Vector3(0,.5,0)},  // front-right
+  {p:0.38, pos:new THREE.Vector3(4.8,  0.7,  0.3),    tar:new THREE.Vector3(0,.5,0)},  // right side
+  {p:0.52, pos:new THREE.Vector3(3.2,  1.9, -3.6),    tar:new THREE.Vector3(0,.4,0)},  // rear quarter
+  {p:0.65, pos:new THREE.Vector3(-4.0, 0.8, -1.4),    tar:new THREE.Vector3(0,.5,0)},  // left rear
+  {p:0.77, pos:new THREE.Vector3(0,    5.2,  1.4),    tar:new THREE.Vector3(0, 0, 0)}, // top-down
+  {p:0.88, pos:new THREE.Vector3(-2.8, 1.0,  3.2+mZ), tar:new THREE.Vector3(0,.4,0)},  // left front
+  {p:1.00, pos:new THREE.Vector3(0,    1.4,  5.5+mZ), tar:new THREE.Vector3(0,.5,0)},  // back to hero
+];
+
+const _tv  = new THREE.Vector3();
+const _tp  = new THREE.Vector3();
+function camFromProgress(prog){
+  let a = KF[0], b = KF[1];
+  for(let i=0; i<KF.length-1; i++){
+    if(prog >= KF[i].p && prog <= KF[i+1].p){ a=KF[i]; b=KF[i+1]; break; }
+  }
+  const raw = a.p===b.p ? 0 : (prog-a.p)/(b.p-a.p);
+  // smooth-step easing
+  const t = raw*raw*(3-2*raw);
+  _tp.lerpVectors(a.pos, b.pos, t);
+  _tv.lerpVectors(a.tar, b.tar, t);
+  camera.position.copy(_tp);
+  camera.lookAt(_tv);
 }
 
-/* ── AUDIO ── */
-const aud=document.getElementById('aud');
-let audOn=false;
-function startAudio(){aud.volume=.3;aud.play().then(()=>{audOn=true;updSnd();}).catch(()=>{});}
-const sndBtn=document.getElementById('snd');
-function updSnd(){sndBtn.textContent=audOn?'♪ Sound On':'♫ Muted';sndBtn.classList.toggle('on',audOn);}
-sndBtn.addEventListener('click',()=>{
-  if(audOn){aud.pause();audOn=false;}else{aud.play().catch(()=>{});audOn=true;}
-  updSnd();
-});
-
-/* ── SCROLL ── */
-let rawS=0,smoothS=0;
-const LERP=MOB?.11:.075;
-window.addEventListener('scroll',()=>{
-  const max=document.body.scrollHeight-innerHeight;
-  rawS=max>0?scrollY/max:0;
-  document.getElementById('pb').style.width=(rawS*100)+'%';
-  updatePanels(rawS);
-  if(rawS>.015) document.getElementById('sh').classList.remove('show');
-},{passive:true});
-
-/* ── CAMERA KF ── */
-const mZ=MOB?1.4:0;
-const KF=[
-  {p:0.00,pos:new THREE.Vector3(0,1.6,5.5+mZ),tar:new THREE.Vector3(0,.4,0)},
-  {p:0.12,pos:new THREE.Vector3(0,1.0,4.0+mZ),tar:new THREE.Vector3(0,.3,0)},
-  {p:0.25,pos:new THREE.Vector3(2.5,1.2,3.4+mZ),tar:new THREE.Vector3(0,.5,0)},
-  {p:0.38,pos:new THREE.Vector3(4.6,.8,.4),tar:new THREE.Vector3(0,.5,0)},
-  {p:0.52,pos:new THREE.Vector3(3.0,2.0,-3.8),tar:new THREE.Vector3(0,.4,0)},
-  {p:0.65,pos:new THREE.Vector3(-3.8,.9,-1.5),tar:new THREE.Vector3(0,.5,0)},
-  {p:0.77,pos:new THREE.Vector3(0,5.0,1.5),tar:new THREE.Vector3(0,0,0)},
-  {p:0.88,pos:new THREE.Vector3(-2.8,1.0,3.4+mZ),tar:new THREE.Vector3(0,.4,0)},
-  {p:1.00,pos:new THREE.Vector3(0,1.4,5.2+mZ),tar:new THREE.Vector3(0,.5,0)},
+/* ────────────────────────────────────────────
+   PANEL TRIGGERS  (driven by currentS, not raw)
+──────────────────────────────────────────── */
+const PAN = [
+  {id:'p1', s:.10, h:.28},
+  {id:'p2', s:.28, h:.45},
+  {id:'p3', s:.45, h:.62},
+  {id:'p4', s:.63, h:.80},
+  {id:'p5', s:.82, h:1.01},
 ];
-function camTick(prog){
-  let a=KF[0],b=KF[1];
-  for(let i=0;i<KF.length-1;i++) if(prog>=KF[i].p&&prog<=KF[i+1].p){a=KF[i];b=KF[i+1];break;}
-  const raw=a.p===b.p?0:(prog-a.p)/(b.p-a.p);
-  const t=raw<.5?2*raw*raw:-1+(4-2*raw)*raw;
-  camera.position.lerpVectors(a.pos,b.pos,t);
-  camera.lookAt(new THREE.Vector3().lerpVectors(a.tar,b.tar,t));
-}
-
-/* ── PANELS ── */
-const PAN=[
-  {id:'p1',s:.10,h:.27},{id:'p2',s:.28,h:.44},
-  {id:'p3',s:.45,h:.62},{id:'p4',s:.63,h:.79},{id:'p5',s:.82,h:1.01}
-];
+let lastProg = -1;
 function updatePanels(p){
-  PAN.forEach(({id,s,h})=>document.getElementById(id)?.classList.toggle('vis',p>=s&&p<=h));
-  document.getElementById('cta')?.classList.toggle('vis',p>.87);
+  if(Math.abs(p-lastProg) < 0.001) return;
+  lastProg = p;
+  PAN.forEach(({id,s,h})=>document.getElementById(id)?.classList.toggle('vis', p>=s && p<=h));
+  document.getElementById('cta')?.classList.toggle('vis', p>.87);
+  document.getElementById('pb').style.width = (p*100)+'%';
 }
 
+/* ────────────────────────────────────────────
+   RESIZE
+──────────────────────────────────────────── */
 window.addEventListener('resize',()=>{
-  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
 });
 
-/* ── ANIMATE ── */
-const clock=new THREE.Clock();
-let bikeRotY=0;
-const ROT_SPEED=0.6; // rad/s
-
-// Gentle ambient sway for instanced lilies — shift matrix Y slightly
-// (we only do this every 3rd frame to keep it cheap)
-let frame=0;
+/* ────────────────────────────────────────────
+   ANIMATE
+──────────────────────────────────────────── */
+const clock = new THREE.Clock();
+let bikeRotY = 0;
+const ROT_SPEED = 0.55; // rad/s, unidirectional
 
 function animate(){
   requestAnimationFrame(animate);
-  const dt=Math.min(clock.getDelta(),.05); // capped delta
-  const t=clock.elapsedTime;
-  frame++;
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t  = clock.elapsedTime;
 
-  /* Smooth scroll */
-  smoothS+=(rawS-smoothS)*LERP;
+  /* ── Virtual scroll inertia ──
+     Touch momentum: decay velocity and apply
+  */
+  if(!isDragging && Math.abs(touchVelY) > 0.1){
+    targetS = Math.max(0, Math.min(1, targetS + touchVelY * SCROLL_SPEED * 1.4));
+    touchVelY *= 0.88;   // friction
+  }
+
+  /* Lerp currentS toward targetS */
+  currentS += (targetS - currentS) * LERP_FACTOR;
+  if(Math.abs(targetS - currentS) < 0.00005) currentS = targetS;
+
+  updatePanels(currentS);
 
   /* Particles */
-  const pa=pGeo.attributes.position;
-  for(let i=0;i<PC;i++){
-    pa.array[i*3]  +=pv[i*3];
-    pa.array[i*3+1]+=pv[i*3+1];
-    pa.array[i*3+2]+=pv[i*3+2];
-    if(pa.array[i*3+1]>12){
-      pa.array[i*3+1]=-0.5;
-      pa.array[i*3]=(Math.random()-.5)*80;
-      pa.array[i*3+2]=(Math.random()-.5)*80;
+  const pa = pGeo.attributes.position;
+  for(let i=0; i<PC; i++){
+    pa.array[i*3]   += pv[i*3];
+    pa.array[i*3+1] += pv[i*3+1];
+    pa.array[i*3+2] += pv[i*3+2];
+    if(pa.array[i*3+1] > 10){
+      pa.array[i*3+1] = 0;
+      pa.array[i*3]   = (Math.random()-.5)*60;
+      pa.array[i*3+2] = (Math.random()-.5)*60;
     }
   }
-  pa.needsUpdate=true;
+  pa.needsUpdate = true;
 
-  /* Bike — delta-time unidirectional rotation, frame-rate independent */
+  /* Bike rotation — delta-time, frame-rate independent */
   if(bike){
-    bikeRotY+=ROT_SPEED*dt;
-    bike.rotation.y=bikeRotY;
+    bikeRotY += ROT_SPEED * dt;
+    bike.rotation.y = bikeRotY;
   }
 
-  /* Ground glow pulse */
-  groundGlow.intensity=6+Math.sin(t*1.8)*.8;
+  /* Pulse lights */
+  green.intensity   = 2.0 + Math.sin(t*1.2)*.5;
+  exhaust.intensity = 1.8 + Math.sin(t*2.4)*.6;
 
-  /* Camera */
-  camTick(smoothS);
+  /* Camera from smooth scroll */
+  camFromProgress(currentS);
 
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 animate();
 </script>

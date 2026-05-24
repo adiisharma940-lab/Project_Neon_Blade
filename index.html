@@ -233,84 +233,9 @@ const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
 scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .04, color: 0x44ff88, transparent: true, opacity: .4, blending: THREE.AdditiveBlending, depthWrite: false })));
 
-/* ── EAGLE MODEL — loaded from GLB ── */
-// Placeholder group added to scene immediately so animation loop can
-// reference it before the async load resolves.
+/* ── EAGLE GROUP — placeholder; GLB loaded after draco is ready ── */
 const eagle = new THREE.Group();
 scene.add(eagle);
-
-// Wings inside the mechanical eagle GLB may have different node names.
-// We detect them by scanning for the two largest child meshes along the
-// X axis and tag them wingL / wingR so the flap animation still works.
-function tagWings(root) {
-  const candidates = [];
-  root.traverse(c => {
-    if (!c.isMesh) return;
-    const box = new THREE.Box3().setFromObject(c);
-    const sz  = box.getSize(new THREE.Vector3());
-    candidates.push({ mesh: c, spanX: sz.x, cx: box.getCenter(new THREE.Vector3()).x });
-  });
-  // Sort by X-span descending — the two widest meshes are the wings
-  candidates.sort((a, b) => b.spanX - a.spanX);
-  if (candidates.length >= 2) {
-    const [a, b] = candidates;
-    const left  = a.cx >= b.cx ? a.mesh : b.mesh;
-    const right = a.cx >= b.cx ? b.mesh : a.mesh;
-    // Wrap each in a pivot group so rotation works from a sensible origin
-    const wrapInPivot = (mesh, name) => {
-      const pivot = new THREE.Group();
-      pivot.name  = name;
-      const wp = mesh.getWorldPosition(new THREE.Vector3());
-      pivot.position.copy(root.worldToLocal(wp.clone()));
-      mesh.parent.add(pivot);
-      pivot.attach(mesh);
-      root.add(pivot);
-      return pivot;
-    };
-    wrapInPivot(left,  'wingL');
-    wrapInPivot(right, 'wingR');
-  }
-}
-
-const eagleLoader = new GLTFLoader();
-eagleLoader.setDRACOLoader(draco);
-eagleLoader.load(
-  'mechanical_eagle.glb',
-  gltf => {
-    const model = gltf.scene;
-
-    // Normalise size — fit inside a ~2-unit bounding sphere
-    const box  = new THREE.Box3().setFromObject(model);
-    const sz   = box.getSize(new THREE.Vector3());
-    const maxD = Math.max(sz.x, sz.y, sz.z);
-    const s    = (MOB ? 3.6 : 2.8) / maxD;
-    model.scale.setScalar(s);
-
-    // Centre the model at origin of the group
-    const box2 = new THREE.Box3().setFromObject(model);
-    const cn   = box2.getCenter(new THREE.Vector3());
-    model.position.sub(cn);
-
-    // Boost metalness / environment response for the mechanical look
-    model.traverse(c => {
-      if (!c.isMesh || !c.material) return;
-      c.frustumCulled = false;
-      const ms = Array.isArray(c.material) ? c.material : [c.material];
-      ms.forEach(m => {
-        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
-        m.envMapIntensity = 3.5;
-        m.metalness = Math.max(m.metalness, 0.7);
-        m.roughness  = Math.min(m.roughness,  0.4);
-        m.needsUpdate = true;
-      });
-    });
-
-    tagWings(model);
-    eagle.add(model);
-  },
-  undefined,
-  err => { console.warn('Eagle GLB failed, continuing without it:', err); }
-);
 
 /* ── FLIGHT PATH ── */
 const FLIGHT_PTS = [
@@ -374,6 +299,68 @@ function dismissLoader() {
   startAudio();
 }
 setTimeout(dismissLoader, LOAD_TIMEOUT);
+
+/* ── EAGLE GLB LOADER — placed here so draco & GLTFLoader are already declared ── */
+function tagWings(root) {
+  const candidates = [];
+  root.traverse(c => {
+    if (!c.isMesh) return;
+    const box = new THREE.Box3().setFromObject(c);
+    const sz  = box.getSize(new THREE.Vector3());
+    candidates.push({ mesh: c, spanX: sz.x, cx: box.getCenter(new THREE.Vector3()).x });
+  });
+  candidates.sort((a, b) => b.spanX - a.spanX);
+  if (candidates.length >= 2) {
+    const [a, b] = candidates;
+    const left  = a.cx >= b.cx ? a.mesh : b.mesh;
+    const right = a.cx >= b.cx ? b.mesh : a.mesh;
+    const wrapInPivot = (mesh, name) => {
+      const pivot = new THREE.Group();
+      pivot.name  = name;
+      const wp = mesh.getWorldPosition(new THREE.Vector3());
+      pivot.position.copy(root.worldToLocal(wp.clone()));
+      mesh.parent.add(pivot);
+      pivot.attach(mesh);
+      root.add(pivot);
+      return pivot;
+    };
+    wrapInPivot(left,  'wingL');
+    wrapInPivot(right, 'wingR');
+  }
+}
+
+const eagleLoader = new GLTFLoader();
+eagleLoader.setDRACOLoader(draco);
+eagleLoader.load(
+  'mechanical_eagle.glb',
+  gltf => {
+    const model = gltf.scene;
+    const box  = new THREE.Box3().setFromObject(model);
+    const sz   = box.getSize(new THREE.Vector3());
+    const maxD = Math.max(sz.x, sz.y, sz.z);
+    const s    = (MOB ? 3.6 : 2.8) / maxD;
+    model.scale.setScalar(s);
+    const box2 = new THREE.Box3().setFromObject(model);
+    const cn   = box2.getCenter(new THREE.Vector3());
+    model.position.sub(cn);
+    model.traverse(c => {
+      if (!c.isMesh || !c.material) return;
+      c.frustumCulled = false;
+      const ms = Array.isArray(c.material) ? c.material : [c.material];
+      ms.forEach(m => {
+        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
+        m.envMapIntensity = 3.5;
+        m.metalness = Math.max(m.metalness, 0.7);
+        m.roughness  = Math.min(m.roughness, 0.4);
+        m.needsUpdate = true;
+      });
+    });
+    tagWings(model);
+    eagle.add(model);
+  },
+  undefined,
+  err => { console.warn('Eagle GLB failed, continuing without it:', err); }
+);
 
 loader.load(
   'kawasaki-ninja-h2r-super-bike.glb',

@@ -9,7 +9,7 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{height:100%;}
-body{background:#030309;color:#f0f4f8;font-family:'Cormorant Garamond',serif;overflow:hidden;height:100%;touch-action:none;}
+body{background:#030309;color:#7a8a9a;font-family:'Cormorant Garamond',serif;overflow:hidden;height:100%;touch-action:none;}
 canvas{position:fixed;inset:0;display:block;}
 
 /* NAV */
@@ -22,12 +22,7 @@ canvas{position:fixed;inset:0;display:block;}
 /* PROGRESS */
 #pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#00ff88,#c9a84c);width:0%;z-index:30;transition:width .1s linear;}
 
-/* SCROLL HINT */
-#sh{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;z-index:20;opacity:0;transition:opacity .8s;}
-#sh.show{opacity:1;}
-.sht{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.36em;color:#8fa0b0;text-transform:uppercase;}
-.sha{width:1px;height:26px;background:linear-gradient(to bottom,#00ff88,transparent);animation:ap 1.6s ease-in-out infinite;}
-@keyframes ap{0%,100%{opacity:.2;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+
 
 /* TEXT PANELS */
 .tp{
@@ -50,7 +45,7 @@ canvas{position:fixed;inset:0;display:block;}
 .ey{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.3vw,.55rem);letter-spacing:.44em;color:#00ff88;text-transform:uppercase;margin-bottom:.5rem;display:block;}
 .hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.9rem,4.5vw,4.2rem);line-height:.91;color:#f0f4f8;margin-bottom:.7rem;}
 .hd em{color:#00ff88;font-style:normal;}
-.bd{font-size:clamp(.8rem,1.25vw,.94rem);line-height:1.72;color:#8fa0b0;font-weight:300;}
+.bd{font-size:clamp(.8rem,1.25vw,.94rem);line-height:1.72;color:#6a7a8a;font-weight:300;font-style:italic;}
 .st{margin-top:.9rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.5vw,2.2rem);color:#c9a84c;letter-spacing:.1em;}
 .st small{font-family:'Cormorant Garamond',serif;font-size:.5em;color:#8fa0b0;letter-spacing:.16em;display:block;}
 .specs{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;margin-top:.8rem;}
@@ -80,7 +75,7 @@ canvas{position:fixed;inset:0;display:block;}
 <div id="nav"><div class="logo">NINJA <span>H2R</span></div><button id="snd">♪ Sound</button></div>
 <div id="pb"></div>
 <div id="vig"></div>
-<div id="sh"><div class="sht">Scroll to Fly</div><div class="sha"></div></div>
+
 
 <!-- Text panels -->
 <div class="tp C" id="p0">
@@ -239,31 +234,35 @@ scene.add(eagle);
 
 /* ── FLIGHT PATH ── */
 const FLIGHT_PTS = [
-  new THREE.Vector3(0,   80, 180),
-  new THREE.Vector3(60,  55, 130),
-  new THREE.Vector3(80,  35,  60),
-  new THREE.Vector3(20,  22,  20),
-  new THREE.Vector3(-50, 18, -10),
-  new THREE.Vector3(-30, 12,  30),
-  new THREE.Vector3(10,   8,  15),
-  new THREE.Vector3(4,    4,   8),
-  new THREE.Vector3(0,    1,   3),
-  new THREE.Vector3(0,   .5,  1.5),
+  new THREE.Vector3(  0,  160,  400),   // high distant start
+  new THREE.Vector3(140,  130,  320),   // wide right bank
+  new THREE.Vector3(200,   95,  210),   // soaring arc
+  new THREE.Vector3(160,   70,  120),   // beginning descent
+  new THREE.Vector3( 60,   50,   60),   // mid approach
+  new THREE.Vector3(-100,  38,   10),   // sweeping left
+  new THREE.Vector3(-120,  26,  -20),   // low left arc
+  new THREE.Vector3( -60,  18,   40),   // rising slightly
+  new THREE.Vector3(  20,  12,   25),   // converging on target
+  new THREE.Vector3(   8,   6,   14),   // final glide
+  new THREE.Vector3(   2,   2,    5),   // flare
+  new THREE.Vector3(   0,   0.4,  1.6), // touchdown
 ];
 const flightPath = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', .5);
 
 /* ── CAMERA PATH ── */
 const CAM_PTS = [
-  new THREE.Vector3(0,   85, 200),
-  new THREE.Vector3(80,  60, 150),
-  new THREE.Vector3(90,  42,  75),
-  new THREE.Vector3(30,  28,  30),
-  new THREE.Vector3(-60, 22,   5),
-  new THREE.Vector3(-40, 16,  40),
-  new THREE.Vector3(15,  12,  22),
-  new THREE.Vector3(8,    7,  12),
-  new THREE.Vector3(4,    3,   8),
-  new THREE.Vector3(0,   1.5, 6.0),
+  new THREE.Vector3(  0,  170,  460),   // behind & high — wide establishing shot
+  new THREE.Vector3(160,  145,  370),
+  new THREE.Vector3(220,  110,  250),   // sweeping with the eagle
+  new THREE.Vector3(180,   82,  145),
+  new THREE.Vector3(  80,  60,   80),
+  new THREE.Vector3(-110,  46,   20),   // left arc chase
+  new THREE.Vector3(-130,  32,  -10),
+  new THREE.Vector3( -70,  24,   50),
+  new THREE.Vector3(  25,  16,   32),
+  new THREE.Vector3(  10,   9,   18),   // closing in for landing
+  new THREE.Vector3(   4,   4,   10),
+  new THREE.Vector3(   0,   2,    7),   // final hero shot position
 ];
 const camPath = new THREE.CatmullRomCurve3(CAM_PTS, false, 'catmullrom', .5);
 
@@ -294,39 +293,36 @@ function dismissLoader() {
   if (loadDone) return;
   loadDone = true;
   document.getElementById('ld').classList.add('done');
-  document.getElementById('sh').classList.add('show');
   showPanel('p0');
   startAudio();
 }
 setTimeout(dismissLoader, LOAD_TIMEOUT);
 
-/* ── EAGLE GLB LOADER — placed here so draco & GLTFLoader are already declared ── */
-function tagWings(root) {
-  const candidates = [];
+/* ── EAGLE GLB LOADER ── */
+// wingL / wingR stored directly — no reparenting, no pivot wrapping.
+// We find the two child Objects (Mesh or Group) with the most extreme
+// local X centres: most-positive = right wing, most-negative = left wing.
+let eagleWingL = null, eagleWingR = null;
+
+function findWings(root) {
+  // Collect direct children and their world-space X centres
+  const entries = [];
   root.traverse(c => {
-    if (!c.isMesh) return;
+    if (c === root) return;
+    // Only look at top-level children of the model root (depth 1-2)
+    let depth = 0, p = c;
+    while (p && p !== root) { depth++; p = p.parent; }
+    if (depth > 2) return;
     const box = new THREE.Box3().setFromObject(c);
-    const sz  = box.getSize(new THREE.Vector3());
-    candidates.push({ mesh: c, spanX: sz.x, cx: box.getCenter(new THREE.Vector3()).x });
+    if (box.isEmpty()) return;
+    const cx = (box.min.x + box.max.x) / 2;
+    entries.push({ obj: c, cx });
   });
-  candidates.sort((a, b) => b.spanX - a.spanX);
-  if (candidates.length >= 2) {
-    const [a, b] = candidates;
-    const left  = a.cx >= b.cx ? a.mesh : b.mesh;
-    const right = a.cx >= b.cx ? b.mesh : a.mesh;
-    const wrapInPivot = (mesh, name) => {
-      const pivot = new THREE.Group();
-      pivot.name  = name;
-      const wp = mesh.getWorldPosition(new THREE.Vector3());
-      pivot.position.copy(root.worldToLocal(wp.clone()));
-      mesh.parent.add(pivot);
-      pivot.attach(mesh);
-      root.add(pivot);
-      return pivot;
-    };
-    wrapInPivot(left,  'wingL');
-    wrapInPivot(right, 'wingR');
-  }
+  if (entries.length < 2) return;
+  // Sort by cx: most negative = left, most positive = right
+  entries.sort((a, b) => a.cx - b.cx);
+  eagleWingL = entries[0].obj;                    // most-negative X = left
+  eagleWingR = entries[entries.length - 1].obj;   // most-positive X = right
 }
 
 const eagleLoader = new GLTFLoader();
@@ -355,7 +351,7 @@ eagleLoader.load(
         m.needsUpdate = true;
       });
     });
-    tagWings(model);
+    findWings(model);
     eagle.add(model);
   },
   undefined,
@@ -502,22 +498,25 @@ function animate() {
     eagle.quaternion.slerp(_dummy.quaternion, 0.12);
   }
 
-  /* ── WING FLAP ── */
-  const speed = 1 - Math.min(rawT, .48) / .48;
-  const flapFreq = 2.5 + speed * 3;
-  const flapAmp  = .5 + speed * .3;
+  /* ── WING FLAP ──
+     eagleWingL / eagleWingR are direct object refs set after GLB loads.
+     Flap speed decreases as bird approaches landing.
+     We try rotation.z (wing up/down for a model facing +Z, wings along X).
+     Amplitude is modest — mechanical eagle wings don't flap like organic ones. */
+  const flapProgress = Math.min(rawT, 0.48) / 0.48;   // 0=fast, 1=landing
+  const flapFreq = 4.5 - flapProgress * 2.5;           // 4.5 → 2.0 Hz
+  const flapAmp  = 0.28 - flapProgress * 0.12;         // 0.28 → 0.16 rad
 
   let wingAngle;
   if (rawT > LAND_START) {
+    // Wings splay out and lock for air-brake during landing
     const lp = Math.min((rawT - LAND_START) / (LAND_END - LAND_START), 1);
-    wingAngle = lp * (-Math.PI * .35);
+    wingAngle = lp * 0.3;  // spread out upward
   } else {
-    wingAngle = Math.sin(t * flapFreq) * flapAmp * (-.6);
+    wingAngle = Math.sin(t * flapFreq) * flapAmp;
   }
-  const wL = eagle.getObjectByName('wingL');
-  const wR = eagle.getObjectByName('wingR');
-  if (wL) wL.rotation.z = wingAngle;
-  if (wR) wR.rotation.z = -wingAngle;
+  if (eagleWingL) eagleWingL.rotation.z =  wingAngle;
+  if (eagleWingR) eagleWingR.rotation.z = -wingAngle;
 
   /* ── EAGLE SCALE ── */
   // The GLB loader already normalises the model to ~3 units internally.

@@ -5,6 +5,544 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>Kawasaki Ninja H2R — Born From Chaos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;}
+body{background:#030309;color:#f0f4f8;font-family:'Cormorant Garamond',serif;overflow:hidden;height:100%;touch-action:none;}
+canvas{position:fixed;inset:0;display:block;}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:25;padding:clamp(.7rem,2vw,1.2rem) clamp(1rem,4vw,2.5rem);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(3,3,9,.8),transparent);transition:opacity .8s;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.9rem,3vw,1.3rem);letter-spacing:.25em;}
+.logo span{color:#00ff88;}
+#snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.2);color:#8fa0b0;font-family:'Cinzel',serif;font-size:clamp(.45rem,1.5vw,.6rem);letter-spacing:.2em;padding:.38rem .9rem;text-transform:uppercase;transition:all .3s;}
+#snd.on{border-color:#00ff88;color:#00ff88;}
+
+/* PROGRESS */
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#00ff88,#c9a84c);width:0%;z-index:30;}
+
+/* SCROLL HINT */
+#sh{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;z-index:20;opacity:0;transition:opacity .8s;}
+#sh.show{opacity:1;}
+.sht{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.36em;color:#8fa0b0;text-transform:uppercase;}
+.sha{width:1px;height:26px;background:linear-gradient(to bottom,#00ff88,transparent);animation:ap 1.6s ease-in-out infinite;}
+@keyframes ap{0%,100%{opacity:.2;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+
+/* TEXT PANELS */
+.tp{
+  position:fixed;opacity:0;pointer-events:none;z-index:20;
+  transition:opacity .7s ease, transform .7s ease;
+}
+@media(min-width:641px){
+  .tp{width:min(360px,34vw);padding:1.4rem;}
+  .tp.L{left:4vw;top:50%;transform:translateY(calc(-50% + 20px));}
+  .tp.L.vis{opacity:1;transform:translateY(-50%);}
+  .tp.R{right:4vw;top:50%;text-align:right;transform:translateY(calc(-50% + 20px));}
+  .tp.R.vis{opacity:1;transform:translateY(-50%);}
+  .tp.C{left:50%;width:min(500px,86vw)!important;top:16%;transform:translateX(-50%) translateY(20px);text-align:center;}
+  .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
+}
+@media(max-width:640px){
+  .tp{left:0;right:0;bottom:0;width:100%!important;padding:1rem 1.2rem 1.8rem;text-align:center;background:linear-gradient(to top,rgba(3,3,9,.96) 55%,transparent);transform:translateY(12px);}
+  .tp.vis{opacity:1;transform:translateY(0);}
+}
+.ey{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.3vw,.55rem);letter-spacing:.44em;color:#00ff88;text-transform:uppercase;margin-bottom:.5rem;display:block;}
+.hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.9rem,4.5vw,4.2rem);line-height:.91;color:#f0f4f8;margin-bottom:.7rem;}
+.hd em{color:#00ff88;font-style:normal;}
+.bd{font-size:clamp(.8rem,1.25vw,.94rem);line-height:1.72;color:#8fa0b0;font-weight:300;}
+.st{margin-top:.9rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.5vw,2.2rem);color:#c9a84c;letter-spacing:.1em;}
+.st small{font-family:'Cormorant Garamond',serif;font-size:.5em;color:#8fa0b0;letter-spacing:.16em;display:block;}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;margin-top:.8rem;}
+@media(max-width:640px){.specs{grid-template-columns:repeat(4,1fr);}}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,2vw,1.5rem);color:#c9a84c;line-height:1;}
+.sl{font-family:'Cinzel',serif;font-size:clamp(.35rem,.9vw,.45rem);letter-spacing:.25em;color:#8fa0b0;text-transform:uppercase;margin-top:.1rem;}
+
+#cta{position:fixed;bottom:9vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .8s;white-space:nowrap;z-index:20;pointer-events:none;}
+#cta.vis{opacity:1;}
+.cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.4vw,.6rem);letter-spacing:.4em;color:#8fa0b0;text-transform:uppercase;margin-bottom:.9rem;}
+.cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,6.5vw,5.8rem);letter-spacing:.1em;line-height:.88;background:linear-gradient(135deg,#00ff88,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* LOADING */
+#ld{position:fixed;inset:0;z-index:50;background:#030309;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.3rem;transition:opacity .6s ease .1s,visibility .6s ease .1s;}
+#ld.done{opacity:0;visibility:hidden;}
+.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,6vw,2.8rem);letter-spacing:.4em;color:#00ff88;}
+.lbw{width:min(240px,70vw);height:1px;background:rgba(255,255,255,.1);}
+.lb{height:100%;background:#00ff88;width:0%;transition:width .2s;}
+.lt{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.3em;color:#8fa0b0;}
+
+/* vignette */
+#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(3,3,9,.68) 100%);}
+</style>
+</head>
+<body>
+<div id="ld"><div class="ll">H2R</div><div class="lbw"><div class="lb" id="lb"></div></div><div class="lt" id="lt">Loading…</div></div>
+<div id="nav"><div class="logo">NINJA <span>H2R</span></div><button id="snd">♪ Sound</button></div>
+<div id="pb"></div>
+<div id="vig"></div>
+<div id="sh"><div class="sht">Scroll to Fly</div><div class="sha"></div></div>
+
+<!-- Text panels -->
+<div class="tp C" id="p0">
+  <span class="ey">The Pursuit</span>
+  <div class="hd">FOLLOW THE<br/><em>EAGLE</em></div>
+  <div class="bd">Scroll to soar. The hunter descends from the heavens — drawn to the only machine worthy of its gaze.</div>
+</div>
+<div class="tp L" id="p1">
+  <span class="ey">The Machine</span>
+  <div class="hd">BUILT FOR<br/>ONE<br/><em>PURPOSE</em></div>
+  <div class="bd">The Kawasaki Ninja H2R is the most powerful production motorcycle ever built. Track-only, supercharged, unapologetically violent.</div>
+  <div class="specs">
+    <div><div class="sv">310</div><div class="sl">Horsepower</div></div>
+    <div><div class="sv">326</div><div class="sl">km/h Top Speed</div></div>
+    <div><div class="sv">2.0s</div><div class="sl">0–100 km/h</div></div>
+    <div><div class="sv">216</div><div class="sl">kg Dry Weight</div></div>
+  </div>
+</div>
+<div class="tp R" id="p2">
+  <span class="ey">Supercharger</span>
+  <div class="hd">FORCED<br/><em>INDUCTION</em></div>
+  <div class="bd">The world's first series-production motorcycle supercharger. Six impeller stages spinning at 130,000 RPM. Zero lag, maximum fury.</div>
+  <div class="st">130,000<small>Supercharger RPM</small></div>
+</div>
+<div class="tp L" id="p3">
+  <span class="ey">Aerodynamics</span>
+  <div class="hd">LIFT IS<br/><em>THE ENEMY</em></div>
+  <div class="bd">Wind-tunnel developed winglets generate real downforce. At 300 km/h aerodynamics are the difference between control and catastrophe.</div>
+  <div class="st">Wind Tunnel<small>Developed Bodywork</small></div>
+</div>
+<div class="tp R" id="p4">
+  <span class="ey">The Legend</span>
+  <div class="hd"><em>H2R</em><br/>FOREVER</div>
+  <div class="bd">Not street legal. Not for the timid. In 2016, Guy Martin hit 331 km/h on this machine. The closest production bike to a MotoGP prototype.</div>
+  <div class="st">331<small>km/h — Land Speed Record</small></div>
+</div>
+<div id="cta"><div class="cl">The Ultimate Track Machine</div><div class="cb">RIDE<br/>BEYOND</div></div>
+
+<audio id="aud" loop preload="none"><source src="sunflower.mp3" type="audio/mpeg"/></audio>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const MOB = innerWidth < 768;
+
+/* ── VIRTUAL SCROLL ── */
+let targetS = 0, currentS = 0, isDragging = false, lastTY = 0, touchVel = 0;
+const SPEED = MOB ? 0.00055 : 0.00038;
+const LERPF = MOB ? 0.075 : 0.058;
+window.addEventListener('wheel',e=>{e.preventDefault();targetS=Math.max(0,Math.min(1,targetS+e.deltaY*SPEED));},{passive:false});
+window.addEventListener('touchstart',e=>{lastTY=e.touches[0].clientY;touchVel=0;isDragging=true;},{passive:true});
+window.addEventListener('touchmove',e=>{if(!isDragging)return;const dy=lastTY-e.touches[0].clientY;touchVel=dy;lastTY=e.touches[0].clientY;targetS=Math.max(0,Math.min(1,targetS+dy*SPEED*1.8));},{passive:true});
+window.addEventListener('touchend',()=>{isDragging=false;},{passive:true});
+
+/* ── RENDERER ── */
+const renderer=new THREE.WebGLRenderer({antialias:!MOB,powerPreference:'high-performance',stencil:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,MOB?1.5:2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=false;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.8;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+/* ── SCENE ── */
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x03040d);
+scene.fog=new THREE.FogExp2(0x03040d,MOB?.014:.009);
+
+const camera=new THREE.PerspectiveCamera(MOB?62:50,innerWidth/innerHeight,.05,400);
+camera.position.set(0,40,120);
+camera.lookAt(0,0,0);
+
+/* ── ENV ── */
+const pmrem=new THREE.PMREMGenerator(renderer);
+scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
+pmrem.dispose();
+
+/* ── LIGHTS ── */
+scene.add(new THREE.AmbientLight(0xd0e0ff,2.5));
+const key=new THREE.DirectionalLight(0xffffff,9); key.position.set(4,9,6); scene.add(key);
+const fill=new THREE.DirectionalLight(0xc8ffcc,3.5); fill.position.set(-5,3,4); scene.add(fill);
+const rim=new THREE.DirectionalLight(0xb0ccff,6); rim.position.set(0,4,-7); scene.add(rim);
+const front=new THREE.DirectionalLight(0xffffff,4); front.position.set(0,2,9); scene.add(front);
+const topSpot=new THREE.SpotLight(0xffffff,20,16,Math.PI/5,.5,1.8);
+topSpot.position.set(0,8,0); scene.add(topSpot,topSpot.target);
+const greenL=new THREE.PointLight(0x00ff55,2.5,7); greenL.position.set(0,-.5,0); scene.add(greenL);
+const exhL=new THREE.PointLight(0xff9922,2.2,4); exhL.position.set(1.2,-.3,-1.5); scene.add(exhL);
+
+/* ── FLOOR ── */
+const floorMat=new THREE.MeshStandardMaterial({color:0x04060a,roughness:.92,metalness:.04});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(300,300),floorMat);
+floor.rotation.x=-Math.PI/2; floor.position.y=-1.05; scene.add(floor);
+const discMat=new THREE.MeshStandardMaterial({color:0x070a0f,roughness:.04,metalness:.98,envMapIntensity:4});
+const disc=new THREE.Mesh(new THREE.CircleGeometry(4.2,96),discMat);
+disc.rotation.x=-Math.PI/2; disc.position.y=-1.03; scene.add(disc);
+
+/* animated grid */
+const gridMat=new THREE.ShaderMaterial({
+  transparent:true,depthWrite:false,side:THREE.DoubleSide,
+  uniforms:{uT:{value:0}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform float uT;varying vec2 vUv;void main(){vec2 uv=vUv*50.;uv.y+=uT*2.5;float gx=abs(fract(uv.x)-.5);float gy=abs(fract(uv.y)-.5);float g=1.-smoothstep(.02,.05,min(gx,gy));vec2 c=vUv-.5;float d=length(c)*2.;float fade=smoothstep(.06,.3,d)*smoothstep(1.,.45,d);gl_FragColor=vec4(0.,1.,.5,g*fade*.14);}`
+});
+const gridMesh=new THREE.Mesh(new THREE.PlaneGeometry(120,120),gridMat);
+gridMesh.rotation.x=-Math.PI/2; gridMesh.position.y=-1.02; scene.add(gridMesh);
+
+/* spoke disc shader */
+const spokeMat=new THREE.ShaderMaterial({
+  transparent:true,depthWrite:false,side:THREE.DoubleSide,
+  uniforms:{uAngle:{value:0}},
+  vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform float uAngle;varying vec2 vUv;void main(){vec2 uv=vUv*2.-1.;float r=length(uv);float a=atan(uv.y,uv.x)+uAngle;float s=abs(fract(a/.785)*2.-1.);float ring=smoothstep(.05,.15,r)*smoothstep(1.,.65,r);gl_FragColor=vec4(0.,1.,.4,s*ring*.2);}`
+});
+const spokeMesh=new THREE.Mesh(new THREE.CircleGeometry(4.1,96),spokeMat);
+spokeMesh.rotation.x=-Math.PI/2; spokeMesh.position.y=-1.015; scene.add(spokeMesh);
+
+/* edge ring */
+const edgeRing=new THREE.Mesh(new THREE.RingGeometry(4.1,4.9,96),new THREE.MeshBasicMaterial({color:0x00ff55,transparent:true,opacity:.1,side:THREE.DoubleSide}));
+edgeRing.rotation.x=-Math.PI/2; edgeRing.position.y=-1.01; scene.add(edgeRing);
+
+/* ── PARTICLES ── */
+const PC=MOB?400:900;
+const pp=new Float32Array(PC*3),pv=new Float32Array(PC*3);
+for(let i=0;i<PC;i++){pp[i*3]=(Math.random()-.5)*80;pp[i*3+1]=Math.random()*15;pp[i*3+2]=(Math.random()-.5)*80;pv[i*3]=(Math.random()-.5)*.003;pv[i*3+1]=Math.random()*.002+.0004;pv[i*3+2]=(Math.random()-.5)*.003;}
+const pGeo=new THREE.BufferGeometry();pGeo.setAttribute('position',new THREE.BufferAttribute(pp,3));
+scene.add(new THREE.Points(pGeo,new THREE.PointsMaterial({size:.04,color:0x44ff88,transparent:true,opacity:.4,blending:THREE.AdditiveBlending,depthWrite:false})));
+
+/* ── EAGLE MODEL (procedural — low poly) ── */
+// Build a stylised eagle from geometry since we have no bird GLB
+function buildEagle(){
+  const g=new THREE.Group();
+
+  // body
+  const bodyG=new THREE.ConeGeometry(.15,.7,6);
+  const bodyM=new THREE.MeshStandardMaterial({color:0x3a2800,roughness:.8,metalness:.1});
+  const body=new THREE.Mesh(bodyG,bodyM);
+  body.rotation.x=Math.PI/2; g.add(body);
+
+  // head
+  const headG=new THREE.SphereGeometry(.12,8,8);
+  const head=new THREE.Mesh(headG,new THREE.MeshStandardMaterial({color:0xf0e0c0,roughness:.8}));
+  head.position.set(0,.05,.38); g.add(head);
+
+  // beak
+  const beakG=new THREE.ConeGeometry(.03,.12,4);
+  const beak=new THREE.Mesh(beakG,new THREE.MeshStandardMaterial({color:0xffaa00,roughness:.5}));
+  beak.rotation.x=-Math.PI/2; beak.position.set(0,.02,.52); g.add(beak);
+
+  // eye
+  const eyeG=new THREE.SphereGeometry(.025,6,6);
+  const eyeM=new THREE.MeshStandardMaterial({color:0xffcc00,emissive:new THREE.Color(0xffaa00),emissiveIntensity:.8});
+  const eyeL=new THREE.Mesh(eyeG,eyeM); eyeL.position.set(.07,.07,.38); g.add(eyeL);
+  const eyeR=eyeL.clone(); eyeR.position.set(-.07,.07,.38); g.add(eyeR);
+
+  // Wings — pivot groups for flap animation
+  const makeWing=(side)=>{
+    const pivot=new THREE.Group(); pivot.position.set(side*.05,0,0);
+    // main wing plane
+    const wShape=new THREE.Shape();
+    wShape.moveTo(0,0); wShape.lineTo(side*.9,.15); wShape.lineTo(side*1.1,0);
+    wShape.lineTo(side*.9,-.2); wShape.lineTo(side*.4,-.25); wShape.lineTo(0,-.1); wShape.closePath();
+    const wG=new THREE.ShapeGeometry(wShape);
+    const wM=new THREE.MeshStandardMaterial({color:0x2a1a00,roughness:.9,side:THREE.DoubleSide});
+    const wing=new THREE.Mesh(wG,wM);
+    wing.rotation.x=Math.PI/2;
+    pivot.add(wing);
+    // primary feathers
+    for(let i=0;i<5;i++){
+      const fG=new THREE.PlaneGeometry(.06,.35);
+      const fM=new THREE.MeshStandardMaterial({color:0x1a0e00,roughness:.9,side:THREE.DoubleSide});
+      const f=new THREE.Mesh(fG,fM);
+      f.position.set(side*(.7+i*.08),0,side*.04*(5-i));
+      f.rotation.set(Math.PI/2,0,side*(.1+i*.05));
+      pivot.add(f);
+    }
+    return pivot;
+  };
+  const wingL=makeWing(1);  wingL.name='wingL'; g.add(wingL);
+  const wingR=makeWing(-1); wingR.name='wingR'; g.add(wingR);
+
+  // tail feathers
+  const tailG=new THREE.PlaneGeometry(.35,.25);
+  const tail=new THREE.Mesh(tailG,new THREE.MeshStandardMaterial({color:0x2a1a00,roughness:.9,side:THREE.DoubleSide}));
+  tail.rotation.x=Math.PI/2; tail.position.set(0,0,-.38); tail.rotation.z=.15; g.add(tail);
+
+  // talons
+  for(let t=0;t<2;t++){
+    const tG=new THREE.CylinderGeometry(.015,.01,.2,4);
+    const tM=new THREE.MeshStandardMaterial({color:0x111111,roughness:.5,metalness:.3});
+    const talon=new THREE.Mesh(tG,tM);
+    talon.position.set((t-.5)*.12,-.3,.05); talon.rotation.z=.2*(t-.5); g.add(talon);
+  }
+
+  g.scale.setScalar(MOB?1.8:1.4);
+  return g;
+}
+
+const eagle=buildEagle();
+scene.add(eagle);
+
+/* ── FLIGHT PATH — CatmullRom spline ──
+   The bird starts high and far, sweeps in dramatic arcs,
+   then dives toward the bike platform and lands         */
+const FLIGHT_PTS=[
+  new THREE.Vector3(0,   80, 180),  // far high start
+  new THREE.Vector3(60,  55, 130),  // sweep right
+  new THREE.Vector3(80,  35,  60),  // bank left descend
+  new THREE.Vector3(20,  22,  20),  // sweeping down
+  new THREE.Vector3(-50, 18, -10),  // wide left arc
+  new THREE.Vector3(-30, 12,  30),  // coming back
+  new THREE.Vector3(10,   8,  15),  // low approach
+  new THREE.Vector3(4,    4,   8),  // final glide
+  new THREE.Vector3(0,    1,   3),  // flare landing
+  new THREE.Vector3(0,   .5,  1.5), // touchdown
+];
+const flightPath=new THREE.CatmullRomCurve3(FLIGHT_PTS,false,'catmullrom',.5);
+
+/* ── CAMERA PATH — follows the bird at different distances ── */
+const CAM_PTS=[
+  new THREE.Vector3(0,   85, 200),  // behind & above bird — wide view
+  new THREE.Vector3(80,  60, 150),
+  new THREE.Vector3(90,  42,  75),
+  new THREE.Vector3(30,  28,  30),
+  new THREE.Vector3(-60, 22,   5),
+  new THREE.Vector3(-40, 16,  40),
+  new THREE.Vector3(15,  12,  22),
+  new THREE.Vector3(8,    7,  12),  // closing in for landing
+  new THREE.Vector3(4,    3,   8),  // low, watching the land
+  new THREE.Vector3(0,   1.5, 6.0), // FINAL — bike hero shot position
+];
+const camPath=new THREE.CatmullRomCurve3(CAM_PTS,false,'catmullrom',.5);
+
+/* ── LOADERS ── */
+const draco=new DRACOLoader();
+draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
+const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
+const lb=document.getElementById('lb'),lt=document.getElementById('lt');
+const setP=(p,t)=>{lb.style.width=p+'%';lt.textContent=t;};
+
+let bike=null, bikeRotY=0;
+const ROT_SPEED=0.5;
+
+loader.load('kawasaki-ninja-h2r-super-bike.glb',gltf=>{
+  bike=gltf.scene;
+  const box=new THREE.Box3().setFromObject(bike);
+  const sz=box.getSize(new THREE.Vector3()),cn=box.getCenter(new THREE.Vector3());
+  const s=3.8/Math.max(sz.x,sz.y,sz.z);
+  bike.scale.setScalar(s);
+  const box2=new THREE.Box3().setFromObject(bike);
+  bike.position.set(-cn.x*s,-box2.min.y-1.05,-cn.z*s);
+  bike.traverse(c=>{
+    if(!c.isMesh||!c.material) return;
+    c.frustumCulled=false;
+    const ms=Array.isArray(c.material)?c.material:[c.material];
+    ms.forEach(m=>{
+      if(!m||!m.isMaterial){return;}
+      m.wireframe=false; m.needsUpdate=true;
+      if(!m.isMeshStandardMaterial&&!m.isMeshPhysicalMaterial) return;
+      m.envMapIntensity=4.5;
+      const r=m.color.r,g=m.color.g,b=m.color.b;
+      const lum=r*.299+g*.587+b*.114;
+      const isGreen=g>r+0.06&&g>b+0.04;
+      const isSilver=lum>0.35&&Math.abs(r-g)<0.12&&Math.abs(g-b)<0.12;
+      const isBlack=lum<0.06;
+      const isRed=r>0.35&&r>g*1.8;
+      if(isGreen){m.color.setHex(0x00a550);if(m.emissive)m.emissive.setHex(0x003318);if(m.emissive)m.emissiveIntensity=.22;m.roughness=.25;m.metalness=.4;}
+      else if(isBlack){m.color.setHex(0x0a0e0c);m.roughness=.07;m.metalness=.94;m.envMapIntensity=5.5;}
+      else if(isSilver){m.color.setHex(0xb8bfc4);m.roughness=.2;m.metalness=.9;}
+      else if(isRed){m.color.setHex(0xcc1111);m.roughness=.3;m.metalness=.65;}
+      else if(lum<.15){m.color.setHex(0x080808);m.roughness=.94;m.metalness=0;}
+      else{m.color.multiplyScalar(1.35);m.roughness=Math.min(m.roughness,.5);m.metalness=Math.max(m.metalness,.3);}
+    });
+  });
+  // Start hidden — revealed when eagle lands
+  bike.visible=false;
+  scene.add(bike);
+  setP(100,'Ready');
+  setTimeout(()=>{
+    document.getElementById('ld').classList.add('done');
+    document.getElementById('sh').classList.add('show');
+    showPanel('p0');
+    startAudio();
+  },350);
+},p=>{if(p.total)setP(p.loaded/p.total*100,'Loading H2R…');},
+ e=>{console.error(e);});
+
+/* ── AUDIO ── */
+const aud=document.getElementById('aud'); let audOn=false;
+function startAudio(){aud.volume=.28;aud.play().then(()=>{audOn=true;updSnd();}).catch(()=>{});}
+const sndBtn=document.getElementById('snd');
+function updSnd(){sndBtn.textContent=audOn?'♪ Sound On':'♫ Muted';sndBtn.classList.toggle('on',audOn);}
+sndBtn.addEventListener('click',()=>{audOn?(aud.pause(),audOn=false):(aud.play().catch(()=>{}),audOn=true);updSnd();});
+
+/* ── PANEL LOGIC ── */
+const PANELS=['p0','p1','p2','p3','p4'];
+let activePanel='';
+function showPanel(id){
+  if(id===activePanel) return;
+  PANELS.forEach(p=>document.getElementById(p)?.classList.remove('vis'));
+  if(id) document.getElementById(id)?.classList.add('vis');
+  activePanel=id;
+}
+const PAN_TRIGGERS=[
+  {s:0.00,e:0.18,id:'p0'},
+  {s:0.52,e:0.68,id:'p1'},
+  {s:0.68,e:0.80,id:'p2'},
+  {s:0.80,e:0.90,id:'p3'},
+  {s:0.90,e:1.01,id:'p4'},
+];
+function updatePanels(p){
+  let show='';
+  for(const{s,e,id} of PAN_TRIGGERS) if(p>=s&&p<e){show=id;break;}
+  showPanel(show);
+  document.getElementById('cta')?.classList.toggle('vis',p>.93);
+  document.getElementById('pb').style.width=(p*100)+'%';
+}
+
+/* ── RESIZE ── */
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+
+/* ── HELPERS ── */
+const _ep=new THREE.Vector3(), _ej=new THREE.Vector3(), _cp=new THREE.Vector3();
+const _lookAt=new THREE.Vector3();
+
+/* ── ANIMATE ── */
+const clock=new THREE.Clock();
+// eagle lands at progress=0.48, bike appears at 0.50
+const LAND_START=0.44;
+const LAND_END  =0.52;
+const BIKE_SHOW =0.50;
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),.05);
+  const t=clock.elapsedTime;
+
+  // Touch inertia
+  if(!isDragging&&Math.abs(touchVel)>.05){targetS=Math.max(0,Math.min(1,targetS+touchVel*SPEED*1.4));touchVel*=.86;}
+
+  // Smooth scroll
+  currentS+=(targetS-currentS)*LERPF;
+  if(Math.abs(targetS-currentS)<.00004) currentS=targetS;
+  updatePanels(currentS);
+
+  /* ── EAGLE POSITION along flight path ── */
+  const rawT=currentS;
+  flightPath.getPoint(Math.min(rawT,1),_ep);
+  eagle.position.copy(_ep);
+
+  /* Wing flap — frequency decreases as bird slows for landing */
+  const speed=1-Math.min(rawT,.48)/.48; // 1=fast, 0=landing
+  const flapFreq=2.5+speed*3;
+  const flapAmp=.5+speed*.3;
+
+  // During landing (LAND_START to LAND_END) — wings spread wide and slow
+  let wingAngle;
+  if(rawT>LAND_START){
+    const lp=Math.min((rawT-LAND_START)/(LAND_END-LAND_START),1);
+    // wings splay out flat as bird brakes
+    wingAngle=lp*(-Math.PI*.35); // bank upward for air brake
+  } else {
+    wingAngle=Math.sin(t*flapFreq)*flapAmp*(-.6);
+  }
+
+  const wL=eagle.getObjectByName('wingL');
+  const wR=eagle.getObjectByName('wingR');
+  if(wL) wL.rotation.z=wingAngle;
+  if(wR) wR.rotation.z=-wingAngle;
+
+  /* Eagle orientation — face the direction of travel */
+  const t2=Math.min(rawT+.015,1);
+  flightPath.getPoint(t2,_ej);
+  _ej.sub(_ep).normalize();
+  if(_ej.length()>.001){
+    const target=_ep.clone().add(_ej);
+    eagle.lookAt(target);
+    eagle.rotateY(Math.PI); // model faces +Z, path faces +Z so flip
+  }
+
+  /* Eagle scale — shrink to nothing for landing moment */
+  if(rawT>LAND_END){
+    eagle.scale.setScalar(0); // vanished on landing
+  } else if(rawT>LAND_START){
+    const lp=(rawT-LAND_START)/(LAND_END-LAND_START);
+    const sc=(1-lp)*(MOB?1.8:1.4);
+    eagle.scale.setScalar(Math.max(sc,.01));
+  } else {
+    eagle.scale.setScalar(MOB?1.8:1.4);
+  }
+
+  /* ── BIKE visibility & rotation ── */
+  if(bike){
+    if(currentS>=BIKE_SHOW && !bike.visible) bike.visible=true;
+    if(currentS<BIKE_SHOW  && bike.visible)  bike.visible=false;
+    bikeRotY+=ROT_SPEED*dt;
+    bike.rotation.y=bikeRotY;
+  }
+
+  /* ── CAMERA ── */
+  if(rawT<BIKE_SHOW){
+    // Follow eagle along camera path
+    camPath.getPoint(Math.min(rawT/(BIKE_SHOW),1),_cp);
+    camera.position.lerp(_cp,.12);
+    // Look slightly ahead of eagle
+    const lookT=Math.min(rawT+.03,1);
+    flightPath.getPoint(lookT,_lookAt);
+    camera.lookAt(_lookAt);
+  } else {
+    // After landing — transition to showroom angles around the bike
+    const bikeProg=(rawT-BIKE_SHOW)/(1-BIKE_SHOW);
+    const mZ=MOB?1.5:0;
+    const BK=[
+      {p:0.00,pos:new THREE.Vector3(0,   1.5, 6+mZ), tar:new THREE.Vector3(0,.45,0)},
+      {p:0.25,pos:new THREE.Vector3(4.8, 1.0, 1.5),  tar:new THREE.Vector3(0,.5, 0)},
+      {p:0.50,pos:new THREE.Vector3(3.0, 2.2,-4.0),  tar:new THREE.Vector3(0,.4, 0)},
+      {p:0.75,pos:new THREE.Vector3(-4.8,.9,  1.0),  tar:new THREE.Vector3(0,.5, 0)},
+      {p:1.00,pos:new THREE.Vector3(0,   5.5, 1.8),  tar:new THREE.Vector3(0, 0, 0)},
+    ];
+    let a=BK[0],b=BK[1];
+    for(let i=0;i<BK.length-1;i++) if(bikeProg>=BK[i].p&&bikeProg<=BK[i+1].p){a=BK[i];b=BK[i+1];break;}
+    const raw2=a.p===b.p?0:(bikeProg-a.p)/(b.p-a.p);
+    const tt=raw2*raw2*(3-2*raw2);
+    _cp.lerpVectors(a.pos,b.pos,tt);
+    _lookAt.lerpVectors(a.tar,b.tar,tt);
+    camera.position.lerp(_cp,.08);
+    camera.lookAt(_lookAt);
+  }
+
+  /* ── PARTICLES ── */
+  const pa=pGeo.attributes.position;
+  for(let i=0;i<PC;i++){
+    pa.array[i*3]+=pv[i*3];pa.array[i*3+1]+=pv[i*3+1];pa.array[i*3+2]+=pv[i*3+2];
+    if(pa.array[i*3+1]>15){pa.array[i*3+1]=0;pa.array[i*3]=(Math.random()-.5)*80;pa.array[i*3+2]=(Math.random()-.5)*80;}
+  }
+  pa.needsUpdate=true;
+
+  /* ── FLOOR SHADERS ── */
+  gridMat.uniforms.uT.value=t;
+  spokeMat.uniforms.uAngle.value=bikeRotY;
+  edgeRing.material.opacity=.07+Math.sin(t*1.4)*.04;
+
+  /* ── PULSE LIGHTS ── */
+  greenL.intensity=2.2+Math.sin(t*1.1)*.5;
+  exhL.intensity=1.9+Math.sin(t*2.3)*.55;
+
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Kawasaki Ninja H2R — Born From Chaos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
 <style>

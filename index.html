@@ -35,7 +35,11 @@ canvas{position:fixed;inset:0;display:block;}
     width:min(340px,32vw);
     padding:clamp(1rem,2vw,1.6rem);
     top:50%;
+    max-height:88vh;
+    overflow-y:auto;
+    scrollbar-width:none;
   }
+  .tp::-webkit-scrollbar{display:none;}
   /* Left panels: start offscreen left, slide right */
   .tp.L{
     left:4vw;
@@ -78,8 +82,12 @@ canvas{position:fixed;inset:0;display:block;}
     text-align:center;
     background:linear-gradient(to top,rgba(3,3,9,.97) 52%,transparent);
     transform:translateY(18px);
+    max-height:60vh;
+    overflow-y:auto;
+    scrollbar-width:none;
     /* on mobile: no left/right slide — just vertical + fade */
   }
+  .tp::-webkit-scrollbar{display:none;}
   .tp.vis{
     opacity:1;
     transform:translateY(0);
@@ -98,29 +106,61 @@ canvas{position:fixed;inset:0;display:block;}
 }
 .hd{
   font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(2rem,5.5vw,4rem);
-  line-height:.92;
+  font-size:clamp(1.8rem,4.8vw,3.5rem);
+  line-height:.93;
   color:#f0f4f8;
-  margin-bottom:.65rem;
+  margin-bottom:.7rem;
 }
 .hd em{color:#00ff88;font-style:normal;}
 .bd{
-  font-size:clamp(.82rem,1.4vw,.94rem);
-  line-height:1.68;
+  font-size:clamp(.78rem,1.3vw,.9rem);
+  line-height:1.72;
   color:#7a8fa8;
   font-weight:300;
   letter-spacing:.03em;
 }
+.bd + .bd{ margin-top:.6rem; }
+.bd strong{ color:#c0d0e0; font-weight:500; }
+.bd em{ color:#00ff88; font-style:normal; }
+.fact-row{
+  display:flex;
+  gap:.5rem .8rem;
+  flex-wrap:wrap;
+  margin-top:.7rem;
+  padding-top:.6rem;
+  border-top:1px solid rgba(0,255,136,.12);
+}
+.fact{
+  flex:1 1 calc(50% - .4rem);
+  min-width:100px;
+}
+.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#c9a84c;line-height:1.05;}
+.fl{font-family:'Cinzel',serif;font-size:clamp(.34rem,.9vw,.44rem);letter-spacing:.2em;color:#8fa0b0;text-transform:uppercase;margin-top:.06rem;}
 .st{
   margin-top:.85rem;
   font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(1.4rem,3vw,2.1rem);
+  font-size:clamp(1.3rem,2.8vw,2rem);
   color:#c9a84c;
   letter-spacing:.08em;
 }
 .st small{font-family:'Rajdhani',sans-serif;font-size:.5em;color:#8fa0b0;letter-spacing:.14em;display:block;}
+.tag-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.3rem;
+  margin-top:.7rem;
+}
+.tag{
+  font-family:'Cinzel',serif;
+  font-size:clamp(.32rem,.85vw,.42rem);
+  letter-spacing:.18em;
+  color:#00ff88;
+  text-transform:uppercase;
+  border:1px solid rgba(0,255,136,.3);
+  padding:.15rem .45rem;
+}
 
-/* SPECS GRID */
+/* SPECS GRID (legacy, kept for compat) */
 .specs{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -128,13 +168,16 @@ canvas{position:fixed;inset:0;display:block;}
   margin-top:.75rem;
 }
 @media(max-width:640px){
-  .specs{
-    grid-template-columns:repeat(4,1fr);
-    gap:.3rem .4rem;
-  }
+  .specs{ grid-template-columns:repeat(4,1fr); gap:.3rem .4rem; }
+  .fact{ flex:1 1 calc(50% - .4rem); }
 }
 .sv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.5vw,1.5rem);color:#c9a84c;line-height:1.05;}
 .sl{font-family:'Cinzel',serif;font-size:clamp(.38rem,1vw,.46rem);letter-spacing:.22em;color:#8fa0b0;text-transform:uppercase;margin-top:.08rem;}
+
+/* Panel width — wider on desktop for more content */
+@media(min-width:641px){
+  .tp.L, .tp.R { width: min(420px,38vw) !important; }
+}
 
 /* PAUSE CARD — shown between eagle landing and bike transform */
 #pause-card{
@@ -213,39 +256,90 @@ canvas{position:fixed;inset:0;display:block;}
 </div>
 
 <!-- Text panels -->
+
+<!-- P0: Opening — shown during eagle flight, scroll 0–18% -->
 <div class="tp C" id="p0">
-  <span class="ey">The Pursuit</span>
+  <span class="ey">Kawasaki Heavy Industries · 2015</span>
   <div class="hd">FOLLOW THE<br/><em>EAGLE</em></div>
-  <div class="bd">A mechanical predator born from the sky. Scroll to descend — follow the iron eagle as it hunts the only machine on earth that matches its fury. What waits below is not a motorcycle. It is a consequence.</div>
-</div>
-<div class="tp L" id="p1">
-  <span class="ey">The Machine</span>
-  <div class="hd">BUILT FOR<br/>ONE<br/><em>PURPOSE</em></div>
-  <div class="bd">Kawasaki didn't build the H2R to win races — they built it to redefine what a motorcycle could physically be. Track-only. Supercharged. 310 horsepower, wrapped in carbon fibre winglets and fed by the first centrifugal supercharger ever fitted to a series-production bike.</div>
-  <div class="specs">
-    <div><div class="sv">310</div><div class="sl">Horsepower</div></div>
-    <div><div class="sv">326</div><div class="sl">km/h Top</div></div>
-    <div><div class="sv">2.0s</div><div class="sl">0–100 km/h</div></div>
-    <div><div class="sv">216</div><div class="sl">kg Dry Wt</div></div>
+  <div class="bd">A mechanical predator born from the sky. Scroll to descend — follow the iron eagle as it hunts the only machine on earth capable of matching its fury. What waits below is not a motorcycle. It is a consequence of obsession — five years of engineering nightmares, aerospace partnerships, and the stubborn refusal to accept that physics had limits.</div>
+  <div class="tag-row">
+    <span class="tag">Track Only</span>
+    <span class="tag">Supercharged</span>
+    <span class="tag">Carbon Fibre</span>
+    <span class="tag">310 hp</span>
   </div>
 </div>
+
+<!-- P1: The Machine — post-transform, scroll 65–76% -->
+<div class="tp L" id="p1">
+  <span class="ey">The Machine · ZX-1002A Engine</span>
+  <div class="hd">BUILT FOR<br/>ONE<br/><em>PURPOSE</em></div>
+  <div class="bd">Kawasaki didn't build the Ninja H2R to win races — they built it to <em>redefine what a motorcycle could physically be</em>. Born of a collaboration between Kawasaki's Aerospace Company, Gas Turbine & Machinery Company, and the Motorcycle & Engine Company, this was not product development. It was a declaration of intent.</div>
+  <div class="bd">The heart is a <strong>998cc liquid-cooled inline-four</strong> with a bore and stroke of 76 × 55mm — a short-stroke, high-revving configuration designed to scream to 14,000 RPM without flinching. In ram-air conditions at speed, the engine produces <strong>310 horsepower</strong> — figures that shatter the imagination when you consider it weighs just 216 kg dry.</div>
+  <div class="fact-row">
+    <div class="fact"><div class="fv">310 <small style="font-size:.55em;color:#8fa0b0">hp</small></div><div class="fl">Ram-Air Power</div></div>
+    <div class="fact"><div class="fv">165 <small style="font-size:.55em;color:#8fa0b0">Nm</small></div><div class="fl">Peak Torque</div></div>
+    <div class="fact"><div class="fv">326</div><div class="fl">km/h Top Speed</div></div>
+    <div class="fact"><div class="fv">2.0s</div><div class="fl">0–100 km/h</div></div>
+    <div class="fact"><div class="fv">216</div><div class="fl">kg Dry Weight</div></div>
+    <div class="fact"><div class="fv">14,000</div><div class="fl">RPM Redline</div></div>
+  </div>
+</div>
+
+<!-- P2: Supercharger — scroll 76–85% -->
 <div class="tp R" id="p2">
-  <span class="ey">Supercharger</span>
-  <div class="hd">FORCED<br/><em>INDUCTION</em></div>
-  <div class="bd">Kawasaki's engineers designed the supercharger entirely in-house — nine impeller blades machined to aerospace tolerances. It spins at up to 130,000 RPM, force-feeding the engine a dense wall of compressed air. No dip, no lag, no mercy.</div>
-  <div class="st">130,000<small>Supercharger RPM</small></div>
+  <span class="ey">Supercharger · Centrifugal · In-House</span>
+  <div class="hd">FORCED<br/><em>INDUCTION</em><br/>REDEFINED</div>
+  <div class="bd">No motorcycle manufacturer had ever fitted a centrifugal supercharger to a series-production bike before the H2R. Kawasaki didn't outsource the engineering — they designed every component internally, drawing on decades of aerospace turbomachinery experience from their own gas turbine division.</div>
+  <div class="bd">The impeller is a <strong>nine-blade centrifugal compressor</strong>, each blade individually machined to tolerances measured in microns. At peak demand it spins at <strong>130,000 RPM</strong> — over 2,100 revolutions every second — compressing the incoming air charge and ramming it into the intake at pressures far beyond what any naturally-aspirated engine can achieve. The result is a boost pressure of <strong>2.4 bar absolute</strong> at peak, with no turbo lag, no step in the powerband, no hesitation. Just a relentless, linear surge that begins the moment you crack the throttle and does not stop until the rev limiter intervenes at 14,000 RPM.</div>
+  <div class="bd">A <strong>gear-driven intermediate shaft</strong> sits between the crankshaft and compressor, multiplying rotational speed with surgical precision. Intake air temperature is managed by an intercooler integrated into the airbox, preventing heat soak from robbing the charge of density. The entire system weighs less than 3 kg — a masterpiece of miniaturised engineering.</div>
+  <div class="fact-row">
+    <div class="fact"><div class="fv">130K</div><div class="fl">RPM — Impeller</div></div>
+    <div class="fact"><div class="fv">9</div><div class="fl">Compressor Blades</div></div>
+    <div class="fact"><div class="fv">2.4</div><div class="fl">Bar Absolute Boost</div></div>
+    <div class="fact"><div class="fv">&lt;3 kg</div><div class="fl">Supercharger Weight</div></div>
+  </div>
 </div>
+
+<!-- P3: Aerodynamics — scroll 85–93% -->
 <div class="tp L" id="p3">
-  <span class="ey">Aerodynamics</span>
-  <div class="hd">LIFT IS<br/><em>THE ENEMY</em></div>
-  <div class="bd">At 300 km/h, air becomes a physical force that can pitch a rider into oblivion. Dual winglets and a lower splitter generate enough downforce to keep both tyres planted through corners that would send any other machine airborne.</div>
-  <div class="st">Wind Tunnel<small>Developed Bodywork</small></div>
+  <span class="ey">Aerodynamics · Wind Tunnel · Downforce</span>
+  <div class="hd">LIFT IS<br/><em>THE ENEMY</em><br/>OF SPEED</div>
+  <div class="bd">At 300 km/h, aerodynamics are not a styling exercise — they are a survival calculation. The Ninja H2R's bodywork was developed in Kawasaki's own wind tunnel, with engineers spending thousands of hours perfecting every surface. The objective: generate maximum downforce without adding drag, keeping the front wheel pinned to the track at speeds where aerodynamic lift would otherwise launch the machine skyward.</div>
+  <div class="bd">The <strong>dual upper winglets</strong> — sculpted in carbon fibre reinforced polymer — generate downforce that acts directly on the fork assembly, pressing the front tyre into the asphalt with every additional kilometre per hour. A lower chin <strong>splitter</strong> further manipulates the underfloor airflow, reducing lift at the front axle. At 200 km/h, the H2R generates enough downforce to meaningfully alter its suspension behaviour — the bike gets <em>lower</em> as it gets faster.</div>
+  <div class="bd">The ram-air intake system is a dual function: it feeds the supercharger with a high-pressure air charge at speed while simultaneously acting as a structural aerodynamic element. Every vent, every louver, every gap in the bodywork has a specific thermodynamic or aerodynamic purpose. Nothing is decorative. Nothing is wasted.</div>
+  <div class="fact-row">
+    <div class="fact"><div class="fv">2</div><div class="fl">Upper Winglets</div></div>
+    <div class="fact"><div class="fv">CFRP</div><div class="fl">Carbon Fibre Body</div></div>
+    <div class="fact"><div class="fv">200+</div><div class="fl">km/h Active Downforce</div></div>
+    <div class="fact"><div class="fv">0.00</div><div class="fl">Decorative Parts</div></div>
+  </div>
+  <div class="tag-row">
+    <span class="tag">Ram-Air Intake</span>
+    <span class="tag">Chin Splitter</span>
+    <span class="tag">Active Geometry</span>
+  </div>
 </div>
+
+<!-- P4: The Legend — scroll 93–100% -->
 <div class="tp R" id="p4">
-  <span class="ey">The Legend</span>
-  <div class="hd"><em>H2R</em><br/>FOREVER</div>
-  <div class="bd">In September 2016, Guy Martin rode a Kawasaki Ninja H2R to 331.15 km/h — a British land speed record. Not a prototype. A production machine you can order from a dealership, if you have the nerve and the track permit.</div>
-  <div class="st">331<small>km/h — Land Speed Record</small></div>
+  <span class="ey">The Legend · 331.15 km/h · 2016</span>
+  <div class="hd"><em>H2R</em><br/>FOREVER<br/>UNTAMED</div>
+  <div class="bd">In September 2016, Guy Martin — television presenter, truck mechanic, and one of the fastest motorcycle racers Britain has ever produced — strapped himself to a Kawasaki Ninja H2R on the Straightliners top-speed event at Elvington Airfield and rode it to <strong>331.15 km/h (205.8 mph)</strong>. That number is a British motorcycle land speed record. It remains unbroken.</div>
+  <div class="bd">What makes this record staggering is context. This was not a factory prototype with a one-off engine. It was not a streamliner fairing built specifically for speed runs. It was a <em>production motorcycle</em> — a machine that Kawasaki dealers around the world will sell you today, assuming you have the nerve and a track permit. The H2R has no road registration, no headlights, no number plate bracket. It exists purely for circuits and for moments like Elvington.</div>
+  <div class="bd">The Kawasaki Ninja H2R is the only motorcycle in history to have been built by the same company that makes fighter jet components, helicopter transmissions, and industrial gas turbines — and it shows. Every system on this machine reflects engineering culture forged in environments where failure is not an option. It is not the fastest vehicle ever made. But it is the most extraordinary motorcycle that has ever existed.</div>
+  <div class="fact-row">
+    <div class="fact"><div class="fv">331</div><div class="fl">km/h Record Speed</div></div>
+    <div class="fact"><div class="fv">205</div><div class="fl">mph — Guy Martin</div></div>
+    <div class="fact"><div class="fv">2016</div><div class="fl">Record Year</div></div>
+    <div class="fact"><div class="fv">∞</div><div class="fl">Times It's Been Broken</div></div>
+  </div>
+  <div class="tag-row">
+    <span class="tag">Elvington Airfield</span>
+    <span class="tag">British Record</span>
+    <span class="tag">Still Unbroken</span>
+  </div>
+  <div class="st">331.15<small>km/h — The Last Word in Speed</small></div>
 </div>
 <div id="cta"><div class="cl">The Ultimate Track Machine</div><div class="cb">RIDE<br/>BEYOND</div></div>
 

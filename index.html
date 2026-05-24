@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>Kawasaki Ninja H2R — Born From Chaos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Rajdhani:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{height:100%;}
-body{background:#030309;color:#7a8a9a;font-family:'Cormorant Garamond',serif;overflow:hidden;height:100%;touch-action:none;}
+body{background:#030309;color:#7a8a9a;font-family:'Rajdhani',sans-serif;overflow:hidden;height:100%;touch-action:none;}
 canvas{position:fixed;inset:0;display:block;}
 
 /* NAV */
@@ -45,9 +45,9 @@ canvas{position:fixed;inset:0;display:block;}
 .ey{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.3vw,.55rem);letter-spacing:.44em;color:#00ff88;text-transform:uppercase;margin-bottom:.5rem;display:block;}
 .hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.9rem,4.5vw,4.2rem);line-height:.91;color:#f0f4f8;margin-bottom:.7rem;}
 .hd em{color:#00ff88;font-style:normal;}
-.bd{font-size:clamp(.8rem,1.25vw,.94rem);line-height:1.72;color:#6a7a8a;font-weight:300;font-style:italic;}
+.bd{font-size:clamp(.8rem,1.25vw,.94rem);line-height:1.72;color:#7a8fa8;font-weight:300;letter-spacing:.04em;}
 .st{margin-top:.9rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.5vw,2.2rem);color:#c9a84c;letter-spacing:.1em;}
-.st small{font-family:'Cormorant Garamond',serif;font-size:.5em;color:#8fa0b0;letter-spacing:.16em;display:block;}
+.st small{font-family:'Rajdhani',sans-serif;font-size:.5em;color:#8fa0b0;letter-spacing:.16em;display:block;}
 .specs{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;margin-top:.8rem;}
 @media(max-width:640px){.specs{grid-template-columns:repeat(4,1fr);}}
 .sv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,2vw,1.5rem);color:#c9a84c;line-height:1;}
@@ -249,22 +249,14 @@ const FLIGHT_PTS = [
 ];
 const flightPath = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', .5);
 
-/* ── CAMERA PATH ── */
-const CAM_PTS = [
-  new THREE.Vector3(  0,  170,  460),   // behind & high — wide establishing shot
-  new THREE.Vector3(160,  145,  370),
-  new THREE.Vector3(220,  110,  250),   // sweeping with the eagle
-  new THREE.Vector3(180,   82,  145),
-  new THREE.Vector3(  80,  60,   80),
-  new THREE.Vector3(-110,  46,   20),   // left arc chase
-  new THREE.Vector3(-130,  32,  -10),
-  new THREE.Vector3( -70,  24,   50),
-  new THREE.Vector3(  25,  16,   32),
-  new THREE.Vector3(  10,   9,   18),   // closing in for landing
-  new THREE.Vector3(   4,   4,   10),
-  new THREE.Vector3(   0,   2,    7),   // final hero shot position
-];
-const camPath = new THREE.CatmullRomCurve3(CAM_PTS, false, 'catmullrom', .5);
+/* ── CAMERA: offset-from-eagle — no separate spline ──
+   Camera sits at a fixed local offset behind/above the eagle, computed
+   each frame from the eagle's world position and travel direction.
+   This guarantees it stays close and cinematic throughout the whole path. */
+const CAM_OFFSET_BACK  = 18;   // units behind the eagle
+const CAM_OFFSET_UP    =  6;   // units above the eagle
+const _camDesired = new THREE.Vector3();
+const _eagleDir   = new THREE.Vector3();
 
 /* ── REUSABLE VECTORS (allocated once, never reallocated in loop) ── */
 const _ep     = new THREE.Vector3();
@@ -539,14 +531,22 @@ function animate() {
 
   /* ── CAMERA ── */
   if (rawT < BIKE_SHOW) {
-    /* Follow eagle */
-    const camT = Math.min(rawT / BIKE_SHOW, 1);
-    camPath.getPoint(camT, _cp);
-    camera.position.lerp(_cp, .12);
-    /* Look slightly ahead of eagle along flight path */
-    const lookT = Math.min(rawT + .03, 1);
-    flightPath.getPoint(lookT, _camTar);
-    camera.lookAt(_camTar);
+    /* Offset-from-eagle chase cam — always close, always cinematic.
+       Compute eagle's travel direction, then place camera behind+above it. */
+    const lookAheadCam = Math.min(rawT + 0.02, 1);
+    flightPath.getPoint(lookAheadCam, _camTar);
+    _eagleDir.subVectors(_camTar, _ep).normalize();
+
+    // Desired camera position: step back along travel dir, then up
+    _camDesired.copy(_ep)
+      .addScaledVector(_eagleDir, -CAM_OFFSET_BACK)
+      .add(new THREE.Vector3(0, CAM_OFFSET_UP, 0));
+
+    // Lerp smoothly — tighter factor = stickier follow
+    camera.position.lerp(_camDesired, 0.08);
+
+    // Look at the eagle itself (not ahead), so eagle stays centered
+    camera.lookAt(_ep);
   } else {
     /* Showroom orbit around bike */
     const bikeProg = (rawT - BIKE_SHOW) / (1 - BIKE_SHOW);

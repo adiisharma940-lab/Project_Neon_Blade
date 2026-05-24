@@ -68,6 +68,8 @@ canvas{position:fixed;inset:0;display:block;}
 
 /* vignette */
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(3,3,9,.68) 100%);}
+/* transform flash */
+#flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.18) 0%,rgba(0,80,40,.06) 50%,transparent 75%);transition:opacity .08s ease;}
 </style>
 </head>
 <body>
@@ -75,6 +77,7 @@ canvas{position:fixed;inset:0;display:block;}
 <div id="nav"><div class="logo">NINJA <span>H2R</span></div><button id="snd">♪ Sound</button></div>
 <div id="pb"></div>
 <div id="vig"></div>
+<div id="flash"></div>
 
 
 <!-- Text panels -->
@@ -420,16 +423,16 @@ function showPanel(id) {
 }
 const PAN_TRIGGERS = [
   { s: 0.00, e: 0.18, id: 'p0' },
-  { s: 0.52, e: 0.68, id: 'p1' },
-  { s: 0.68, e: 0.80, id: 'p2' },
-  { s: 0.80, e: 0.90, id: 'p3' },
-  { s: 0.90, e: 1.01, id: 'p4' },
+  { s: 0.60, e: 0.72, id: 'p1' },
+  { s: 0.72, e: 0.82, id: 'p2' },
+  { s: 0.82, e: 0.91, id: 'p3' },
+  { s: 0.91, e: 1.01, id: 'p4' },
 ];
 function updatePanels(p) {
   let show = '';
   for (const { s, e, id } of PAN_TRIGGERS) if (p >= s && p < e) { show = id; break; }
   showPanel(show);
-  document.getElementById('cta')?.classList.toggle('vis', p > .93);
+  document.getElementById('cta')?.classList.toggle('vis', p > .95);
   document.getElementById('pb').style.width = (p * 100) + '%';
 }
 
@@ -441,9 +444,15 @@ window.addEventListener('resize', () => {
 });
 
 /* ── CONSTANTS ── */
-const LAND_START = 0.44;
-const LAND_END   = 0.52;
-const BIKE_SHOW  = 0.50;
+const LAND_START   = 0.44;   // eagle begins braking / wings splay
+const LAND_END     = 0.50;   // eagle fully vanishes — transform flash fires
+const XFORM_START  = 0.50;   // bike begins materialising
+const XFORM_END    = 0.58;   // bike fully revealed
+const BIKE_SHOW    = 0.50;   // alias — same as XFORM_START
+
+// Transform flash state
+let flashFired   = false;    // one-shot — only fires once per session
+let flashOpacity = 0;        // driven each frame
 
 /* ── ANIMATE ── */
 const clock = new THREE.Clock();
@@ -510,23 +519,57 @@ function animate() {
   if (eagleWingL) eagleWingL.rotation.z =  wingAngle;
   if (eagleWingR) eagleWingR.rotation.z = -wingAngle;
 
-  /* ── EAGLE SCALE ── */
-  // The GLB loader already normalises the model to ~3 units internally.
-  // Group scale stays at 1.0 during flight; shrinks to 0 at landing.
-  if (rawT > LAND_END) {
+  /* ── EAGLE SCALE + TRANSFORM ── */
+  if (rawT >= LAND_END) {
+    // Eagle has landed — hide it
     eagle.scale.setScalar(0);
+
+    // Fire the one-shot transform flash exactly at LAND_END
+    if (!flashFired) {
+      flashFired = true;
+      flashOpacity = 1.0;
+      // Burst of green light at landing point
+      greenL.intensity = 28;
+      exhL.intensity   = 18;
+    }
   } else if (rawT > LAND_START) {
+    // Eagle braking — shrink toward zero, wings locked out
     const lp = (rawT - LAND_START) / (LAND_END - LAND_START);
-    eagle.scale.setScalar(Math.max(1 - lp, 0.01));
+    // Ease-in shrink: slow at first, fast at end
+    const eased = lp * lp;
+    eagle.scale.setScalar(Math.max(1 - eased, 0.005));
   } else {
     eagle.scale.setScalar(1);
   }
 
-  /* ── BIKE ── */
+  // Decay the flash each frame
+  if (flashOpacity > 0) {
+    flashOpacity = Math.max(0, flashOpacity - dt * 3.5);
+    document.getElementById('flash').style.opacity = flashOpacity;
+  }
+
+  /* ── BIKE — materialise from landing point during XFORM window ── */
   if (bike) {
-    bike.visible = currentS >= BIKE_SHOW;
-    bikeRotY += ROT_SPEED * dt;
-    bike.rotation.y = bikeRotY;
+    if (rawT < XFORM_START) {
+      bike.visible = false;
+    } else {
+      bike.visible = true;
+      const xp = Math.min((rawT - XFORM_START) / (XFORM_END - XFORM_START), 1);
+      // Ease-out scale: snappy pop then settle
+      const xEased = 1 - Math.pow(1 - xp, 3);
+      bike.scale.setScalar(xEased);
+
+      // During materialise: hold bike at eagle's landing spot, then settle to origin
+      // Landing spot is flightPath end (rawT=LAND_END)
+      const landPos = new THREE.Vector3(0, 0.4, 1.6); // matches last FLIGHT_PTS point
+      const finalPos = new THREE.Vector3(0, 0, 0);    // resting origin
+      bike.position.lerpVectors(landPos, finalPos, xEased);
+
+      // Spin fast on materialise, then slow to normal rotation
+      const spinBoost = (1 - xp) * 8;
+      bikeRotY += (ROT_SPEED + spinBoost) * dt;
+      bike.rotation.y = bikeRotY;
+    }
   }
 
   /* ── CAMERA ── */
@@ -547,9 +590,19 @@ function animate() {
 
     // Look at the eagle itself (not ahead), so eagle stays centered
     camera.lookAt(_ep);
+  } else if (rawT < XFORM_END) {
+    /* Transform reveal — camera holds close to landing point, pulls back */
+    const xp = (rawT - XFORM_START) / (XFORM_END - XFORM_START);
+    const xEased = xp * xp * (3 - 2 * xp); // smoothstep
+    // Pull from tight (close to landing) to showroom opening position
+    const closePos = new THREE.Vector3(0, 3, 8);
+    const openPos  = new THREE.Vector3(0, 1.5, 6);
+    _camDesired.lerpVectors(closePos, openPos, xEased);
+    camera.position.lerp(_camDesired, 0.1);
+    camera.lookAt(0, 0.5, 0);
   } else {
     /* Showroom orbit around bike */
-    const bikeProg = (rawT - BIKE_SHOW) / (1 - BIKE_SHOW);
+    const bikeProg = (rawT - XFORM_END) / (1 - XFORM_END);
     const mZ = MOB ? 1.5 : 0;
     const BK = [
       { p: 0.00, pos: new THREE.Vector3(0,    1.5, 6 + mZ), tar: new THREE.Vector3(0, .45, 0) },
@@ -590,8 +643,14 @@ function animate() {
   edgeRing.material.opacity = .07 + Math.sin(t * 1.4) * .04;
 
   /* ── PULSE LIGHTS ── */
-  greenL.intensity = 2.2 + Math.sin(t * 1.1) * .5;
-  exhL.intensity   = 1.9 + Math.sin(t * 2.3) * .55;
+  // After flash, lights decay back to normal pulse over ~1s
+  if (!flashFired || greenL.intensity <= 3) {
+    greenL.intensity = 2.2 + Math.sin(t * 1.1) * .5;
+    exhL.intensity   = 1.9 + Math.sin(t * 2.3) * .55;
+  } else {
+    greenL.intensity = Math.max(greenL.intensity - dt * 40, 2.2 + Math.sin(t * 1.1) * .5);
+    exhL.intensity   = Math.max(exhL.intensity   - dt * 25, 1.9 + Math.sin(t * 2.3) * .55);
+  }
 
   renderer.render(scene, camera);
 }

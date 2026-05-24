@@ -46,37 +46,54 @@ body{
 /* vignette */
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(3,3,9,.7) 100%);}
 
-/* text panels — absolutely positioned over canvas */
-.tp{
-  position:fixed;opacity:0;pointer-events:none;
-  width:min(360px,36vw);padding:1.4rem;
-  transition:opacity .6s ease, transform .6s ease;
-  z-index:20;
+/* ── TEXT PANELS ── */
+/* DESKTOP */
+@media(min-width:641px){
+  .tp{
+    position:fixed; opacity:0; pointer-events:none;
+    width:min(340px,33vw); padding:1.4rem;
+    z-index:20; top:50%;
+    transition:opacity .55s ease, transform .55s ease;
+  }
+  .tp.L { left:4vw;  transform:translateY(calc(-50% + 18px)); }
+  .tp.L.vis { opacity:1; transform:translateY(-50%); }
+  .tp.R { right:4vw; text-align:right; transform:translateY(calc(-50% + 18px)); }
+  .tp.R.vis { opacity:1; transform:translateY(-50%); }
+  .tp.C { left:50%; width:min(420px,80vw)!important; top:16%;
+          transform:translateX(-50%) translateY(18px); text-align:center; }
+  .tp.C.vis { opacity:1; transform:translateX(-50%) translateY(0); }
 }
-.tp.L {left:4vw; top:50%; transform:translateY(calc(-50% + 20px));}
-.tp.L.vis{opacity:1;transform:translateY(-50%);}
-.tp.R {right:4vw;top:50%;text-align:right;transform:translateY(calc(-50% + 20px));}
-.tp.R.vis{opacity:1;transform:translateY(-50%);}
-.tp.C {left:50%;width:min(440px,84vw)!important;top:18%;transform:translateX(-50%) translateY(20px);text-align:center;}
-.tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* MOBILE — single panel, bottom strip, no transform wars */
 @media(max-width:640px){
   .tp{
-    width:calc(100% - 1.6rem)!important;left:.8rem!important;
-    right:auto!important;top:auto!important;bottom:5vh!important;
-    text-align:center!important;transform:translateY(16px)!important;
-    background:linear-gradient(to top,rgba(3,3,9,.92) 0%,transparent 100%);
-    padding:.9rem .9rem 1.2rem;
+    position:fixed;
+    left:0; right:0; bottom:0;            /* full width, pinned to bottom */
+    top:auto !important;
+    width:100% !important;
+    padding:1.2rem 1.4rem 2rem;
+    z-index:20;
+    text-align:center;
+    background:linear-gradient(to top, rgba(3,3,9,.96) 60%, transparent 100%);
+    opacity:0;
+    transform:translateY(14px);           /* single consistent transform */
+    transition:opacity .5s ease, transform .5s ease;
+    pointer-events:none;
   }
-  .tp.vis{opacity:1!important;transform:translateY(0)!important;}
+  .tp.vis{
+    opacity:1;
+    transform:translateY(0);
+  }
+  /* hide stat block on very small screens to prevent overflow */
+  @media(max-height:600px){ .st{ display:none; } }
 }
 
-.ey{font-family:'Cinzel',serif;font-size:clamp(.45rem,1.4vw,.57rem);letter-spacing:.46em;color:var(--g);text-transform:uppercase;margin-bottom:.5rem;display:block;}
-.hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,4.5rem);line-height:.9;letter-spacing:.04em;color:var(--w);margin-bottom:.7rem;}
+.ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.3vw,.56rem);letter-spacing:.44em;color:var(--g);text-transform:uppercase;margin-bottom:.5rem;display:block;}
+.hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.5vw,4rem);line-height:.92;letter-spacing:.04em;color:var(--w);margin-bottom:.65rem;}
 .hd em{color:var(--g);font-style:normal;}
-.bd{font-size:clamp(.78rem,1.2vw,.96rem);line-height:1.7;color:var(--s);font-weight:300;}
-.st{margin-top:1rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.4rem,2.8vw,2.5rem);color:var(--gold);letter-spacing:.1em;}
-.st small{font-family:'Cormorant Garamond',serif;font-size:.5em;color:var(--s);letter-spacing:.18em;display:block;}
+.bd{font-size:clamp(.82rem,2.2vw,.95rem);line-height:1.68;color:var(--s);font-weight:300;}
+.st{margin-top:.9rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.6vw,2.3rem);color:var(--gold);letter-spacing:.1em;}
+.st small{font-family:'Cormorant Garamond',serif;font-size:.5em;color:var(--s);letter-spacing:.16em;display:block;}
 
 /* CTA */
 #cta{
@@ -149,8 +166,8 @@ let isDragging = false;
 let touchStartY = 0;
 let lastTouchY  = 0;
 let touchVelY   = 0;
-const SCROLL_SPEED = MOB ? 0.0012 : 0.0008;  // wheel units → progress
-const LERP_FACTOR  = MOB ? 0.09   : 0.07;    // camera smoothing
+const SCROLL_SPEED = MOB ? 0.0006 : 0.0004;  // slower = more scrolling per angle
+const LERP_FACTOR  = MOB ? 0.08   : 0.06;    // camera smoothing
 
 // Wheel
 window.addEventListener('wheel', e=>{
@@ -412,17 +429,15 @@ sndBtn.addEventListener('click',()=>{ audOn?(aud.pause(),audOn=false):(aud.play(
 /* ────────────────────────────────────────────
    CAMERA KEYFRAMES
 ──────────────────────────────────────────── */
-const mZ = MOB ? 1.5 : 0;
+const mZ = MOB ? 1.6 : 0;
+// 6 keyframes spread wide — each angle gets ~20% of scroll to dwell in
 const KF = [
-  {p:0.00, pos:new THREE.Vector3(0,    1.4,  5.8+mZ), tar:new THREE.Vector3(0,.4,0)},
-  {p:0.12, pos:new THREE.Vector3(0,    0.9,  3.8+mZ), tar:new THREE.Vector3(0,.3,0)},  // close front
-  {p:0.25, pos:new THREE.Vector3(2.6,  1.1,  3.2+mZ), tar:new THREE.Vector3(0,.5,0)},  // front-right
-  {p:0.38, pos:new THREE.Vector3(4.8,  0.7,  0.3),    tar:new THREE.Vector3(0,.5,0)},  // right side
-  {p:0.52, pos:new THREE.Vector3(3.2,  1.9, -3.6),    tar:new THREE.Vector3(0,.4,0)},  // rear quarter
-  {p:0.65, pos:new THREE.Vector3(-4.0, 0.8, -1.4),    tar:new THREE.Vector3(0,.5,0)},  // left rear
-  {p:0.77, pos:new THREE.Vector3(0,    5.2,  1.4),    tar:new THREE.Vector3(0, 0, 0)}, // top-down
-  {p:0.88, pos:new THREE.Vector3(-2.8, 1.0,  3.2+mZ), tar:new THREE.Vector3(0,.4,0)},  // left front
-  {p:1.00, pos:new THREE.Vector3(0,    1.4,  5.5+mZ), tar:new THREE.Vector3(0,.5,0)},  // back to hero
+  {p:0.00, pos:new THREE.Vector3(0,    1.5,  6.0+mZ), tar:new THREE.Vector3(0, .45, 0)}, // hero front
+  {p:0.22, pos:new THREE.Vector3(4.8,  1.0,  1.5),    tar:new THREE.Vector3(0, .5,  0)}, // right side
+  {p:0.42, pos:new THREE.Vector3(3.5,  2.2, -4.0),    tar:new THREE.Vector3(0, .4,  0)}, // rear quarter
+  {p:0.62, pos:new THREE.Vector3(-4.8, 0.9,  1.0),    tar:new THREE.Vector3(0, .5,  0)}, // left side
+  {p:0.80, pos:new THREE.Vector3(0,    5.5,  1.8),    tar:new THREE.Vector3(0,  0,  0)}, // top-down
+  {p:1.00, pos:new THREE.Vector3(0,    1.5,  6.0+mZ), tar:new THREE.Vector3(0, .45, 0)}, // back to hero
 ];
 
 const _tv  = new THREE.Vector3();
@@ -445,11 +460,11 @@ function camFromProgress(prog){
    PANEL TRIGGERS  (driven by currentS, not raw)
 ──────────────────────────────────────────── */
 const PAN = [
-  {id:'p1', s:.10, h:.28},
-  {id:'p2', s:.28, h:.45},
-  {id:'p3', s:.45, h:.62},
-  {id:'p4', s:.63, h:.80},
-  {id:'p5', s:.82, h:1.01},
+  {id:'p1', s:.08,  h:.30},
+  {id:'p2', s:.30,  h:.50},
+  {id:'p3', s:.50,  h:.68},
+  {id:'p4', s:.68,  h:.85},
+  {id:'p5', s:.86,  h:1.01},
 ];
 let lastProg = -1;
 function updatePanels(p){

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,757 +8,538 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
   <style>
-    :root {
-      --green:#00ff88; --red:#c8003a; --deep:#030309;
-      --steel:#8fa0b0; --white:#f0f4f8; --gold:#c9a84c;
-    }
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; height:100%; }
+    :root { --green:#00ff88; --deep:#030309; --steel:#8fa0b0; --white:#f0f4f8; --gold:#c9a84c; }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; }
     body {
       background:var(--deep); color:var(--white);
       font-family:'Cormorant Garamond',serif;
-      overflow-x:hidden; -webkit-overflow-scrolling:touch;
-      touch-action:pan-y;
+      overflow-x:hidden; overflow-y:scroll;
+      -webkit-overflow-scrolling:touch;
     }
 
-    /* ── CANVAS ── */
     #canvas-container { position:fixed; inset:0; z-index:0; }
     #canvas-container canvas { display:block; width:100%!important; height:100%!important; }
 
-    /* ── SCROLL DRIVER ── */
+    /* NAV */
+    #nav {
+      position:fixed; top:0; left:0; right:0; z-index:25;
+      padding:clamp(.8rem,2vw,1.4rem) clamp(1rem,4vw,2.5rem);
+      display:flex; justify-content:space-between; align-items:center;
+      background:linear-gradient(to bottom,rgba(3,3,9,.7) 0%,transparent 100%);
+    }
+    .nav-logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(1rem,3.5vw,1.4rem); letter-spacing:.25em; color:var(--white); }
+    .nav-logo span { color:var(--green); }
+    .sound-btn {
+      cursor:pointer; background:transparent;
+      border:1px solid rgba(255,255,255,.2); color:var(--steel);
+      font-family:'Cinzel',serif; font-size:clamp(.48rem,1.6vw,.62rem);
+      letter-spacing:.22em; padding:.4rem 1rem; text-transform:uppercase;
+      transition:border-color .3s,color .3s; -webkit-tap-highlight-color:transparent;
+    }
+    .sound-btn.playing { border-color:var(--green); color:var(--green); }
+
+    /* PROGRESS */
+    #progress-bar {
+      position:fixed; top:0; left:0; height:2px;
+      background:linear-gradient(90deg,var(--green),var(--gold));
+      width:0%; z-index:30;
+    }
+
+    /* SCROLL DRIVER */
     #scroll-driver { position:relative; z-index:1; pointer-events:none; }
     .scroll-section {
       height:100svh; display:flex; align-items:center;
       justify-content:center; pointer-events:none; position:relative;
     }
 
-    /* ── LOADING ── */
-    #loading {
-      position:fixed; inset:0; z-index:50; background:var(--deep);
-      display:flex; flex-direction:column; align-items:center;
-      justify-content:center; gap:1.5rem;
-      transition:opacity .8s ease .2s, visibility .8s ease .2s;
-    }
-    #loading.done { opacity:0; visibility:hidden; }
-    .load-logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,8vw,3rem); letter-spacing:.4em; color:var(--green); }
-    .load-bar-wrap { width:min(280px,80vw); height:1px; background:rgba(255,255,255,.1); }
-    .load-bar { height:100%; background:var(--green); width:0%; transition:width .3s; }
-    .load-label { font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:.35em; color:var(--steel); text-align:center; }
-
-    /* ── INTRO ── */
-    #intro {
-      position:fixed; inset:0; z-index:20; background:var(--deep);
-      display:flex; flex-direction:column; align-items:center;
-      justify-content:center; gap:clamp(1rem,3vw,2rem);
-      transition:opacity 1.2s ease, visibility 1.2s ease;
-    }
-    #intro.hidden { opacity:0; visibility:hidden; }
-    .intro-title {
-      font-family:'Bebas Neue',sans-serif;
-      font-size:clamp(3.5rem,14vw,10rem);
-      letter-spacing:.12em; color:var(--white);
-      text-align:center; line-height:.88;
-    }
-    .intro-title span { color:var(--green); }
-    .intro-sub {
-      font-family:'Cinzel',serif;
-      font-size:clamp(.55rem,2.5vw,.9rem);
-      letter-spacing:.35em; color:var(--steel);
-      text-transform:uppercase; text-align:center;
-      padding:0 1rem;
-    }
-    .enter-btn {
-      pointer-events:all; cursor:pointer; background:transparent;
-      border:1px solid var(--green); color:var(--green);
-      font-family:'Cinzel',serif; font-size:clamp(.7rem,2.5vw,.85rem);
-      letter-spacing:.3em; padding:clamp(.7rem,2vw,1rem) clamp(1.5rem,6vw,3rem);
-      text-transform:uppercase; position:relative; overflow:hidden;
-      transition:color .3s, box-shadow .3s;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .enter-btn::before {
-      content:''; position:absolute; inset:0;
-      background:var(--green); transform:translateX(-101%);
-      transition:transform .3s ease;
-    }
-    .enter-btn:hover::before, .enter-btn:active::before { transform:translateX(0); }
-    .enter-btn:hover, .enter-btn:active { color:var(--deep); box-shadow:0 0 32px rgba(0,255,136,.35); }
-    .enter-btn span { position:relative; z-index:1; }
-
-    /* ── NAV ── */
-    #nav {
-      position:fixed; top:0; left:0; right:0; z-index:25;
-      padding:clamp(.8rem,2vw,1.5rem) clamp(1rem,4vw,3rem);
-      display:flex; justify-content:space-between; align-items:center;
-      opacity:0; transition:opacity .8s;
-      background:linear-gradient(to bottom,rgba(3,3,9,.6),transparent);
-    }
-    #nav.visible { opacity:1; }
-    .nav-logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(1rem,4vw,1.4rem); letter-spacing:.25em; color:var(--white); }
-    .nav-logo span { color:var(--green); }
-    .sound-btn {
-      pointer-events:all; cursor:pointer; background:transparent;
-      border:1px solid rgba(255,255,255,.25); color:var(--steel);
-      font-family:'Cinzel',serif; font-size:clamp(.5rem,2vw,.65rem);
-      letter-spacing:.25em; padding:.45rem 1.1rem;
-      text-transform:uppercase; transition:all .3s;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .sound-btn:hover, .sound-btn.playing { border-color:var(--green); color:var(--green); }
-
-    /* ── PROGRESS BAR ── */
-    #progress-bar {
-      position:fixed; top:0; left:0; height:2px;
-      background:linear-gradient(90deg,var(--green),var(--gold));
-      width:0%; z-index:30; transition:width .08s linear;
-    }
-
-    /* ── TEXT PANELS ── */
+    /* TEXT PANELS */
     .text-panel {
-      position:absolute;
-      width:min(420px,42vw);      /* desktop */
-      padding:1.5rem;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .8s ease, transform .8s ease;
+      position:absolute; opacity:0; pointer-events:none;
+      width:min(400px,40vw); padding:1.5rem;
+      transition:opacity .7s ease, transform .7s ease;
     }
-    /* Mobile: full-width strip at bottom */
     @media(max-width:640px){
       .text-panel {
-        width:calc(100% - 2rem)!important;
-        left:1rem!important; right:1rem!important;
-        top:auto!important; bottom:6vh!important;
-        text-align:center!important;
-        transform:translateY(30px)!important;
-        background:linear-gradient(to top,rgba(3,3,9,.85),transparent);
-        border-radius:4px;
-        padding:1.2rem 1rem;
+        width:calc(100% - 2rem)!important; left:1rem!important;
+        right:auto!important; top:auto!important; bottom:5vh!important;
+        text-align:center!important; transform:translateY(20px)!important;
+        background:linear-gradient(to top,rgba(3,3,9,.88),rgba(3,3,9,.0));
+        padding:1rem;
       }
-      .text-panel.visible { transform:translateY(0)!important; }
+      .text-panel.visible { transform:translateY(0)!important; opacity:1!important; }
     }
-    .text-panel.left  { left:3vw; top:50%; transform:translateY(calc(-50% + 30px)); }
+    .text-panel.left  { left:3vw; top:50%; transform:translateY(calc(-50% + 25px)); }
     .text-panel.left.visible  { opacity:1; transform:translateY(-50%); }
-    .text-panel.right { right:3vw; top:50%; transform:translateY(calc(-50% + 30px)); text-align:right; }
+    .text-panel.right { right:3vw; top:50%; text-align:right; transform:translateY(calc(-50% + 25px)); }
     .text-panel.right.visible { opacity:1; transform:translateY(-50%); }
-    .text-panel.center {
-      left:50%; width:min(500px,90vw)!important;
-      top:25%; transform:translateX(-50%) translateY(30px);
-      text-align:center;
-    }
+    .text-panel.center { left:50%; width:min(480px,88vw)!important; top:22%; transform:translateX(-50%) translateY(25px); text-align:center; }
     .text-panel.center.visible { opacity:1; transform:translateX(-50%) translateY(0); }
 
-    .panel-eyebrow {
-      font-family:'Cinzel',serif; font-size:clamp(.5rem,1.8vw,.62rem);
-      letter-spacing:.5em; color:var(--green);
-      text-transform:uppercase; margin-bottom:.6rem; display:block;
-    }
-    .panel-heading {
-      font-family:'Bebas Neue',sans-serif;
-      font-size:clamp(2rem,5.5vw,5rem);
-      line-height:.92; letter-spacing:.04em;
-      color:var(--white); margin-bottom:.8rem;
-    }
+    .panel-eyebrow { font-family:'Cinzel',serif; font-size:clamp(.48rem,1.5vw,.6rem); letter-spacing:.5em; color:var(--green); text-transform:uppercase; margin-bottom:.55rem; display:block; }
+    .panel-heading { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.2rem,5.5vw,5rem); line-height:.9; letter-spacing:.04em; color:var(--white); margin-bottom:.75rem; }
     .panel-heading em { color:var(--green); font-style:normal; }
-    .panel-body {
-      font-family:'Cormorant Garamond',serif;
-      font-size:clamp(.85rem,1.3vw,1.05rem);
-      line-height:1.7; color:var(--steel); font-weight:300;
-    }
-    .panel-stat {
-      margin-top:1.2rem; font-family:'Bebas Neue',sans-serif;
-      font-size:clamp(1.5rem,3vw,2.6rem);
-      color:var(--gold); letter-spacing:.1em;
-    }
-    .panel-stat small {
-      font-family:'Cormorant Garamond',serif;
-      font-size:.55em; color:var(--steel);
-      letter-spacing:.2em; display:block; margin-top:-.1em;
-    }
+    .panel-body { font-size:clamp(.82rem,1.25vw,1rem); line-height:1.72; color:var(--steel); font-weight:300; }
+    .panel-stat { margin-top:1.1rem; font-family:'Bebas Neue',sans-serif; font-size:clamp(1.6rem,3vw,2.8rem); color:var(--gold); letter-spacing:.1em; }
+    .panel-stat small { font-family:'Cormorant Garamond',serif; font-size:.52em; color:var(--steel); letter-spacing:.2em; display:block; }
 
-    /* ── OVERLAYS ── */
-    #scanlines {
-      position:fixed; inset:0; z-index:10; pointer-events:none;
-      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
-    }
-    #vignette {
-      position:fixed; inset:0; z-index:9; pointer-events:none;
-      background:radial-gradient(ellipse at center,transparent 40%,rgba(3,3,9,.7) 100%);
-    }
+    /* OVERLAYS */
+    #vignette { position:fixed; inset:0; z-index:9; pointer-events:none; background:radial-gradient(ellipse at center,transparent 38%,rgba(3,3,9,.68) 100%); }
 
-    /* ── FINAL CTA ── */
-    #final-cta {
-      position:absolute; bottom:8vh; left:50%;
-      transform:translateX(-50%); text-align:center;
-      opacity:0; transition:opacity 1s ease .3s;
-      pointer-events:all; white-space:nowrap;
-    }
+    /* FINAL CTA */
+    #final-cta { position:absolute; bottom:10vh; left:50%; transform:translateX(-50%); text-align:center; opacity:0; transition:opacity .9s ease .2s; pointer-events:all; white-space:nowrap; }
     #final-cta.visible { opacity:1; }
-    .cta-line {
-      font-family:'Cinzel',serif; font-size:clamp(.55rem,1.8vw,.7rem);
-      letter-spacing:.45em; color:var(--steel);
-      text-transform:uppercase; margin-bottom:1.2rem;
-    }
-    .cta-big {
-      font-family:'Bebas Neue',sans-serif;
-      font-size:clamp(2.8rem,8vw,7rem);
-      letter-spacing:.1em; line-height:.88;
-      background:linear-gradient(135deg,var(--green),var(--gold));
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-      background-clip:text;
-    }
+    .cta-line { font-family:'Cinzel',serif; font-size:clamp(.5rem,1.6vw,.68rem); letter-spacing:.45em; color:var(--steel); text-transform:uppercase; margin-bottom:1rem; }
+    .cta-big { font-family:'Bebas Neue',sans-serif; font-size:clamp(3rem,8vw,7rem); letter-spacing:.1em; line-height:.88; background:linear-gradient(135deg,var(--green),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 
-    /* ── SCROLL HINT ── */
-    #scroll-hint {
-      position:fixed; bottom:2.5rem; left:50%;
-      transform:translateX(-50%);
-      display:flex; flex-direction:column; align-items:center; gap:.5rem;
-      z-index:20; opacity:0; transition:opacity .6s;
-    }
-    #scroll-hint.visible { opacity:1; }
-    #scroll-hint.gone    { opacity:0; pointer-events:none; }
-    .scroll-hint-text { font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.4em; color:var(--steel); text-transform:uppercase; }
-    .scroll-arrow { width:1px; height:36px; background:linear-gradient(to bottom,var(--green),transparent); animation:arrowPulse 1.6s ease-in-out infinite; }
-    @keyframes arrowPulse { 0%,100%{opacity:.3;transform:scaleY(.7)} 50%{opacity:1;transform:scaleY(1)} }
+    /* SCROLL HINT */
+    #scroll-hint { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:.45rem; z-index:20; opacity:0; transition:opacity .8s; }
+    #scroll-hint.show { opacity:1; }
+    #scroll-hint.hide { opacity:0; pointer-events:none; }
+    .sh-text { font-family:'Cinzel',serif; font-size:.55rem; letter-spacing:.4em; color:var(--steel); text-transform:uppercase; }
+    .sh-line { width:1px; height:32px; background:linear-gradient(to bottom,var(--green),transparent); animation:pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:.25;transform:scaleY(.6)} 50%{opacity:1;transform:scaleY(1)} }
+
+    /* LOADING */
+    #loading { position:fixed; inset:0; z-index:50; background:var(--deep); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; transition:opacity .7s ease .1s, visibility .7s ease .1s; }
+    #loading.done { opacity:0; visibility:hidden; }
+    .ll { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,7vw,3rem); letter-spacing:.4em; color:var(--green); }
+    .lbw { width:min(260px,75vw); height:1px; background:rgba(255,255,255,.1); }
+    .lb  { height:100%; background:var(--green); width:0%; transition:width .25s; }
+    .lt  { font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.35em; color:var(--steel); }
   </style>
 </head>
 <body>
 
-<!-- LOADING -->
 <div id="loading">
-  <div class="load-logo">H2R</div>
-  <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
-  <div class="load-label" id="load-label">Initializing Engine…</div>
+  <div class="ll">H2R</div>
+  <div class="lbw"><div class="lb" id="lb"></div></div>
+  <div class="lt" id="lt">Loading…</div>
 </div>
 
-<!-- INTRO -->
-<div id="intro">
-  <div class="intro-title">KAWASAKI<br/><span>NINJA H2R</span></div>
-  <div class="intro-sub">Born From Chaos · Track Only · 310 HP</div>
-  <button class="enter-btn" id="enter-btn"><span>Enter The Experience</span></button>
-</div>
-
-<!-- NAV -->
 <div id="nav">
   <div class="nav-logo">NINJA <span>H2R</span></div>
-  <button class="sound-btn" id="sound-btn">♪ Sound On</button>
+  <button class="sound-btn" id="snd">♪ Sound</button>
 </div>
-
 <div id="progress-bar"></div>
-<div id="scanlines"></div>
 <div id="vignette"></div>
 
 <div id="scroll-hint">
-  <div class="scroll-hint-text">Scroll to Explore</div>
-  <div class="scroll-arrow"></div>
+  <div class="sh-text">Scroll</div>
+  <div class="sh-line"></div>
 </div>
 
-<!-- CANVAS -->
 <div id="canvas-container"></div>
 
-<!-- SCROLL SECTIONS -->
 <div id="scroll-driver">
   <div class="scroll-section" style="height:100svh"></div>
 
   <div class="scroll-section">
-    <div class="text-panel left" id="panel-1">
+    <div class="text-panel left" id="p1">
       <span class="panel-eyebrow">Aerodynamic Mastery</span>
-      <div class="panel-heading">BORN<br/>FROM<br/><em>WIND</em></div>
-      <div class="panel-body">The H2R's ram-air supercharger forces atmosphere into six compression stages. At 200+ km/h, the intake becomes a weapon in itself.</div>
+      <div class="panel-heading">BORN FROM<br/><em>WIND</em></div>
+      <div class="panel-body">The H2R's ram-air supercharger forces atmosphere into six compression stages. At 200+ km/h, the intake becomes a weapon.</div>
       <div class="panel-stat">310 <small>PS @ 13,000 RPM</small></div>
     </div>
   </div>
-
   <div class="scroll-section">
-    <div class="text-panel right" id="panel-2">
+    <div class="text-panel right" id="p2">
       <span class="panel-eyebrow">Supercharged Legacy</span>
       <div class="panel-heading">FORCED<br/><em>INDUCTION</em></div>
-      <div class="panel-body">A centrifugal supercharger developed entirely in-house. No turbo lag — pure mechanical pressure feeding a screaming 998cc inline-four.</div>
+      <div class="panel-body">A centrifugal supercharger built entirely in-house. No turbo lag — pure mechanical fury feeding a screaming 998cc inline-four.</div>
       <div class="panel-stat">326 <small>km/h · Top Speed</small></div>
     </div>
   </div>
-
   <div class="scroll-section">
-    <div class="text-panel left" id="panel-3">
+    <div class="text-panel left" id="p3">
       <span class="panel-eyebrow">Track Dominance</span>
       <div class="panel-heading">ZERO<br/>MERCY<br/><em>GIVEN</em></div>
-      <div class="panel-body">Carbon-fibre bodywork, winglets generating true aerodynamic downforce, and OHLINS suspension calibrated for one thing — the perfect lap.</div>
+      <div class="panel-body">Carbon-fibre bodywork, winglets generating true downforce, and OHLINS suspension calibrated for one purpose — the perfect lap.</div>
       <div class="panel-stat">216 <small>kg · Dry Weight</small></div>
     </div>
   </div>
-
   <div class="scroll-section">
-    <div class="text-panel right" id="panel-4">
+    <div class="text-panel right" id="p4">
       <span class="panel-eyebrow">Wing Technology</span>
       <div class="panel-heading">LIFT IS<br/><em>THE ENEMY</em></div>
-      <div class="panel-body">Dual aerodynamic winglets suppress front-wheel lift under extreme acceleration. Borrowed from MotoGP prototypes, adapted for the H2R's savage power.</div>
+      <div class="panel-body">Dual winglets suppress front-wheel lift under savage acceleration. Borrowed from MotoGP, evolved for the H2R's unbridled power.</div>
       <div class="panel-stat">2.0 <small>sec · 0–100 km/h</small></div>
     </div>
   </div>
-
   <div class="scroll-section">
-    <div class="text-panel center" id="panel-5">
+    <div class="text-panel center" id="p5">
       <span class="panel-eyebrow">The Legend</span>
-      <div class="panel-heading"><em>H2R</em><br/>FOREVER</div>
-      <div class="panel-body">Not street legal. Not for the timid. The Kawasaki Ninja H2R exists at the absolute boundary of what engineering can produce for two wheels.</div>
+      <div class="panel-heading"><em>H2R</em> FOREVER</div>
+      <div class="panel-body">Not street legal. Not for the timid. The Ninja H2R exists at the absolute edge of what engineering can achieve for two wheels.</div>
     </div>
     <div id="final-cta">
       <div class="cta-line">The Ultimate Track Machine</div>
       <div class="cta-big">RIDE<br/>BEYOND</div>
     </div>
   </div>
-
-  <div style="height:50svh"></div>
+  <div style="height:40svh"></div>
 </div>
 
-<audio id="bg-audio" loop preload="auto">
-  <source src="sunflower.mp3" type="audio/mpeg"/>
-</audio>
+<audio id="aud" loop preload="none"><source src="sunflower.mp3" type="audio/mpeg"/></audio>
 
 <script type="importmap">
-{
-  "imports": {
-    "three":          "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/":  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-  }
-}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
-
 <script type="module">
 import * as THREE from 'three';
-import { GLTFLoader }       from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader }      from 'three/addons/loaders/DRACOLoader.js';
-import { RoomEnvironment }  from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ─────────────────────────────────────────
-   DETECT MOBILE
-───────────────────────────────────────── */
-const isMobile = window.innerWidth < 768;
+/* ── MOBILE DETECT ── */
+const MOB = innerWidth < 768;
 
-/* ─────────────────────────────────────────
-   RENDERER
-───────────────────────────────────────── */
-const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: 'high-performance' });
-renderer.setPixelRatio(isMobile ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2));
+/* ── RENDERER ── */
+const renderer = new THREE.WebGLRenderer({ antialias: !MOB, powerPreference:'high-performance', stencil:false, depth:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2));
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = !isMobile;          // shadows off on mobile for perf
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = false;        // OFF entirely — huge perf win
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.9;
+renderer.toneMappingExposure = 2.0;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-/* ─────────────────────────────────────────
-   SCENE
-───────────────────────────────────────── */
+/* ── SCENE ── */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x04060f);
-scene.fog = new THREE.FogExp2(0x05080f, isMobile ? 0.025 : 0.018);
+scene.fog = new THREE.FogExp2(0x04060f, MOB ? 0.022 : 0.016);
 
-/* ─────────────────────────────────────────
-   CAMERA — wider FOV on mobile
-───────────────────────────────────────── */
-const fov = isMobile ? 65 : 50;
-const camera = new THREE.PerspectiveCamera(fov, innerWidth / innerHeight, 0.01, 300);
-camera.position.set(0, 1.6, isMobile ? 6.5 : 5.5);
+/* ── CAMERA ── */
+const camera = new THREE.PerspectiveCamera(MOB ? 62 : 50, innerWidth/innerHeight, 0.05, 200);
+camera.position.set(0, 1.6, MOB ? 6.5 : 5.5);
 camera.lookAt(0, 0.5, 0);
 
-/* ─────────────────────────────────────────
-   ENVIRONMENT (IBL) — correct import
-───────────────────────────────────────── */
-const pmremGen = new THREE.PMREMGenerator(renderer);
-pmremGen.compileEquirectangularShader();
-const envTex = pmremGen.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environment = envTex;
-pmremGen.dispose();
+/* ── ENVIRONMENT ── */
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+pmrem.dispose();
 
-/* ─────────────────────────────────────────
-   LIGHTS
-───────────────────────────────────────── */
-scene.add(new THREE.AmbientLight(0xffffff, 3.5));
+/* ── LIGHTS ── */
+scene.add(new THREE.AmbientLight(0xffffff, 4.0));
 
-const keyLight = new THREE.DirectionalLight(0xffffff, 9.0);
-keyLight.position.set(5, 10, 7);
-if (!isMobile) {
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(1024, 1024);
-  keyLight.shadow.camera.near = 0.5;
-  keyLight.shadow.camera.far  = 40;
-  Object.assign(keyLight.shadow.camera, { top:8, bottom:-8, left:-8, right:8 });
-}
-scene.add(keyLight);
+const key = new THREE.DirectionalLight(0xffffff, 10);
+key.position.set(5, 10, 7);
+scene.add(key);
 
-const fillLight = new THREE.DirectionalLight(0x88ffcc, 3.5);
-fillLight.position.set(-6, 4, 3);
-scene.add(fillLight);
+const fill1 = new THREE.DirectionalLight(0x88ffcc, 4);
+fill1.position.set(-6, 4, 3); scene.add(fill1);
+const fill2 = new THREE.DirectionalLight(0xaaddff, 5);
+fill2.position.set(0, 5, -6); scene.add(fill2);
+const fill3 = new THREE.DirectionalLight(0xffffff, 4.5);
+fill3.position.set(0, 3, 10); scene.add(fill3);
 
-const rimLight = new THREE.DirectionalLight(0xaaddff, 4.5);
-rimLight.position.set(0, 5, -6);
-scene.add(rimLight);
+const groundGlow = new THREE.PointLight(0xff2244, 6, 9);
+groundGlow.position.set(0, -0.3, 1);
+scene.add(groundGlow);
 
-const frontFill = new THREE.DirectionalLight(0xffffff, 4.0);
-frontFill.position.set(0, 3, 10);
-scene.add(frontFill);
+const topSpot = new THREE.SpotLight(0xffffff, 20, 16, Math.PI/4, 0.6, 2);
+topSpot.position.set(0, 8, 0);
+scene.add(topSpot, topSpot.target);
 
-// Pulsing under-glow (red)
-const groundLight = new THREE.PointLight(0xff2244, 5.0, 8);
-groundLight.position.set(0, -0.4, 1);
-scene.add(groundLight);
-
-// Top spotlight on bike
-const topSpot = new THREE.SpotLight(0xffffff, 18, 14, Math.PI / 4, 0.6, 1.5);
-topSpot.position.set(0, 7, 0);
-scene.add(topSpot);
-scene.add(topSpot.target); // target stays at origin
-
-// Lily accent ring lights — more, closer, brighter for the dense field
-[ [5,0.4,5],[-5,0.4,5],[5,0.4,-5],[-5,0.4,-5],
-  [7,0.4,0],[-7,0.4,0],[0,0.4,7],[0,0.4,-7],
-  [9,0.4,9],[-9,0.4,9],[9,0.4,-9],[-9,0.4,-9],
-  [12,0.4,0],[-12,0.4,0],[0,0.4,12],[0,0.4,-12] ]
-.forEach(([x,y,z]) => {
-  const l = new THREE.PointLight(0xff2255, 4.5, 11);
-  l.position.set(x, y, z);
-  scene.add(l);
+// Lily field lights — wide ring, warm red
+const LILY_LIGHTS = [
+  [5,.3,0],[-5,.3,0],[0,.3,5],[0,.3,-5],
+  [8,.3,8],[-8,.3,8],[8,.3,-8],[-8,.3,-8],
+  [13,.3,0],[-13,.3,0],[0,.3,13],[0,.3,-13],
+  [18,.3,5],[-18,.3,5],[18,.3,-5],[-18,.3,-5],
+];
+LILY_LIGHTS.forEach(([x,y,z]) => {
+  const l = new THREE.PointLight(0xff1133, 5, 14);
+  l.position.set(x,y,z); scene.add(l);
 });
 
-/* ─────────────────────────────────────────
-   GROUND + REFLECTIVE DISC
-───────────────────────────────────────── */
+/* ── GROUND ── */
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(200, 200),
-  new THREE.MeshStandardMaterial({ color:0x060c0a, roughness:.95, metalness:.05 })
+  new THREE.PlaneGeometry(300,300),
+  new THREE.MeshStandardMaterial({ color:0x050a06, roughness:.96, metalness:.02 })
 );
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -1.05;
-ground.receiveShadow = true;
+ground.rotation.x = -Math.PI/2; ground.position.y = -1.05;
 scene.add(ground);
 
+// Reflective disc under bike — clear of lilies
+const DISC_R = 4.5;
 const disc = new THREE.Mesh(
-  new THREE.CircleGeometry(4, 64),
-  new THREE.MeshStandardMaterial({ color:0x0a1208, roughness:.15, metalness:.9, envMapIntensity:2.5 })
+  new THREE.CircleGeometry(DISC_R, 80),
+  new THREE.MeshStandardMaterial({ color:0x080d09, roughness:.12, metalness:.92, envMapIntensity:3 })
 );
-disc.rotation.x = -Math.PI / 2;
-disc.position.y = -1.04;
+disc.rotation.x = -Math.PI/2; disc.position.y = -1.03;
 scene.add(disc);
 
-/* ─────────────────────────────────────────
-   PARTICLES
-───────────────────────────────────────── */
-const pCount = isMobile ? 800 : 2000;
-const pPos = new Float32Array(pCount * 3);
-const pVel = new Float32Array(pCount * 3);
-for (let i = 0; i < pCount; i++) {
-  pPos[i*3]   = (Math.random()-.5)*70;
-  pPos[i*3+1] = Math.random()*10 - .8;
-  pPos[i*3+2] = (Math.random()-.5)*70;
-  pVel[i*3]   = (Math.random()-.5)*.005;
-  pVel[i*3+1] = Math.random()*.004+.001;
-  pVel[i*3+2] = (Math.random()-.5)*.005;
+/* ── PARTICLES (fewer = faster) ── */
+const PC = MOB ? 600 : 1400;
+const pp = new Float32Array(PC*3), pv = new Float32Array(PC*3);
+for(let i=0;i<PC;i++){
+  pp[i*3]=(Math.random()-.5)*80; pp[i*3+1]=Math.random()*12-.5; pp[i*3+2]=(Math.random()-.5)*80;
+  pv[i*3]=(Math.random()-.5)*.004; pv[i*3+1]=Math.random()*.003+.001; pv[i*3+2]=(Math.random()-.5)*.004;
 }
-const pGeo = new THREE.BufferGeometry();
-pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-const pMesh = new THREE.Points(pGeo,
-  new THREE.PointsMaterial({ size:.06, color:0xff1155, transparent:true, opacity:.85, blending:THREE.AdditiveBlending, depthWrite:false })
-);
-scene.add(pMesh);
+const pGeo=new THREE.BufferGeometry();
+pGeo.setAttribute('position',new THREE.BufferAttribute(pp,3));
+scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({size:.055,color:0xff1133,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false})));
 
-/* ─────────────────────────────────────────
-   LOADERS
-───────────────────────────────────────── */
+/* ── LOADERS ── */
 const draco = new DRACOLoader();
 draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
-const loader = new GLTFLoader();
-loader.setDRACOLoader(draco);
+const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
 
-let bikeModel = null, lilyTemplate = null;
-const lilyInstances = [];
-let done = 0;
+let bike=null, lilyTpl=null;
+const lilies=[];   // {mesh, phase}
+let loaded=0;
+const lb=document.getElementById('lb'), lt=document.getElementById('lt');
+const setP=(p,t)=>{ lb.style.width=p+'%'; lt.textContent=t; };
 
-const loadBar   = document.getElementById('load-bar');
-const loadLabel = document.getElementById('load-label');
-function setLoad(pct, txt) { loadBar.style.width = pct+'%'; loadLabel.textContent = txt; }
-
-/* ── BIKE ── */
-loader.load('kawasaki-ninja-h2r-super-bike.glb', gltf => {
-  bikeModel = gltf.scene;
-
-  // Scale to target 3.4 units (longest dimension)
-  const box = new THREE.Box3().setFromObject(bikeModel);
-  const sz  = box.getSize(new THREE.Vector3());
-  const cen = box.getCenter(new THREE.Vector3());
-  const s   = 3.4 / Math.max(sz.x, sz.y, sz.z);
-  bikeModel.scale.setScalar(s);
-
-  // Sit on ground
-  const box2   = new THREE.Box3().setFromObject(bikeModel);
-  bikeModel.position.set(-cen.x*s, -box2.min.y - 1.05, -cen.z*s);
-
-  // Material pass — lift blacks, boost env
-  bikeModel.traverse(c => {
-    if (!c.isMesh) return;
-    c.castShadow  = !isMobile;
-    c.receiveShadow = true;
-    const mats = Array.isArray(c.material) ? c.material : [c.material];
-    mats.forEach(m => {
-      if (!m) return;
-      m.envMapIntensity = 3.0;
-      if (m.color) {
-        const lum = m.color.r*.3 + m.color.g*.59 + m.color.b*.11;
-        if (lum < 0.04) m.color.setHex(0x191922); // lift pure-black parts
+/* BIKE */
+loader.load('kawasaki-ninja-h2r-super-bike.glb', gltf=>{
+  bike=gltf.scene;
+  const box=new THREE.Box3().setFromObject(bike);
+  const sz=box.getSize(new THREE.Vector3()), cn=box.getCenter(new THREE.Vector3());
+  const s=3.6/Math.max(sz.x,sz.y,sz.z);
+  bike.scale.setScalar(s);
+  const box2=new THREE.Box3().setFromObject(bike);
+  bike.position.set(-cn.x*s, -box2.min.y-1.05, -cn.z*s);
+  bike.traverse(c=>{
+    if(!c.isMesh||!c.material) return;
+    const ms=Array.isArray(c.material)?c.material:[c.material];
+    ms.forEach(m=>{
+      if(!m||!m.isMaterial) return;
+      m.wireframe = false;
+      if(m.isMeshStandardMaterial || m.isMeshPhysicalMaterial){
+        m.envMapIntensity = 3.5;
+        if(m.color){
+          const lum=m.color.r*.3+m.color.g*.59+m.color.b*.11;
+          if(lum<.04) m.color.setHex(0x1a1a22);
+        }
       }
-      m.needsUpdate = true;
+      m.needsUpdate=true;
     });
   });
+  scene.add(bike);
+  loaded++; setP(50,'Loading Spider Lilies…'); chk();
+}, p=>{ if(p.total) setP(p.loaded/p.total*50,'Loading H2R…'); },
+e=>{ console.error(e); loaded++; chk(); });
 
-  scene.add(bikeModel);
-  done++; setLoad(50,'Loading Spider Lilies…'); tryFinish();
-},
-p => { if (p.total) setLoad(p.loaded/p.total*50, 'Loading H2R…'); },
-e => { console.error('Bike:',e); done++; tryFinish(); });
+/* LILY */
+loader.load('spider_lily_lycoris_radiata.glb', gltf=>{
+  lilyTpl=gltf.scene;
+  const box=new THREE.Box3().setFromObject(lilyTpl);
+  const sz=box.getSize(new THREE.Vector3());
+  // Base scale — will be multiplied per instance
+  lilyTpl.scale.setScalar(1.0/Math.max(sz.x,sz.y,sz.z));
 
-/* ── LILY ── */
-loader.load('spider_lily_lycoris_radiata.glb', gltf => {
-  lilyTemplate = gltf.scene;
-
-  // Scale template to 0.9 units — bigger base before per-instance scale
-  const box = new THREE.Box3().setFromObject(lilyTemplate);
-  const sz  = box.getSize(new THREE.Vector3());
-  lilyTemplate.scale.setScalar(0.9 / Math.max(sz.x, sz.y, sz.z));
-
-  // Vivid, sharp materials — strong emissive so they pop even at distance
-  lilyTemplate.traverse(c => {
-    if (!c.isMesh || !c.material) return;
-    const mats = Array.isArray(c.material) ? c.material : [c.material];
-    mats.forEach(m => {
-      m.envMapIntensity = 2.2;
-      m.roughness = Math.min(m.roughness ?? 0.8, 0.55); // less rough = crisper
-      if (!m.emissive) m.emissive = new THREE.Color(0);
-      const r = m.color?.r ?? 1, g = m.color?.g ?? 1, b2 = m.color?.b ?? 1;
-      if (r > g + 0.12) {
-        // Red petals — saturate colour, strong emissive
-        m.color.setHex(0xff1a3a);
-        m.emissive.setHex(0xcc0022); m.emissiveIntensity = 1.0;
-      } else if (g > r + 0.04) {
-        // Green stems — brighten, slight glow
-        m.color.setHex(0x22aa44);
-        m.emissive.setHex(0x115522); m.emissiveIntensity = 0.5;
+  // AGGRESSIVELY RED — override every material, safely
+  lilyTpl.traverse(c=>{
+    if(!c.isMesh||!c.material) return;
+    const ms=Array.isArray(c.material)?c.material:[c.material];
+    ms.forEach(m=>{
+      if(!m||!m.isMaterial) return;
+      // Convert to MeshStandardMaterial if it isn't one (avoids wireframe artifacts)
+      if(!m.isMeshStandardMaterial){
+        // Just set basic colour override, skip PBR props
+        m.color && m.color.setHex(0xff0022);
+        return;
+      }
+      m.envMapIntensity = 2.0;
+      m.roughness = 0.4;
+      m.metalness = Math.min(m.metalness ?? 0, 0.3);
+      m.wireframe = false;
+      if(!m.emissive) m.emissive = new THREE.Color(0);
+      const r = m.color ? m.color.r : 1;
+      const g = m.color ? m.color.g : 1;
+      if(g > r + 0.08){
+        m.color.setHex(0x1daa40);
+        m.emissive.setHex(0x083d14); m.emissiveIntensity = 0.6;
       } else {
-        // Anything else (stamens, etc) — warm orange glow
-        m.color.setHex(0xff6600);
-        m.emissive.setHex(0x882200); m.emissiveIntensity = 0.7;
+        m.color.setHex(0xff0020);
+        m.emissive.setHex(0xcc0010); m.emissiveIntensity = 1.1;
       }
       m.needsUpdate = true;
     });
   });
 
-  spawnLilies();
-  done++; setLoad(100,'Ready'); tryFinish();
-},
-p => { if (p.total) setLoad(50 + p.loaded/p.total*50,'Loading Lilies…'); },
-e => { console.error('Lily:',e); done++; tryFinish(); });
+  buildLilyField();
+  loaded++; setP(100,'Ready'); chk();
+}, p=>{ if(p.total) setP(50+p.loaded/p.total*50,'Loading Lilies…'); },
+e=>{ console.error(e); loaded++; chk(); });
 
-const DISC_R     = 4.2;   // must match disc geometry radius — no lilies inside
-const FIELD_R    = 55;    // how far the field extends
-const GRID_STEP  = isMobile ? 1.6 : 1.1;   // spacing between grid slots (smaller = denser)
-const JITTER     = GRID_STEP * 0.45;        // random offset per slot so it looks natural
+/* ── LILY FIELD — overlapping grid ──
+   Key insight: multiple lilies per "cluster" at very tight spacing
+   so they genuinely overlap like a real dense field              */
+const INNER_CLEAR = DISC_R + 0.6;  // no lily inside disc + small buffer
+const FIELD_EXTENT = 60;
 
-function spawnLilies() {
-  const half = Math.ceil(FIELD_R / GRID_STEP);
-  for (let ix = -half; ix <= half; ix++) {
-    for (let iz = -half; iz <= half; iz++) {
-      // Jitter each grid slot
-      const x = ix * GRID_STEP + (Math.random() - .5) * 2 * JITTER;
-      const z = iz * GRID_STEP + (Math.random() - .5) * 2 * JITTER;
-      const dist = Math.sqrt(x*x + z*z);
-
-      // Skip inside the reflective black disc (+ small buffer)
-      if (dist < DISC_R + 0.3) continue;
-      // Skip beyond field radius
-      if (dist > FIELD_R) continue;
-
-      placeLily(x, z);
+function buildLilyField(){
+  // PRIMARY GRID — tight 0.85 unit spacing
+  const step = MOB ? 1.3 : 0.85;
+  const half  = Math.ceil(FIELD_EXTENT/step);
+  for(let ix=-half; ix<=half; ix++){
+    for(let iz=-half; iz<=half; iz++){
+      const bx=ix*step, bz=iz*step;
+      // Each grid slot spawns 1–3 lilies clustered around that point
+      const clusterN = Math.random()<0.55 ? 2 : 1;
+      for(let c=0;c<clusterN;c++){
+        const jx = bx + (Math.random()-.5)*step*0.85;
+        const jz = bz + (Math.random()-.5)*step*0.85;
+        const d = Math.sqrt(jx*jx+jz*jz);
+        if(d < INNER_CLEAR || d > FIELD_EXTENT) continue;
+        spawnLily(jx, jz);
+      }
     }
   }
 }
 
-function placeLily(x, z) {
-  const lily = lilyTemplate.clone(true);
-  // Clone materials per instance so emissive/colour is independent
-  lily.traverse(c => {
-    if (c.isMesh && c.material) {
-      c.material = Array.isArray(c.material)
-        ? c.material.map(m => m.clone())
-        : c.material.clone();
-    }
+function spawnLily(x,z){
+  const m=lilyTpl.clone(true);
+  m.traverse(c=>{
+    if(!c.isMesh||!c.material) return;
+    const cloned = Array.isArray(c.material)
+      ? c.material.map(mm=>{ const n=mm.clone(); n.wireframe=false; nudge(n); return n; })
+      : (()=>{ const n=c.material.clone(); n.wireframe=false; nudge(n); return n; })();
+    c.material = cloned;
   });
-  const b = new THREE.Box3().setFromObject(lily);
-  lily.position.set(x, -1.05 - b.min.y, z);
-  lily.rotation.y = Math.random() * Math.PI * 2;
-  // Bigger, more consistent size — 1.4 base with ±30% variation
-  lily.scale.multiplyScalar(1.4 + Math.random() * 0.6);
-  lily.traverse(c => { if (c.isMesh) c.receiveShadow = true; });
-  scene.add(lily);
-  lilyInstances.push({ mesh:lily, ox:x, oz:z, phase:Math.random()*Math.PI*2 });
+  const b=new THREE.Box3().setFromObject(m);
+  m.position.set(x, -1.05-b.min.y, z);
+  m.rotation.y=Math.random()*Math.PI*2;
+  const sc=0.9+Math.random()*1.5;
+  m.scale.multiplyScalar(sc);
+  scene.add(m);
+  lilies.push({mesh:m, phase:Math.random()*Math.PI*2});
 }
 
-function tryFinish() {
-  if (done >= 2) setTimeout(() => document.getElementById('loading').classList.add('done'), 500);
-}
-
-/* ─────────────────────────────────────────
-   SCROLL — smooth via lerp target
-───────────────────────────────────────── */
-let rawScroll = 0;      // actual window.scrollY ratio
-let smoothScroll = 0;   // lerped value used by camera
-let lastTick = 0;
-
-window.addEventListener('scroll', () => {
-  const max = document.body.scrollHeight - innerHeight;
-  rawScroll = max > 0 ? scrollY / max : 0;
-  document.getElementById('progress-bar').style.width = (rawScroll*100)+'%';
-  updatePanels(rawScroll);
-  if (rawScroll > 0.01) document.getElementById('scroll-hint').classList.add('gone');
-}, { passive:true });
-
-/* ─────────────────────────────────────────
-   CAMERA KEYFRAMES
-   Mobile: same angles but slightly farther Z
-───────────────────────────────────────── */
-const mZ = isMobile ? 1.5 : 0; // extra distance on mobile
-const KF = [
-  { p:0.00, pos:new THREE.Vector3(0,    1.6,  5.5+mZ), tar:new THREE.Vector3(0,.4,0) },
-  { p:0.12, pos:new THREE.Vector3(0,    1.0,  4.2+mZ), tar:new THREE.Vector3(0,.3,0) },
-  { p:0.25, pos:new THREE.Vector3(2.4,  1.2,  3.5+mZ), tar:new THREE.Vector3(0,.5,0) },
-  { p:0.38, pos:new THREE.Vector3(4.5,  0.8,  0.5),    tar:new THREE.Vector3(0,.5,0) },
-  { p:0.52, pos:new THREE.Vector3(3.0,  2.0, -3.8),    tar:new THREE.Vector3(0,.4,0) },
-  { p:0.65, pos:new THREE.Vector3(-3.8, 0.9, -1.5),    tar:new THREE.Vector3(0,.5,0) },
-  { p:0.77, pos:new THREE.Vector3(0,    4.8,  1.5),    tar:new THREE.Vector3(0,0,0)  },
-  { p:0.88, pos:new THREE.Vector3(-2.8, 1.0,  3.5+mZ), tar:new THREE.Vector3(0,.4,0) },
-  { p:1.00, pos:new THREE.Vector3(0,    1.4,  5.2+mZ), tar:new THREE.Vector3(0,.5,0) },
-];
-
-function camFromScroll(prog) {
-  let a = KF[0], b = KF[1];
-  for (let i = 0; i < KF.length-1; i++) {
-    if (prog >= KF[i].p && prog <= KF[i+1].p) { a=KF[i]; b=KF[i+1]; break; }
+function nudge(m){
+  // Tiny random brightness shift on red channel only
+  if(m.emissive && m.emissiveIntensity > 0.5){
+    m.emissiveIntensity = 0.9 + Math.random()*0.6;   // 0.9–1.5
   }
-  const raw = a.p===b.p ? 0 : (prog-a.p)/(b.p-a.p);
-  const t   = raw < .5 ? 2*raw*raw : -1+(4-2*raw)*raw;
-  camera.position.lerpVectors(a.pos, b.pos, t);
-  camera.lookAt(new THREE.Vector3().lerpVectors(a.tar, b.tar, t));
 }
 
-/* ─────────────────────────────────────────
-   PANELS
-───────────────────────────────────────── */
-const PANELS = [
-  { id:'panel-1', show:.10, hide:.27 },
-  { id:'panel-2', show:.28, hide:.44 },
-  { id:'panel-3', show:.45, hide:.62 },
-  { id:'panel-4', show:.63, hide:.79 },
-  { id:'panel-5', show:.82, hide:1.01},
+function chk(){
+  if(loaded>=2) setTimeout(()=>{
+    document.getElementById('loading').classList.add('done');
+    document.getElementById('scroll-hint').classList.add('show');
+    startAudio();
+  },400);
+}
+
+/* ── AUDIO — auto-play on load, no intro gate ── */
+const aud=document.getElementById('aud');
+let audPlaying=false;
+function startAudio(){
+  aud.volume=0.3;
+  aud.play().then(()=>{ audPlaying=true; updateSndBtn(); }).catch(()=>{});
+}
+const sndBtn=document.getElementById('snd');
+function updateSndBtn(){ sndBtn.textContent=audPlaying?'♪ Sound On':'♫ Muted'; sndBtn.classList.toggle('playing',audPlaying); }
+sndBtn.addEventListener('click',()=>{
+  if(audPlaying){ aud.pause(); audPlaying=false; }
+  else { aud.play().catch(()=>{}); audPlaying=true; }
+  updateSndBtn();
+});
+
+/* ── SMOOTH SCROLL — lerp ── */
+let rawS=0, smoothS=0;
+const LERP = MOB ? 0.10 : 0.07;
+
+window.addEventListener('scroll',()=>{
+  const max=document.body.scrollHeight-innerHeight;
+  rawS=max>0?scrollY/max:0;
+  document.getElementById('progress-bar').style.width=(rawS*100)+'%';
+  updatePanels(rawS);
+  if(rawS>0.015) document.getElementById('scroll-hint').classList.remove('show');
+},{ passive:true });
+
+/* ── CAMERA KEYFRAMES ── */
+const mZ=MOB?1.4:0;
+const KF=[
+  {p:0.00, pos:new THREE.Vector3(0,    1.6, 5.5+mZ), tar:new THREE.Vector3(0,.4,0)},
+  {p:0.12, pos:new THREE.Vector3(0,    1.0, 4.0+mZ), tar:new THREE.Vector3(0,.3,0)},
+  {p:0.25, pos:new THREE.Vector3(2.5,  1.2, 3.4+mZ), tar:new THREE.Vector3(0,.5,0)},
+  {p:0.38, pos:new THREE.Vector3(4.6,  0.8, 0.4),    tar:new THREE.Vector3(0,.5,0)},
+  {p:0.52, pos:new THREE.Vector3(3.0,  2.0,-3.8),    tar:new THREE.Vector3(0,.4,0)},
+  {p:0.65, pos:new THREE.Vector3(-3.8, 0.9,-1.5),    tar:new THREE.Vector3(0,.5,0)},
+  {p:0.77, pos:new THREE.Vector3(0,    5.0, 1.5),    tar:new THREE.Vector3(0,0,0) },
+  {p:0.88, pos:new THREE.Vector3(-2.8, 1.0, 3.4+mZ), tar:new THREE.Vector3(0,.4,0)},
+  {p:1.00, pos:new THREE.Vector3(0,    1.4, 5.2+mZ), tar:new THREE.Vector3(0,.5,0)},
 ];
-function updatePanels(p) {
-  PANELS.forEach(({id,show,hide}) =>
-    document.getElementById(id)?.classList.toggle('visible', p>=show && p<=hide)
-  );
-  document.getElementById('final-cta')?.classList.toggle('visible', p>.87);
+
+function camTick(prog){
+  let a=KF[0],b=KF[1];
+  for(let i=0;i<KF.length-1;i++) if(prog>=KF[i].p&&prog<=KF[i+1].p){a=KF[i];b=KF[i+1];break;}
+  const raw=a.p===b.p?0:(prog-a.p)/(b.p-a.p);
+  const t=raw<.5?2*raw*raw:-1+(4-2*raw)*raw;
+  camera.position.lerpVectors(a.pos,b.pos,t);
+  camera.lookAt(new THREE.Vector3().lerpVectors(a.tar,b.tar,t));
 }
 
-/* ─────────────────────────────────────────
-   ENTER
-───────────────────────────────────────── */
-let started = false;
-document.getElementById('enter-btn').addEventListener('click', () => {
-  document.getElementById('intro').classList.add('hidden');
-  document.getElementById('nav').classList.add('visible');
-  document.getElementById('scroll-hint').classList.add('visible');
-  started = true;
-  tryAudio();
-});
-
-/* ─────────────────────────────────────────
-   AUDIO
-───────────────────────────────────────── */
-const audio = document.getElementById('bg-audio');
-let playing = false;
-const sBtn = document.getElementById('sound-btn');
-function tryAudio() {
-  audio.volume = 0.35;
-  audio.play().then(() => { playing=true; sBtn.textContent='♪ Sound On'; sBtn.classList.add('playing'); }).catch(()=>{});
+/* ── PANELS ── */
+const PANELS=[
+  {id:'p1',show:.10,hide:.27},{id:'p2',show:.28,hide:.44},
+  {id:'p3',show:.45,hide:.62},{id:'p4',show:.63,hide:.79},
+  {id:'p5',show:.82,hide:1.01},
+];
+function updatePanels(p){
+  PANELS.forEach(({id,show,hide})=>document.getElementById(id)?.classList.toggle('visible',p>=show&&p<=hide));
+  document.getElementById('final-cta')?.classList.toggle('visible',p>.87);
 }
-sBtn.addEventListener('click', () => {
-  if (playing) { audio.pause(); playing=false; sBtn.textContent='♫ Muted'; sBtn.classList.remove('playing'); }
-  else tryAudio();
+
+/* ── RESIZE ── */
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
 });
 
-/* ─────────────────────────────────────────
-   RESIZE
-───────────────────────────────────────── */
-window.addEventListener('resize', () => {
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+/* ── ANIMATE ── */
+const clock=new THREE.Clock();
+// Bike continuous rotation — unidirectional, constant speed
+let bikeRotY=0;
+const BIKE_RPM = 0.55; // radians per second — feels fast and purposeful
 
-/* ─────────────────────────────────────────
-   ANIMATE
-───────────────────────────────────────── */
-const clock = new THREE.Clock();
+// Sway only a subset of lilies each frame for performance
+let lilyPtr=0;
+const LILY_BATCH=MOB?80:200; // process this many per frame
 
-function animate() {
+function animate(){
   requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  const dt = clock.getDelta ? 1/60 : 1/60;
+  const t=clock.getElapsedTime();
 
-  // Smooth scroll interpolation — ease factor
-  const ease = isMobile ? 0.12 : 0.09;
-  smoothScroll += (rawScroll - smoothScroll) * ease;
+  /* Smooth scroll lerp */
+  smoothS += (rawS-smoothS)*LERP;
 
-  // Particles
-  const pa = pGeo.attributes.position;
-  for (let i = 0; i < pCount; i++) {
-    pa.array[i*3]   += pVel[i*3];
-    pa.array[i*3+1] += pVel[i*3+1];
-    pa.array[i*3+2] += pVel[i*3+2];
-    if (pa.array[i*3+1] > 10) {
-      pa.array[i*3+1] = -0.5;
-      pa.array[i*3]   = (Math.random()-.5)*70;
-      pa.array[i*3+2] = (Math.random()-.5)*70;
-    }
+  /* Particles */
+  const pa=pGeo.attributes.position;
+  for(let i=0;i<PC;i++){
+    pa.array[i*3]  +=pv[i*3];
+    pa.array[i*3+1]+=pv[i*3+1];
+    pa.array[i*3+2]+=pv[i*3+2];
+    if(pa.array[i*3+1]>12){ pa.array[i*3+1]=-0.5; pa.array[i*3]=(Math.random()-.5)*80; pa.array[i*3+2]=(Math.random()-.5)*80; }
   }
-  pa.needsUpdate = true;
+  pa.needsUpdate=true;
 
-  // Lily sway (skip every other frame on mobile)
-  if (!isMobile || Math.round(t*60)%2===0) {
-    lilyInstances.forEach(li => {
-      li.mesh.rotation.z = Math.sin(t*.5 + li.phase)*.045;
-      li.mesh.rotation.x = Math.sin(t*.32 + li.phase*.7)*.025;
-    });
+  /* Lily sway — batched */
+  const end=Math.min(lilyPtr+LILY_BATCH, lilies.length);
+  for(let i=lilyPtr;i<end;i++){
+    const li=lilies[i];
+    li.mesh.rotation.z=Math.sin(t*.45+li.phase)*.038;
+    li.mesh.rotation.x=Math.sin(t*.28+li.phase*.8)*.022;
   }
+  lilyPtr=end>=lilies.length?0:end;
 
-  // Bike idle animation — faster rotation speed (was .35, now 1.2)
-  if (bikeModel) {
-    if (!started || smoothScroll < 0.02) {
-      bikeModel.rotation.y = Math.sin(t * 1.2) * 0.35;   // faster oscillation, bigger arc
-    } else {
-      bikeModel.rotation.y *= .94;  // faster settle when scrolling
-    }
+  /* Bike CONTINUOUS unidirectional rotation */
+  if(bike){
+    bikeRotY += BIKE_RPM/60; // per frame at ~60fps ≈ BIKE_RPM rad/s
+    bike.rotation.y = bikeRotY;
   }
 
-  // Pulsing ground glow
-  groundLight.intensity = 4.0 + Math.sin(t*2.1)*.9;
-  groundLight.color.setHSL(.97 + Math.sin(t*.4)*.02, 1, .5);
+  /* Pulsing ground glow */
+  groundGlow.intensity=5+Math.sin(t*2)*.8;
 
-  // Camera
-  if (started) {
-    camFromScroll(smoothScroll);
-  } else {
-    camera.position.set(Math.sin(t*.1)*.35, 1.6+Math.sin(t*.18)*.1, isMobile?6.5:5.5);
-    camera.lookAt(0, .5, 0);
-  }
+  /* Camera */
+  camTick(smoothS);
 
-  renderer.render(scene, camera);
+  renderer.render(scene,camera);
 }
 animate();
 </script>

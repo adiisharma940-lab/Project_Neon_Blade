@@ -22,8 +22,6 @@ canvas{position:fixed;inset:0;display:block;}
 /* PROGRESS */
 #pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#00ff88,#c9a84c);width:0%;z-index:30;transition:width .1s linear;}
 
-
-
 /* TEXT PANELS */
 .tp{
   position:fixed;opacity:0;pointer-events:none;z-index:20;
@@ -69,7 +67,7 @@ canvas{position:fixed;inset:0;display:block;}
 /* vignette */
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(3,3,9,.68) 100%);}
 /* transform flash */
-#flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.18) 0%,rgba(0,80,40,.06) 50%,transparent 75%);transition:opacity .08s ease;}
+#flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.22) 0%,rgba(0,80,40,.08) 50%,transparent 75%);transition:opacity .06s ease;}
 </style>
 </head>
 <body>
@@ -78,7 +76,6 @@ canvas{position:fixed;inset:0;display:block;}
 <div id="pb"></div>
 <div id="vig"></div>
 <div id="flash"></div>
-
 
 <!-- Text panels -->
 <div class="tp C" id="p0">
@@ -89,7 +86,7 @@ canvas{position:fixed;inset:0;display:block;}
 <div class="tp L" id="p1">
   <span class="ey">The Machine</span>
   <div class="hd">BUILT FOR<br/>ONE<br/><em>PURPOSE</em></div>
-  <div class="bd">Kawasaki didn't build the H2R to win races — they built it to redefine what a motorcycle could physically be. Track-only. Supercharged. A 998cc inline-four producing 310 horsepower in ram-air conditions, wrapped in carbon fibre winglets and fed by the first centrifugal supercharger ever fitted to a series-production bike. This is not transport. This is controlled detonation.</div>
+  <div class="bd">Kawasaki didn't build the H2R to win races — they built it to redefine what a motorcycle could physically be. Track-only. Supercharged. A 998cc inline-four producing 310 horsepower in ram-air conditions, wrapped in carbon fibre winglets and fed by the first centrifugal supercharger ever fitted to a series-production bike.</div>
   <div class="specs">
     <div><div class="sv">310</div><div class="sl">Horsepower</div></div>
     <div><div class="sv">326</div><div class="sl">km/h Top Speed</div></div>
@@ -100,19 +97,19 @@ canvas{position:fixed;inset:0;display:block;}
 <div class="tp R" id="p2">
   <span class="ey">Supercharger</span>
   <div class="hd">FORCED<br/><em>INDUCTION</em></div>
-  <div class="bd">Kawasaki's engineers designed the supercharger entirely in-house — a centrifugal compressor with nine impeller blades machined to aerospace tolerances. It spins at up to 130,000 RPM, force-feeding the engine a dense wall of compressed air that naturally-aspirated machines can only dream of. The result is a torque curve with no dip, no lag, no mercy — just linear, relentless power from idle to the 14,000 RPM redline.</div>
+  <div class="bd">Kawasaki's engineers designed the supercharger entirely in-house — a centrifugal compressor with nine impeller blades machined to aerospace tolerances. It spins at up to 130,000 RPM, force-feeding the engine a dense wall of compressed air. The result: a torque curve with no dip, no lag, no mercy.</div>
   <div class="st">130,000<small>Supercharger RPM</small></div>
 </div>
 <div class="tp L" id="p3">
   <span class="ey">Aerodynamics</span>
   <div class="hd">LIFT IS<br/><em>THE ENEMY</em></div>
-  <div class="bd">At 300 km/h, air is no longer invisible — it becomes a physical force that can lift the front wheel and pitch a rider into oblivion. Kawasaki's wind-tunnel engineers spent thousands of hours shaping the H2R's carbon fibre body to fight that force at every corner. The dual upper winglets and lower splitter generate enough downforce to keep both tyres planted through corners that would send any other machine airborne. Form follows physics.</div>
+  <div class="bd">At 300 km/h, air becomes a physical force that can pitch a rider into oblivion. Kawasaki's wind-tunnel engineers shaped the H2R's carbon fibre body to fight that force at every corner. Dual winglets and a lower splitter generate enough downforce to keep both tyres planted.</div>
   <div class="st">Wind Tunnel<small>Developed Bodywork</small></div>
 </div>
 <div class="tp R" id="p4">
   <span class="ey">The Legend</span>
   <div class="hd"><em>H2R</em><br/>FOREVER</div>
-  <div class="bd">In September 2016, Guy Martin strapped himself to a Kawasaki Ninja H2R on the Straightliners top-speed course and rode it to 331.15 km/h — a British land speed record. Not a prototype. Not a factory special. A production machine you can order from a dealership, if you have the nerve and the track permit. No other road-derived motorcycle has ever gone faster. This is where engineering ends and mythology begins.</div>
+  <div class="bd">In September 2016, Guy Martin rode a Kawasaki Ninja H2R to 331.15 km/h — a British land speed record. Not a prototype. A production machine. No other road-derived motorcycle has ever gone faster. This is where engineering ends and mythology begins.</div>
   <div class="st">331<small>km/h — Land Speed Record</small></div>
 </div>
 <div id="cta"><div class="cl">The Ultimate Track Machine</div><div class="cb">RIDE<br/>BEYOND</div></div>
@@ -231,44 +228,59 @@ const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
 scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .04, color: 0x44ff88, transparent: true, opacity: .4, blending: THREE.AdditiveBlending, depthWrite: false })));
 
-/* ── EAGLE GROUP — placeholder; GLB loaded after draco is ready ── */
+/* ── EAGLE GROUP ── */
 const eagle = new THREE.Group();
 scene.add(eagle);
 
-/* ── FLIGHT PATH ── */
+/* ── FLIGHT PATH
+   Eagle sweeps in from high/far and lands EXACTLY on the floor (y = -1.05 floor + ~1 eagle half-height ≈ y = 0).
+   Final point is (0, 0, 0) — ground level. ── */
 const FLIGHT_PTS = [
-  new THREE.Vector3(  0,  160,  400),   // high distant start
-  new THREE.Vector3(140,  130,  320),   // wide right bank
-  new THREE.Vector3(200,   95,  210),   // soaring arc
-  new THREE.Vector3(160,   70,  120),   // beginning descent
-  new THREE.Vector3( 60,   50,   60),   // mid approach
-  new THREE.Vector3(-100,  38,   10),   // sweeping left
-  new THREE.Vector3(-120,  26,  -20),   // low left arc
-  new THREE.Vector3( -60,  18,   40),   // rising slightly
-  new THREE.Vector3(  20,  12,   25),   // converging on target
-  new THREE.Vector3(   8,   6,   14),   // final glide
-  new THREE.Vector3(   2,   2,    5),   // flare
-  new THREE.Vector3(   0,   0.4,  1.6), // touchdown
+  new THREE.Vector3(   0, 160,  400),   // high distant start
+  new THREE.Vector3( 140, 130,  320),   // wide right bank
+  new THREE.Vector3( 200,  95,  210),   // soaring arc
+  new THREE.Vector3( 160,  70,  120),   // descent begins
+  new THREE.Vector3(  60,  45,   60),   // mid approach
+  new THREE.Vector3(-100,  28,   10),   // sweeping left
+  new THREE.Vector3(-120,  16,  -20),   // low left arc
+  new THREE.Vector3( -60,   8,   40),   // skimming low
+  new THREE.Vector3(  20,   4,   20),   // final glide — almost ground
+  new THREE.Vector3(   5,   1.5,  8),   // flare
+  new THREE.Vector3(   0,   0,    0),   // TOUCHDOWN — on the floor
 ];
 const flightPath = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', .5);
 
-/* ── CAMERA: offset-from-eagle — no separate spline ──
-   Camera sits at a fixed local offset behind/above the eagle, computed
-   each frame from the eagle's world position and travel direction.
-   This guarantees it stays close and cinematic throughout the whole path. */
-const CAM_OFFSET_BACK  = 18;   // units behind the eagle
-const CAM_OFFSET_UP    =  6;   // units above the eagle
-const _camDesired = new THREE.Vector3();
-const _eagleDir   = new THREE.Vector3();
+/* ── CAMERA CONSTANTS ── */
+// Phase 1: Far follow — wide establishing shot
+// Phase 2: Tight closeup — locks onto eagle close during final descent
+// Phase 3: Transform — pulls back to reveal bike on ground
+const CLOSEUP_START = 0.30;  // when camera begins tightening on eagle
+const LAND_START    = 0.44;  // eagle starts braking / wings lock
+const LAND_END      = 0.50;  // eagle fully vanishes — flash fires
+const XFORM_START   = 0.50;
+const XFORM_END     = 0.58;
+const BIKE_SHOW     = 0.50;
 
-/* ── REUSABLE VECTORS (allocated once, never reallocated in loop) ── */
-const _ep     = new THREE.Vector3();
-const _eNext  = new THREE.Vector3();
-const _dir    = new THREE.Vector3();
-const _cp     = new THREE.Vector3();
-const _camTar = new THREE.Vector3();
-const _dummy  = new THREE.Object3D();  // FIX: reusable dummy for orientation
-scene.add(_dummy);                     // must be in scene for quaternion math
+// Closeup camera: tight behind/slightly-above eagle
+const CAM_FAR_BACK  = 18;   // distance behind eagle — wide phase
+const CAM_FAR_UP    =  6;
+const CAM_CLOSE_BACK = 5;   // tight closeup distance
+const CAM_CLOSE_UP   = 1.8; // nearly level with eagle
+
+// Transform flash state
+let flashFired   = false;
+let flashOpacity = 0;
+
+/* Reusable vectors */
+const _ep        = new THREE.Vector3();
+const _eNext     = new THREE.Vector3();
+const _dir       = new THREE.Vector3();
+const _cp        = new THREE.Vector3();
+const _camTar    = new THREE.Vector3();
+const _camDesired= new THREE.Vector3();
+const _eagleDir  = new THREE.Vector3();
+const _dummy     = new THREE.Object3D();
+scene.add(_dummy);
 
 /* ── LOADERS ── */
 const draco = new DRACOLoader();
@@ -281,8 +293,6 @@ const setP = (p, t) => { lbEl.style.width = p + '%'; ltEl.textContent = t; };
 let bike = null, bikeRotY = 0;
 const ROT_SPEED = 0.5;
 
-/* FIX: Dismiss loader after timeout regardless of GLB status */
-const LOAD_TIMEOUT = 15000;
 let loadDone = false;
 function dismissLoader() {
   if (loadDone) return;
@@ -291,20 +301,15 @@ function dismissLoader() {
   showPanel('p0');
   startAudio();
 }
-setTimeout(dismissLoader, LOAD_TIMEOUT);
+setTimeout(dismissLoader, 15000);
 
-/* ── EAGLE GLB LOADER ── */
-// wingL / wingR stored directly — no reparenting, no pivot wrapping.
-// We find the two child Objects (Mesh or Group) with the most extreme
-// local X centres: most-positive = right wing, most-negative = left wing.
+/* ── EAGLE GLB ── */
 let eagleWingL = null, eagleWingR = null;
 
 function findWings(root) {
-  // Collect direct children and their world-space X centres
   const entries = [];
   root.traverse(c => {
     if (c === root) return;
-    // Only look at top-level children of the model root (depth 1-2)
     let depth = 0, p = c;
     while (p && p !== root) { depth++; p = p.parent; }
     if (depth > 2) return;
@@ -314,10 +319,9 @@ function findWings(root) {
     entries.push({ obj: c, cx });
   });
   if (entries.length < 2) return;
-  // Sort by cx: most negative = left, most positive = right
   entries.sort((a, b) => a.cx - b.cx);
-  eagleWingL = entries[0].obj;                    // most-negative X = left
-  eagleWingR = entries[entries.length - 1].obj;   // most-positive X = right
+  eagleWingL = entries[0].obj;
+  eagleWingR = entries[entries.length - 1].obj;
 }
 
 const eagleLoader = new GLTFLoader();
@@ -350,7 +354,7 @@ eagleLoader.load(
     eagle.add(model);
   },
   undefined,
-  err => { console.warn('Eagle GLB failed, continuing without it:', err); }
+  err => { console.warn('Eagle GLB failed:', err); }
 );
 
 loader.load(
@@ -363,6 +367,7 @@ loader.load(
     const s    = 3.8 / Math.max(sz.x, sz.y, sz.z);
     bike.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(bike);
+    // Pin bottom of bike exactly to floor level
     bike.position.set(-cn.x * s, -box2.min.y - 1.05, -cn.z * s);
 
     bike.traverse(c => {
@@ -389,13 +394,16 @@ loader.load(
       });
     });
 
+    // Store bike's floor-level y offset so we never float it
+    bike._floorY = bike.position.y;
+
     bike.visible = false;
     scene.add(bike);
     setP(100, 'Ready');
-    dismissLoader(); // FIX: call shared dismiss instead of inline
+    dismissLoader();
   },
   p => { if (p.total) setP(p.loaded / p.total * 100, 'Loading H2R…'); },
-  e => { console.error('GLB load error:', e); setP(100, 'Ready'); dismissLoader(); } // FIX: error also dismisses
+  e => { console.error('GLB load error:', e); setP(100, 'Ready'); dismissLoader(); }
 );
 
 /* ── AUDIO ── */
@@ -443,17 +451,6 @@ window.addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
-/* ── CONSTANTS ── */
-const LAND_START   = 0.44;   // eagle begins braking / wings splay
-const LAND_END     = 0.50;   // eagle fully vanishes — transform flash fires
-const XFORM_START  = 0.50;   // bike begins materialising
-const XFORM_END    = 0.58;   // bike fully revealed
-const BIKE_SHOW    = 0.50;   // alias — same as XFORM_START
-
-// Transform flash state
-let flashFired   = false;    // one-shot — only fires once per session
-let flashOpacity = 0;        // driven each frame
-
 /* ── ANIMATE ── */
 const clock = new THREE.Clock();
 
@@ -479,13 +476,7 @@ function animate() {
   flightPath.getPoint(Math.min(rawT, 1), _ep);
   eagle.position.copy(_ep);
 
-  /* ── EAGLE ORIENTATION — FIX: use dummy Object3D + quaternion slerp ──
-     Original bug: eagle.rotateY(Math.PI) is ADDITIVE and accumulates
-     every frame, causing the eagle to spin uncontrollably.
-     Fix: position a dummy at eagle's location, call lookAt on the dummy
-     (which sets its quaternion correctly), then rotate the dummy by a
-     fixed PI offset (once, non-accumulating), then slerp eagle's
-     quaternion toward the dummy's. This gives smooth, stable orientation. */
+  /* ── EAGLE ORIENTATION ── */
   const lookAheadT = Math.min(rawT + 0.015, 1);
   flightPath.getPoint(lookAheadT, _eNext);
   _dir.subVectors(_eNext, _ep);
@@ -493,26 +484,20 @@ function animate() {
   if (_dir.length() > 0.001) {
     _dummy.position.copy(_ep);
     _dummy.lookAt(_eNext);
-    // Apply the fixed model-space flip ONCE on the dummy (non-accumulating)
     _dummy.rotateY(Math.PI);
-    // Slerp eagle's quaternion toward the dummy's for smooth orientation
     eagle.quaternion.slerp(_dummy.quaternion, 0.12);
   }
 
-  /* ── WING FLAP ──
-     eagleWingL / eagleWingR are direct object refs set after GLB loads.
-     Flap speed decreases as bird approaches landing.
-     We try rotation.z (wing up/down for a model facing +Z, wings along X).
-     Amplitude is modest — mechanical eagle wings don't flap like organic ones. */
-  const flapProgress = Math.min(rawT, 0.48) / 0.48;   // 0=fast, 1=landing
-  const flapFreq = 4.5 - flapProgress * 2.5;           // 4.5 → 2.0 Hz
-  const flapAmp  = 0.28 - flapProgress * 0.12;         // 0.28 → 0.16 rad
+  /* ── WING FLAP ── */
+  const flapProgress = Math.min(rawT, 0.44) / 0.44;
+  const flapFreq = 4.5 - flapProgress * 2.5;
+  const flapAmp  = 0.28 - flapProgress * 0.12;
 
   let wingAngle;
   if (rawT > LAND_START) {
-    // Wings splay out and lock for air-brake during landing
+    // Wings splay out as air brake during landing
     const lp = Math.min((rawT - LAND_START) / (LAND_END - LAND_START), 1);
-    wingAngle = lp * 0.3;  // spread out upward
+    wingAngle = lp * 0.45;
   } else {
     wingAngle = Math.sin(t * flapFreq) * flapAmp;
   }
@@ -521,52 +506,47 @@ function animate() {
 
   /* ── EAGLE SCALE + TRANSFORM ── */
   if (rawT >= LAND_END) {
-    // Eagle has landed — hide it
     eagle.scale.setScalar(0);
-
-    // Fire the one-shot transform flash exactly at LAND_END
     if (!flashFired) {
       flashFired = true;
       flashOpacity = 1.0;
-      // Burst of green light at landing point
-      greenL.intensity = 28;
-      exhL.intensity   = 18;
+      greenL.intensity = 32;
+      exhL.intensity   = 22;
     }
   } else if (rawT > LAND_START) {
-    // Eagle braking — shrink toward zero, wings locked out
     const lp = (rawT - LAND_START) / (LAND_END - LAND_START);
-    // Ease-in shrink: slow at first, fast at end
     const eased = lp * lp;
     eagle.scale.setScalar(Math.max(1 - eased, 0.005));
   } else {
     eagle.scale.setScalar(1);
   }
 
-  // Decay the flash each frame
+  // Decay flash
   if (flashOpacity > 0) {
     flashOpacity = Math.max(0, flashOpacity - dt * 3.5);
     document.getElementById('flash').style.opacity = flashOpacity;
   }
 
-  /* ── BIKE — materialise from landing point during XFORM window ── */
+  /* ── BIKE — materialise ON THE FLOOR at origin ── */
   if (bike) {
     if (rawT < XFORM_START) {
       bike.visible = false;
     } else {
       bike.visible = true;
       const xp = Math.min((rawT - XFORM_START) / (XFORM_END - XFORM_START), 1);
-      // Ease-out scale: snappy pop then settle
-      const xEased = 1 - Math.pow(1 - xp, 3);
+      const xEased = 1 - Math.pow(1 - xp, 3); // ease-out cubic
+
+      // Scale up from zero — but keep Y position pinned to floor the whole time
+      // Use the stored scale approach: only change scale, NOT position.y
+      // bike._floorY already has the correct floor-level y.
       bike.scale.setScalar(xEased);
+      // Position stays at ground level — no lerp from air, no levitation
+      bike.position.x = 0;
+      bike.position.y = bike._floorY !== undefined ? bike._floorY : 0;
+      bike.position.z = 0;
 
-      // During materialise: hold bike at eagle's landing spot, then settle to origin
-      // Landing spot is flightPath end (rawT=LAND_END)
-      const landPos = new THREE.Vector3(0, 0.4, 1.6); // matches last FLIGHT_PTS point
-      const finalPos = new THREE.Vector3(0, 0, 0);    // resting origin
-      bike.position.lerpVectors(landPos, finalPos, xEased);
-
-      // Spin fast on materialise, then slow to normal rotation
-      const spinBoost = (1 - xp) * 8;
+      // Spin fast on materialise, slow to cruise
+      const spinBoost = (1 - xp) * 10;
       bikeRotY += (ROT_SPEED + spinBoost) * dt;
       bike.rotation.y = bikeRotY;
     }
@@ -574,34 +554,47 @@ function animate() {
 
   /* ── CAMERA ── */
   if (rawT < BIKE_SHOW) {
-    /* Offset-from-eagle chase cam — always close, always cinematic.
-       Compute eagle's travel direction, then place camera behind+above it. */
+
+    /* Blend from far-follow to tight closeup as eagle approaches ground */
+    // closeupBlend: 0 = wide establishing, 1 = tight eagle closeup
+    const closeupBlend = rawT < CLOSEUP_START
+      ? 0
+      : Math.min((rawT - CLOSEUP_START) / (LAND_START - CLOSEUP_START), 1);
+    // Ease in
+    const cb = closeupBlend * closeupBlend * (3 - 2 * closeupBlend);
+
+    const backDist = CAM_FAR_BACK  + (CAM_CLOSE_BACK  - CAM_FAR_BACK)  * cb;
+    const upDist   = CAM_FAR_UP    + (CAM_CLOSE_UP    - CAM_FAR_UP)    * cb;
+
+    // Camera looks slightly ahead of eagle for natural framing
     const lookAheadCam = Math.min(rawT + 0.02, 1);
     flightPath.getPoint(lookAheadCam, _camTar);
     _eagleDir.subVectors(_camTar, _ep).normalize();
 
-    // Desired camera position: step back along travel dir, then up
     _camDesired.copy(_ep)
-      .addScaledVector(_eagleDir, -CAM_OFFSET_BACK)
-      .add(new THREE.Vector3(0, CAM_OFFSET_UP, 0));
+      .addScaledVector(_eagleDir, -backDist)
+      .add(new THREE.Vector3(0, upDist, 0));
 
-    // Lerp smoothly — tighter factor = stickier follow
-    camera.position.lerp(_camDesired, 0.08);
+    // Tighter lerp during closeup for stickier follow
+    const lerpFactor = 0.06 + cb * 0.06;
+    camera.position.lerp(_camDesired, lerpFactor);
 
-    // Look at the eagle itself (not ahead), so eagle stays centered
+    // Look at eagle
     camera.lookAt(_ep);
+
   } else if (rawT < XFORM_END) {
-    /* Transform reveal — camera holds close to landing point, pulls back */
+    /* Transform reveal — pull back from ground-level landing point to show bike */
     const xp = (rawT - XFORM_START) / (XFORM_END - XFORM_START);
-    const xEased = xp * xp * (3 - 2 * xp); // smoothstep
-    // Pull from tight (close to landing) to showroom opening position
-    const closePos = new THREE.Vector3(0, 3, 8);
-    const openPos  = new THREE.Vector3(0, 1.5, 6);
+    const xEased = xp * xp * (3 - 2 * xp);
+    // Start very close to landing/floor, pull back to showroom view
+    const closePos = new THREE.Vector3(0, 1.2, 3.5);   // tight, low — floor level
+    const openPos  = new THREE.Vector3(0, 1.5, 6.0);   // showroom pull-back
     _camDesired.lerpVectors(closePos, openPos, xEased);
     camera.position.lerp(_camDesired, 0.1);
-    camera.lookAt(0, 0.5, 0);
+    camera.lookAt(0, 0.3, 0);
+
   } else {
-    /* Showroom orbit around bike */
+    /* Showroom orbit */
     const bikeProg = (rawT - XFORM_END) / (1 - XFORM_END);
     const mZ = MOB ? 1.5 : 0;
     const BK = [
@@ -616,7 +609,7 @@ function animate() {
       if (bikeProg >= BK[i].p && bikeProg <= BK[i + 1].p) { a = BK[i]; b = BK[i + 1]; break; }
     }
     const raw2 = a.p === b.p ? 0 : (bikeProg - a.p) / (b.p - a.p);
-    const tt = raw2 * raw2 * (3 - 2 * raw2); // smoothstep
+    const tt = raw2 * raw2 * (3 - 2 * raw2);
     _cp.lerpVectors(a.pos, b.pos, tt);
     _camTar.lerpVectors(a.tar, b.tar, tt);
     camera.position.lerp(_cp, .08);
@@ -643,13 +636,12 @@ function animate() {
   edgeRing.material.opacity = .07 + Math.sin(t * 1.4) * .04;
 
   /* ── PULSE LIGHTS ── */
-  // After flash, lights decay back to normal pulse over ~1s
   if (!flashFired || greenL.intensity <= 3) {
     greenL.intensity = 2.2 + Math.sin(t * 1.1) * .5;
     exhL.intensity   = 1.9 + Math.sin(t * 2.3) * .55;
   } else {
-    greenL.intensity = Math.max(greenL.intensity - dt * 40, 2.2 + Math.sin(t * 1.1) * .5);
-    exhL.intensity   = Math.max(exhL.intensity   - dt * 25, 1.9 + Math.sin(t * 2.3) * .55);
+    greenL.intensity = Math.max(greenL.intensity - dt * 45, 2.2 + Math.sin(t * 1.1) * .5);
+    exhL.intensity   = Math.max(exhL.intensity   - dt * 30, 1.9 + Math.sin(t * 2.3) * .55);
   }
 
   renderer.render(scene, camera);

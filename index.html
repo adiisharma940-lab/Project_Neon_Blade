@@ -3,804 +3,971 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<title>Kawasaki Ninja H2R — Born From Chaos</title>
+<title>McLaren W1 — Born to Hunt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Rajdhani:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;700&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{height:100%;}
-body{background:#030309;color:#7a8a9a;font-family:'Rajdhani',sans-serif;overflow:hidden;height:100%;touch-action:none;}
+html,body{height:100%;overflow:hidden;background:#050508;}
+body{font-family:'Rajdhani',sans-serif;color:#8a9ab0;touch-action:none;}
 canvas{position:fixed;inset:0;display:block;}
 
-/* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:25;padding:clamp(.6rem,2vw,1.2rem) clamp(.8rem,4vw,2.5rem);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(3,3,9,.85),transparent);}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,3.5vw,1.3rem);letter-spacing:.25em;}
-.logo span{color:#00ff88;}
-#snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.2);color:#8fa0b0;font-family:'Cinzel',serif;font-size:clamp(.5rem,1.8vw,.6rem);letter-spacing:.2em;padding:.38rem .9rem;text-transform:uppercase;transition:all .3s;}
-#snd.on{border-color:#00ff88;color:#00ff88;}
+/* ── NAV ── */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:25;
+  padding:clamp(.6rem,2vw,1.1rem) clamp(.8rem,4vw,2.2rem);
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(to bottom,rgba(5,5,8,.9),transparent);
+}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.95rem,3.5vw,1.25rem);letter-spacing:.28em;color:#e8eef4;}
+.logo span{color:#ff4400;}
+#snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.18);color:#7a8fa8;
+  font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.2em;
+  padding:.35rem .85rem;text-transform:uppercase;transition:all .3s;}
+#snd.on{border-color:#ff4400;color:#ff4400;}
 
-/* PROGRESS */
-#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#00ff88,#c9a84c);width:0%;z-index:30;transition:width .1s linear;}
+/* ── PROGRESS ── */
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#ff4400,#ff8800,#ffcc00);width:0%;z-index:30;transition:width .08s linear;}
 
-/* ── TEXT PANELS — slide in from left/right with fade ── */
+/* ── SCROLL HINT ── */
+#hint{
+  position:fixed;bottom:5vh;left:50%;transform:translateX(-50%);
+  z-index:20;opacity:1;transition:opacity .8s;pointer-events:none;text-align:center;
+}
+#hint.gone{opacity:0;}
+.hint-txt{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.4vw,.54rem);letter-spacing:.45em;color:#556070;text-transform:uppercase;margin-bottom:.5rem;}
+.hint-arrow{width:1px;height:28px;background:linear-gradient(to bottom,#ff4400,transparent);margin:0 auto;animation:pulse-arrow 1.6s ease-in-out infinite;}
+@keyframes pulse-arrow{0%,100%{opacity:.3;transform:scaleY(.6);}50%{opacity:1;transform:scaleY(1);}}
+
+/* ── TEXT PANELS ── */
 .tp{
   position:fixed;opacity:0;pointer-events:none;z-index:20;
-  /* transition drives both opacity AND translateX */
-  transition:opacity .65s cubic-bezier(.22,.68,0,1.2), transform .65s cubic-bezier(.22,.68,0,1.2);
+  transition:opacity .7s cubic-bezier(.22,.68,0,1.15), transform .7s cubic-bezier(.22,.68,0,1.15);
 }
 
 /* DESKTOP */
 @media(min-width:641px){
   .tp{
-    width:min(340px,32vw);
-    padding:clamp(1rem,2vw,1.6rem);
+    width:min(400px,36vw);
+    padding:clamp(1rem,1.8vw,1.5rem);
     top:50%;
-    max-height:88vh;
+    max-height:86vh;
     overflow-y:auto;
     scrollbar-width:none;
   }
   .tp::-webkit-scrollbar{display:none;}
-  /* Left panels: start offscreen left, slide right */
-  .tp.L{
-    left:4vw;
-    transform:translateY(-50%) translateX(-60px);
-  }
-  .tp.L.vis{
-    opacity:1;
-    transform:translateY(-50%) translateX(0);
-  }
-  /* Right panels: start offscreen right, slide left */
-  .tp.R{
-    right:4vw;
-    text-align:right;
-    transform:translateY(-50%) translateX(60px);
-  }
-  .tp.R.vis{
-    opacity:1;
-    transform:translateY(-50%) translateX(0);
-  }
-  /* Centre panel: fade + slide up slightly */
+  .tp.L{left:3.5vw;transform:translateY(-50%) translateX(-70px);}
+  .tp.L.vis{opacity:1;transform:translateY(-50%) translateX(0);}
+  .tp.R{right:3.5vw;text-align:right;transform:translateY(-50%) translateX(70px);}
+  .tp.R.vis{opacity:1;transform:translateY(-50%) translateX(0);}
   .tp.C{
-    left:50%;
-    width:min(480px,82vw)!important;
-    top:14%;
-    transform:translateX(-50%) translateY(24px);
-    text-align:center;
+    left:50%;width:min(520px,88vw)!important;
+    top:13%;text-align:center;
+    transform:translateX(-50%) translateY(28px);
   }
-  .tp.C.vis{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
+  .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
 }
 
-/* MOBILE — panels anchor to bottom, slide up from bottom edge */
+/* MOBILE */
 @media(max-width:640px){
   .tp{
-    left:0;right:0;bottom:0;
-    width:100%!important;
-    padding:.85rem 1rem 1.6rem;
-    text-align:center;
-    background:linear-gradient(to top,rgba(3,3,9,.97) 52%,transparent);
-    transform:translateY(18px);
-    max-height:60vh;
-    overflow-y:auto;
-    scrollbar-width:none;
-    /* on mobile: no left/right slide — just vertical + fade */
+    left:0;right:0;bottom:0;width:100%!important;
+    padding:.8rem 1rem 1.5rem;text-align:center;
+    background:linear-gradient(to top,rgba(5,5,8,.98) 50%,transparent);
+    transform:translateY(16px);
+    max-height:58vh;overflow-y:auto;scrollbar-width:none;
   }
   .tp::-webkit-scrollbar{display:none;}
-  .tp.vis{
-    opacity:1;
-    transform:translateY(0);
-  }
+  .tp.vis{opacity:1;transform:translateY(0);}
 }
 
 /* TYPOGRAPHY */
 .ey{
-  font-family:'Cinzel',serif;
-  font-size:clamp(.5rem,1.6vw,.58rem);
-  letter-spacing:.4em;
-  color:#00ff88;
-  text-transform:uppercase;
-  margin-bottom:.45rem;
-  display:block;
+  font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);
+  letter-spacing:.42em;color:#ff4400;text-transform:uppercase;
+  margin-bottom:.4rem;display:block;
 }
 .hd{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(1.8rem,4.8vw,3.5rem);
-  line-height:.93;
-  color:#f0f4f8;
-  margin-bottom:.7rem;
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);
+  line-height:.91;color:#eef2f6;margin-bottom:.6rem;
 }
-.hd em{color:#00ff88;font-style:normal;}
+.hd em{color:#ff4400;font-style:normal;}
+.hd .gold{color:#ffcc00;font-style:normal;}
 .bd{
-  font-size:clamp(.78rem,1.3vw,.9rem);
-  line-height:1.72;
-  color:#7a8fa8;
-  font-weight:300;
-  letter-spacing:.03em;
+  font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;
+  color:#7a8fa8;font-weight:300;letter-spacing:.025em;
 }
-.bd + .bd{ margin-top:.6rem; }
-.bd strong{ color:#c0d0e0; font-weight:500; }
-.bd em{ color:#00ff88; font-style:normal; }
+.bd+.bd{margin-top:.55rem;}
+.bd strong{color:#b8ccd8;font-weight:500;}
+.bd em{color:#ff6622;font-style:normal;}
+
+/* FACT GRID */
 .fact-row{
-  display:flex;
-  gap:.5rem .8rem;
-  flex-wrap:wrap;
-  margin-top:.7rem;
-  padding-top:.6rem;
-  border-top:1px solid rgba(0,255,136,.12);
+  display:flex;flex-wrap:wrap;gap:.4rem .7rem;
+  margin-top:.7rem;padding-top:.6rem;
+  border-top:1px solid rgba(255,68,0,.15);
 }
-.fact{
-  flex:1 1 calc(50% - .4rem);
-  min-width:100px;
+.fact{flex:1 1 calc(50% - .35rem);min-width:90px;}
+.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#ff8800;line-height:1.05;}
+.fv small{font-size:.5em;color:#7a8fa8;}
+.fl{font-family:'Cinzel',serif;font-size:clamp(.33rem,.88vw,.43rem);letter-spacing:.2em;color:#7a8fa8;text-transform:uppercase;margin-top:.05rem;}
+.stat-stamp{
+  margin-top:.8rem;font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(1.3rem,2.8vw,2rem);color:#ffcc00;letter-spacing:.07em;
 }
-.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#c9a84c;line-height:1.05;}
-.fl{font-family:'Cinzel',serif;font-size:clamp(.34rem,.9vw,.44rem);letter-spacing:.2em;color:#8fa0b0;text-transform:uppercase;margin-top:.06rem;}
-.st{
-  margin-top:.85rem;
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(1.3rem,2.8vw,2rem);
-  color:#c9a84c;
-  letter-spacing:.08em;
-}
-.st small{font-family:'Rajdhani',sans-serif;font-size:.5em;color:#8fa0b0;letter-spacing:.14em;display:block;}
-.tag-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:.3rem;
-  margin-top:.7rem;
-}
+.stat-stamp small{font-family:'Rajdhani',sans-serif;font-size:.52em;color:#7a8fa8;letter-spacing:.14em;display:block;}
+
+/* TAG CHIPS */
+.tag-row{display:flex;flex-wrap:wrap;gap:.28rem;margin-top:.65rem;}
 .tag{
-  font-family:'Cinzel',serif;
-  font-size:clamp(.32rem,.85vw,.42rem);
-  letter-spacing:.18em;
-  color:#00ff88;
-  text-transform:uppercase;
-  border:1px solid rgba(0,255,136,.3);
-  padding:.15rem .45rem;
+  font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;
+  color:#ff4400;text-transform:uppercase;
+  border:1px solid rgba(255,68,0,.28);padding:.12rem .4rem;
 }
 
-/* SPECS GRID (legacy, kept for compat) */
-.specs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:.35rem .7rem;
-  margin-top:.75rem;
+/* Right panel alignment */
+@media(min-width:641px){
+  .tp.R .fact-row{justify-content:flex-end;}
+  .tp.R .tag-row{justify-content:flex-end;}
+  .tp.R .fact{text-align:right;}
+  .tp.L,.tp.R{width:min(400px,36vw)!important;}
 }
 @media(max-width:640px){
-  .specs{ grid-template-columns:repeat(4,1fr); gap:.3rem .4rem; }
-  .fact{ flex:1 1 calc(50% - .4rem); }
-}
-.sv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.5vw,1.5rem);color:#c9a84c;line-height:1.05;}
-.sl{font-family:'Cinzel',serif;font-size:clamp(.38rem,1vw,.46rem);letter-spacing:.22em;color:#8fa0b0;text-transform:uppercase;margin-top:.08rem;}
-
-/* Panel width — wider on desktop for more content */
-@media(min-width:641px){
-  .tp.L, .tp.R { width: min(420px,38vw) !important; }
+  .fact{flex:1 1 calc(50% - .35rem);}
 }
 
-/* PAUSE CARD — shown between eagle landing and bike transform */
-#pause-card{
-  position:fixed;
-  left:50%;top:50%;
-  transform:translate(-50%,-50%) scale(.92);
-  text-align:center;
-  z-index:20;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .5s ease, transform .5s ease;
+/* ── LOADING ── */
+#ld{
+  position:fixed;inset:0;z-index:50;background:#050508;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;
+  transition:opacity .7s ease .1s,visibility .7s ease .1s;
 }
-#pause-card.vis{
-  opacity:1;
-  transform:translate(-50%,-50%) scale(1);
-}
-.pc-line{
-  font-family:'Cinzel',serif;
-  font-size:clamp(.5rem,2vw,.72rem);
-  letter-spacing:.55em;
-  color:#00ff88;
-  text-transform:uppercase;
-  margin-bottom:1.1rem;
-  display:block;
-}
-.pc-h{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(2.8rem,8vw,7rem);
-  line-height:.88;
-  color:#f0f4f8;
-  letter-spacing:.06em;
-}
-.pc-h em{color:#00ff88;font-style:normal;}
-/* animated scan line */
-.pc-scan{
-  width:clamp(120px,30vw,260px);
-  height:1px;
-  background:linear-gradient(90deg,transparent,#00ff88,transparent);
-  margin:1.2rem auto 0;
-  animation:scan 1.8s ease-in-out infinite;
-}
-@keyframes scan{0%,100%{opacity:.3;transform:scaleX(.4);}50%{opacity:1;transform:scaleX(1);}}
-
-/* CTA */
-#cta{position:fixed;bottom:8vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .8s;white-space:nowrap;z-index:20;pointer-events:none;}
-#cta.vis{opacity:1;}
-.cl{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.6vw,.62rem);letter-spacing:.38em;color:#8fa0b0;text-transform:uppercase;margin-bottom:.8rem;}
-.cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,7vw,5.5rem);letter-spacing:.08em;line-height:.9;background:linear-gradient(135deg,#00ff88,#c9a84c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-
-/* LOADING */
-#ld{position:fixed;inset:0;z-index:50;background:#030309;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.3rem;transition:opacity .6s ease .1s,visibility .6s ease .1s;}
 #ld.done{opacity:0;visibility:hidden;pointer-events:none;}
-.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3rem);letter-spacing:.45em;color:#00ff88;}
-.lbw{width:min(240px,68vw);height:1px;background:rgba(255,255,255,.1);}
-.lb{height:100%;background:#00ff88;width:0%;transition:width .2s;}
-.lt{font-family:'Cinzel',serif;font-size:clamp(.52rem,1.5vw,.58rem);letter-spacing:.3em;color:#8fa0b0;}
+.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#ff4400;}
+.lbw{width:min(220px,65vw);height:1px;background:rgba(255,255,255,.08);}
+.lb{height:100%;background:linear-gradient(90deg,#ff4400,#ffcc00);width:0%;transition:width .25s;}
+.lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#7a8fa8;}
 
-/* VIGNETTE */
-#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 28%,rgba(3,3,9,.72) 100%);}
-/* FLASH */
-#flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.28) 0%,rgba(0,80,40,.1) 45%,transparent 72%);transition:opacity .06s ease;}
+/* ── VIGNETTE ── */
+#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 25%,rgba(5,5,8,.75) 100%);}
+
+/* ── FLASH ── */
+#flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(255,100,0,.3) 0%,rgba(120,30,0,.1) 45%,transparent 72%);
+  transition:opacity .05s ease;}
+
+/* ── CTA ── */
+#cta{
+  position:fixed;bottom:7vh;left:50%;transform:translateX(-50%);
+  text-align:center;opacity:0;transition:opacity .9s;
+  white-space:nowrap;z-index:20;pointer-events:none;
+}
+#cta.vis{opacity:1;}
+.cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.4em;color:#7a8fa8;text-transform:uppercase;margin-bottom:.7rem;}
+.cb{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5.5rem);
+  letter-spacing:.1em;line-height:.9;
+  background:linear-gradient(135deg,#ff4400,#ffcc00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
 </style>
 </head>
 <body>
-<div id="ld"><div class="ll">H2R</div><div class="lbw"><div class="lb" id="lb"></div></div><div class="lt" id="lt">Loading…</div></div>
-<div id="nav"><div class="logo">NINJA <span>H2R</span></div><button id="snd">♪ Sound</button></div>
+
+<div id="ld">
+  <div class="ll">W1</div>
+  <div class="lbw"><div class="lb" id="lb"></div></div>
+  <div class="lt" id="lt">Initialising…</div>
+</div>
+
+<div id="nav">
+  <div class="logo">McLAREN <span>W1</span></div>
+  <button id="snd">♪ Sound</button>
+</div>
 <div id="pb"></div>
 <div id="vig"></div>
 <div id="flash"></div>
 
-<!-- PAUSE CARD — shown while camera holds on empty landing spot -->
-<div id="pause-card">
-  <span class="pc-line">Transformation</span>
-  <div class="pc-h">WHAT<br/>LANDS<br/>AS AN <em>EAGLE</em></div>
-  <div class="pc-scan"></div>
+<div id="hint">
+  <div class="hint-txt">Scroll to Begin</div>
+  <div class="hint-arrow"></div>
 </div>
 
-<!-- Text panels -->
+<!-- ═══════════════════════════════════════
+     TEXT PANELS
+     p0: intro (0–17%)
+     p1: Legacy (65–74%)
+     p2: Hybrid Heart (74–82%)
+     p3: Aerodynamics (82–90%)
+     p4: The Hunt (90–100%)
+════════════════════════════════════════ -->
 
-<!-- P0: Opening — shown during eagle flight, scroll 0–18% -->
 <div class="tp C" id="p0">
-  <span class="ey">Kawasaki Heavy Industries · 2015</span>
-  <div class="hd">FOLLOW THE<br/><em>EAGLE</em></div>
-  <div class="bd">A mechanical predator born from the sky. Scroll to descend — follow the iron eagle as it hunts the only machine on earth capable of matching its fury. What waits below is not a motorcycle. It is a consequence of obsession — five years of engineering nightmares, aerospace partnerships, and the stubborn refusal to accept that physics had limits.</div>
-  <div class="tag-row">
-    <span class="tag">Track Only</span>
-    <span class="tag">Supercharged</span>
-    <span class="tag">Carbon Fibre</span>
-    <span class="tag">310 hp</span>
+  <span class="ey">McLaren Automotive · 2024</span>
+  <div class="hd">THE EAGLE<br/>HUNTS <em>ITS OWN</em></div>
+  <div class="bd">Above you, a mechanical predator carves the sky — drawn by something it recognises. Below, on a polished plinth in the dark, waits the machine that earned that reverence. Scroll to follow the eagle down. What it has come to find is not a car. It is the culmination of everything McLaren has learned in sixty years of building weapons for the road.</div>
+  <div class="tag-row" style="justify-content:center;">
+    <span class="tag">Hybrid V8</span><span class="tag">928 hp</span>
+    <span class="tag">Active Aero</span><span class="tag">Track &amp; Road</span>
   </div>
 </div>
 
-<!-- P1: The Machine — post-transform, scroll 65–76% -->
 <div class="tp L" id="p1">
-  <span class="ey">The Machine · ZX-1002A Engine</span>
-  <div class="hd">BUILT FOR<br/>ONE<br/><em>PURPOSE</em></div>
-  <div class="bd">Kawasaki didn't build the Ninja H2R to win races — they built it to <em>redefine what a motorcycle could physically be</em>. Born of a collaboration between Kawasaki's Aerospace Company, Gas Turbine & Machinery Company, and the Motorcycle & Engine Company, this was not product development. It was a declaration of intent.</div>
-  <div class="bd">The heart is a <strong>998cc liquid-cooled inline-four</strong> with a bore and stroke of 76 × 55mm — a short-stroke, high-revving configuration designed to scream to 14,000 RPM without flinching. In ram-air conditions at speed, the engine produces <strong>310 horsepower</strong> — figures that shatter the imagination when you consider it weighs just 216 kg dry.</div>
+  <span class="ey">Heritage · F1 Bloodline · 2024</span>
+  <div class="hd">WHERE THE<br/><em>F1</em> LEFT OFF</div>
+  <div class="bd">The McLaren W1 is not the successor to the P1. It is the successor to the <em>F1</em> — the 1992 Gordon Murray masterpiece that was the fastest production car on earth for a decade. The W1 carries that lineage deliberately: a central driving position, an engine developed by McLaren's own powertrain team, and an obsessive commitment to the idea that a road car should feel like nothing else has ever felt.</div>
+  <div class="bd">Thirty-two years separate the F1 and the W1. In that time McLaren learned to win Formula 1 championships, survived near bankruptcy, built the P1 and the Senna and the Speedtail, and emerged with something rare in the hypercar world: <strong>genuine engineering conviction</strong>. The W1 is what happens when a company stops trying to compete and starts trying to be correct.</div>
   <div class="fact-row">
-    <div class="fact"><div class="fv">310 <small style="font-size:.55em;color:#8fa0b0">hp</small></div><div class="fl">Ram-Air Power</div></div>
-    <div class="fact"><div class="fv">165 <small style="font-size:.55em;color:#8fa0b0">Nm</small></div><div class="fl">Peak Torque</div></div>
-    <div class="fact"><div class="fv">326</div><div class="fl">km/h Top Speed</div></div>
-    <div class="fact"><div class="fv">2.0s</div><div class="fl">0–100 km/h</div></div>
-    <div class="fact"><div class="fv">216</div><div class="fl">kg Dry Weight</div></div>
-    <div class="fact"><div class="fv">14,000</div><div class="fl">RPM Redline</div></div>
+    <div class="fact"><div class="fv">928</div><div class="fl">Combined HP</div></div>
+    <div class="fact"><div class="fv">1399</div><div class="fl">kg Kerb Weight</div></div>
+    <div class="fact"><div class="fv">2.7<small>s</small></div><div class="fl">0–100 km/h</div></div>
+    <div class="fact"><div class="fv">350+</div><div class="fl">km/h Top Speed</div></div>
+    <div class="fact"><div class="fv">106</div><div class="fl">Units Produced</div></div>
+    <div class="fact"><div class="fv">4.0<small>L</small></div><div class="fl">Twin-Turbo V8</div></div>
   </div>
 </div>
 
-<!-- P2: Supercharger — scroll 76–85% -->
 <div class="tp R" id="p2">
-  <span class="ey">Supercharger · Centrifugal · In-House</span>
-  <div class="hd">FORCED<br/><em>INDUCTION</em><br/>REDEFINED</div>
-  <div class="bd">No motorcycle manufacturer had ever fitted a centrifugal supercharger to a series-production bike before the H2R. Kawasaki didn't outsource the engineering — they designed every component internally, drawing on decades of aerospace turbomachinery experience from their own gas turbine division.</div>
-  <div class="bd">The impeller is a <strong>nine-blade centrifugal compressor</strong>, each blade individually machined to tolerances measured in microns. At peak demand it spins at <strong>130,000 RPM</strong> — over 2,100 revolutions every second — compressing the incoming air charge and ramming it into the intake at pressures far beyond what any naturally-aspirated engine can achieve. The result is a boost pressure of <strong>2.4 bar absolute</strong> at peak, with no turbo lag, no step in the powerband, no hesitation. Just a relentless, linear surge that begins the moment you crack the throttle and does not stop until the rev limiter intervenes at 14,000 RPM.</div>
-  <div class="bd">A <strong>gear-driven intermediate shaft</strong> sits between the crankshaft and compressor, multiplying rotational speed with surgical precision. Intake air temperature is managed by an intercooler integrated into the airbox, preventing heat soak from robbing the charge of density. The entire system weighs less than 3 kg — a masterpiece of miniaturised engineering.</div>
+  <span class="ey">Powertrain · Hybrid · E-Turbo</span>
+  <div class="hd">THE HEART<br/>IS <em>ELECTRIFIED</em><br/>FURY</div>
+  <div class="bd">At the centre of the W1 is a <strong>4.0-litre twin-turbocharged V8</strong> — a clean-sheet design by McLaren Automotive's own powertrain engineers, not a unit shared with any other vehicle. It produces <strong>727 horsepower</strong> alone. But McLaren didn't stop there. They fitted the turbocharger shafts with electric motors — a technology borrowed directly from Formula 1 — creating what they call an <em>E-Turbo system</em>.</div>
+  <div class="bd">The electric motors eliminate turbo lag entirely. Before the exhaust gases have even begun to spool the compressor, the electric motor has already spun it to operating speed. There is no delay. There is no step. There is just torque — <strong>900Nm</strong> — available from the moment you ask for it, from idle all the way to the 8,500 RPM redline.</div>
+  <div class="bd">A second electric motor drives the rear axle directly, adding <strong>201 horsepower</strong> of electric thrust for a combined system output of 928 horsepower. The battery is a 1.196 kWh unit — deliberately small, because the W1 is not an EV. It is a combustion engine with electric supercharging and an instantaneous torque-fill system. <strong>Every joule is a weapon.</strong></div>
   <div class="fact-row">
-    <div class="fact"><div class="fv">130K</div><div class="fl">RPM — Impeller</div></div>
-    <div class="fact"><div class="fv">9</div><div class="fl">Compressor Blades</div></div>
-    <div class="fact"><div class="fv">2.4</div><div class="fl">Bar Absolute Boost</div></div>
-    <div class="fact"><div class="fv">&lt;3 kg</div><div class="fl">Supercharger Weight</div></div>
+    <div class="fact"><div class="fv">727</div><div class="fl">ICE Horsepower</div></div>
+    <div class="fact"><div class="fv">201</div><div class="fl">Electric HP</div></div>
+    <div class="fact"><div class="fv">900</div><div class="fl">Nm Peak Torque</div></div>
+    <div class="fact"><div class="fv">8,500</div><div class="fl">RPM Redline</div></div>
+    <div class="fact"><div class="fv">E-Turbo</div><div class="fl">F1 Technology</div></div>
+    <div class="fact"><div class="fv">1.196</div><div class="fl">kWh Battery</div></div>
   </div>
 </div>
 
-<!-- P3: Aerodynamics — scroll 85–93% -->
 <div class="tp L" id="p3">
-  <span class="ey">Aerodynamics · Wind Tunnel · Downforce</span>
-  <div class="hd">LIFT IS<br/><em>THE ENEMY</em><br/>OF SPEED</div>
-  <div class="bd">At 300 km/h, aerodynamics are not a styling exercise — they are a survival calculation. The Ninja H2R's bodywork was developed in Kawasaki's own wind tunnel, with engineers spending thousands of hours perfecting every surface. The objective: generate maximum downforce without adding drag, keeping the front wheel pinned to the track at speeds where aerodynamic lift would otherwise launch the machine skyward.</div>
-  <div class="bd">The <strong>dual upper winglets</strong> — sculpted in carbon fibre reinforced polymer — generate downforce that acts directly on the fork assembly, pressing the front tyre into the asphalt with every additional kilometre per hour. A lower chin <strong>splitter</strong> further manipulates the underfloor airflow, reducing lift at the front axle. At 200 km/h, the H2R generates enough downforce to meaningfully alter its suspension behaviour — the bike gets <em>lower</em> as it gets faster.</div>
-  <div class="bd">The ram-air intake system is a dual function: it feeds the supercharger with a high-pressure air charge at speed while simultaneously acting as a structural aerodynamic element. Every vent, every louver, every gap in the bodywork has a specific thermodynamic or aerodynamic purpose. Nothing is decorative. Nothing is wasted.</div>
+  <span class="ey">Aerodynamics · Active · Downforce</span>
+  <div class="hd">AIR IS<br/><em>SCULPTED</em><br/>NOT MANAGED</div>
+  <div class="bd">McLaren has always been suspicious of wings. Big fixed wings are a lazy solution — they generate downforce but also drag, and drag is the enemy of speed. The W1 takes a different philosophy: <em>every surface generates downforce, and every surface is active</em>. The car reshapes itself in real time, driven by algorithms that read road conditions, speed, and driver inputs 1,000 times per second.</div>
+  <div class="bd">The front underbody features a <strong>Ground Effect Tunnel</strong> — a venturi channel that accelerates air under the car, creating a low-pressure zone that literally sucks the W1 to the road. At 150 mph, the W1 generates <strong>1,000 kg of downforce</strong> — more than the car weighs. At that moment it would drive on the ceiling. This is not a metaphor. This is physics being exploited by engineers who refused to accept compromise.</div>
+  <div class="bd">An active rear wing adjusts its angle continuously, working in concert with an active front splitter and adjustable ride height. In Race mode, the suspension drops, the aerodynamics tighten, and the W1 transforms from a grand tourer into something that shares more DNA with an LMP1 prototype than anything sold by a road car manufacturer.</div>
   <div class="fact-row">
-    <div class="fact"><div class="fv">2</div><div class="fl">Upper Winglets</div></div>
-    <div class="fact"><div class="fv">CFRP</div><div class="fl">Carbon Fibre Body</div></div>
-    <div class="fact"><div class="fv">200+</div><div class="fl">km/h Active Downforce</div></div>
-    <div class="fact"><div class="fv">0.00</div><div class="fl">Decorative Parts</div></div>
+    <div class="fact"><div class="fv">1,000<small>kg</small></div><div class="fl">Downforce @ 150mph</div></div>
+    <div class="fact"><div class="fv">1000<small>Hz</small></div><div class="fl">Aero Update Rate</div></div>
+    <div class="fact"><div class="fv">GEF</div><div class="fl">Ground Effect Floor</div></div>
+    <div class="fact"><div class="fv">Active</div><div class="fl">Front + Rear Wing</div></div>
   </div>
   <div class="tag-row">
-    <span class="tag">Ram-Air Intake</span>
-    <span class="tag">Chin Splitter</span>
-    <span class="tag">Active Geometry</span>
+    <span class="tag">Venturi Tunnels</span><span class="tag">Active Splitter</span><span class="tag">Race Mode</span>
   </div>
 </div>
 
-<!-- P4: The Legend — scroll 93–100% -->
 <div class="tp R" id="p4">
-  <span class="ey">The Legend · 331.15 km/h · 2016</span>
-  <div class="hd"><em>H2R</em><br/>FOREVER<br/>UNTAMED</div>
-  <div class="bd">In September 2016, Guy Martin — television presenter, truck mechanic, and one of the fastest motorcycle racers Britain has ever produced — strapped himself to a Kawasaki Ninja H2R on the Straightliners top-speed event at Elvington Airfield and rode it to <strong>331.15 km/h (205.8 mph)</strong>. That number is a British motorcycle land speed record. It remains unbroken.</div>
-  <div class="bd">What makes this record staggering is context. This was not a factory prototype with a one-off engine. It was not a streamliner fairing built specifically for speed runs. It was a <em>production motorcycle</em> — a machine that Kawasaki dealers around the world will sell you today, assuming you have the nerve and a track permit. The H2R has no road registration, no headlights, no number plate bracket. It exists purely for circuits and for moments like Elvington.</div>
-  <div class="bd">The Kawasaki Ninja H2R is the only motorcycle in history to have been built by the same company that makes fighter jet components, helicopter transmissions, and industrial gas turbines — and it shows. Every system on this machine reflects engineering culture forged in environments where failure is not an option. It is not the fastest vehicle ever made. But it is the most extraordinary motorcycle that has ever existed.</div>
+  <span class="ey">The W1 · 106 Built · Sold Out</span>
+  <div class="hd"><em>W1</em><br/>THE LAST<br/>ARGUMENT</div>
+  <div class="bd">McLaren built 106 examples of the W1. Every one was allocated before the public announcement. The people who own them understand something that numbers alone cannot communicate — that this car represents the closing argument of a company that spent three decades proving that a small British manufacturer could build cars that embarrassed Ferrari, Porsche, and Bugatti on their best days.</div>
+  <div class="bd">The W1 has a <strong>carbon fibre MonoCell III-T</strong> tub — the third generation of McLaren's signature chassis technology, stiffened specifically for the W1's increased power and downforce loads. The body panels are carbon fibre. The roof is carbon fibre. The floor is carbon fibre. The car is, at its core, a structure so rigid that its torsional stiffness exceeds many dedicated racing cars.</div>
+  <div class="bd">It costs £2.1 million before options. It goes 0–200 mph in under 15 seconds — a figure that puts it in a category with machines that cost twice as much. But price is not the point. <em>The point is that every W1 owner knows they own the closest thing to a racing car that has ever been granted a number plate.</em> That knowledge has no market value. It is simply true.</div>
   <div class="fact-row">
-    <div class="fact"><div class="fv">331</div><div class="fl">km/h Record Speed</div></div>
-    <div class="fact"><div class="fv">205</div><div class="fl">mph — Guy Martin</div></div>
-    <div class="fact"><div class="fv">2016</div><div class="fl">Record Year</div></div>
-    <div class="fact"><div class="fv">∞</div><div class="fl">Times It's Been Broken</div></div>
+    <div class="fact"><div class="fv">106</div><div class="fl">Units — All Sold</div></div>
+    <div class="fact"><div class="fv">£2.1M</div><div class="fl">Base Price</div></div>
+    <div class="fact"><div class="fv">&lt;15<small>s</small></div><div class="fl">0–200 mph</div></div>
+    <div class="fact"><div class="fv">III-T</div><div class="fl">MonoCell Carbon</div></div>
   </div>
   <div class="tag-row">
-    <span class="tag">Elvington Airfield</span>
-    <span class="tag">British Record</span>
-    <span class="tag">Still Unbroken</span>
+    <span class="tag">Sold Out</span><span class="tag">Carbon Tub</span><span class="tag">Road Legal</span><span class="tag">Track Ready</span>
   </div>
-  <div class="st">331.15<small>km/h — The Last Word in Speed</small></div>
+  <div class="stat-stamp">928 HP<small>The Last Great Analogue Hypercar</small></div>
 </div>
-<div id="cta"><div class="cl">The Ultimate Track Machine</div><div class="cb">RIDE<br/>BEYOND</div></div>
 
-<audio id="aud" loop preload="none"><source src="sunflower.mp3" type="audio/mpeg"/></audio>
+<div id="cta">
+  <div class="cl">McLaren W1 — 106 of 106</div>
+  <div class="cb">BEYOND<br/>LIMITS</div>
+</div>
 
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<audio id="aud" loop preload="none">
+  <source src="wow.mp3" type="audio/mpeg"/>
+</audio>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+/* ─────────────────────────────────────────
+   CONSTANTS & GLOBALS
+───────────────────────────────────────── */
 const MOB = innerWidth < 768;
 
-/* ── VIRTUAL SCROLL ── */
-let targetS = 0, currentS = 0, isDragging = false, lastTY = 0, touchVel = 0;
-const SPEED = MOB ? 0.00055 : 0.00038;
-const LERPF = MOB ? 0.075 : 0.058;
+// Scroll zones (0–1)
+const ZONES = {
+  FLIGHT_END  : 0.48,   // eagle arrives above car position
+  LAND_START  : 0.42,   // eagle begins final descent / shrink
+  LAND_END    : 0.50,   // eagle gone, flash fires
+  PAUSE_END   : 0.56,   // camera holds, nothing visible
+  XFORM_START : 0.56,   // car begins materialising
+  XFORM_END   : 0.64,   // car fully revealed
+  // Closeup orbit starts at XFORM_END
+};
+
+/* ─────────────────────────────────────────
+   SCROLL
+───────────────────────────────────────── */
+let targetS = 0, currentS = 0;
+let isDragging = false, lastTY = 0, touchVel = 0;
+const SCROLL_SPEED = MOB ? 0.00052 : 0.00036;
+const LERP_F = MOB ? 0.07 : 0.055;
+
 window.addEventListener('wheel', e => {
   e.preventDefault();
-  targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SPEED));
+  targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED));
+  hintEl.classList.add('gone');
 }, { passive: false });
-window.addEventListener('touchstart', e => { lastTY = e.touches[0].clientY; touchVel = 0; isDragging = true; }, { passive: true });
+
+window.addEventListener('touchstart', e => {
+  lastTY = e.touches[0].clientY; touchVel = 0; isDragging = true;
+  hintEl.classList.add('gone');
+}, { passive: true });
+
 window.addEventListener('touchmove', e => {
   if (!isDragging) return;
   const dy = lastTY - e.touches[0].clientY;
-  touchVel = dy;
-  lastTY = e.touches[0].clientY;
-  targetS = Math.max(0, Math.min(1, targetS + dy * SPEED * 1.8));
+  touchVel = dy; lastTY = e.touches[0].clientY;
+  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED * 1.8));
 }, { passive: true });
+
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
-/* ── RENDERER ── */
-const renderer = new THREE.WebGLRenderer({ antialias: !MOB, powerPreference: 'high-performance', stencil: false });
+const hintEl = document.getElementById('hint');
+
+/* ─────────────────────────────────────────
+   RENDERER
+───────────────────────────────────────── */
+const renderer = new THREE.WebGLRenderer({
+  antialias: !MOB, powerPreference: 'high-performance', stencil: false
+});
 renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2));
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = false;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.8;
+renderer.toneMappingExposure = 2.0;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
 
-/* ── SCENE ── */
+/* ─────────────────────────────────────────
+   SCENE
+───────────────────────────────────────── */
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x03040d);
-scene.fog = new THREE.FogExp2(0x03040d, MOB ? .014 : .009);
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x050508, MOB ? 0.013 : 0.008);
 
-const camera = new THREE.PerspectiveCamera(MOB ? 65 : 50, innerWidth / innerHeight, .05, 400);
-camera.position.set(0, 40, 120);
+const camera = new THREE.PerspectiveCamera(MOB ? 65 : 52, innerWidth / innerHeight, 0.05, 600);
+camera.position.set(0, 50, 150);
 camera.lookAt(0, 0, 0);
 
-/* ── ENV ── */
+/* ─────────────────────────────────────────
+   ENVIRONMENT
+───────────────────────────────────────── */
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.05).texture;
 pmrem.dispose();
 
-/* ── LIGHTS ── */
-scene.add(new THREE.AmbientLight(0xd0e0ff, 2.5));
-const key = new THREE.DirectionalLight(0xffffff, 9);   key.position.set(4, 9, 6);   scene.add(key);
-const fill = new THREE.DirectionalLight(0xc8ffcc, 3.5);fill.position.set(-5, 3, 4);  scene.add(fill);
-const rim  = new THREE.DirectionalLight(0xb0ccff, 6);  rim.position.set(0, 4, -7);  scene.add(rim);
-const front= new THREE.DirectionalLight(0xffffff, 4);  front.position.set(0, 2, 9); scene.add(front);
-const topSpot = new THREE.SpotLight(0xffffff, 20, 16, Math.PI/5, .5, 1.8);
-topSpot.position.set(0, 8, 0); scene.add(topSpot, topSpot.target);
-const greenL = new THREE.PointLight(0x00ff55, 2.5, 7); greenL.position.set(0, -.5, 0);   scene.add(greenL);
-const exhL   = new THREE.PointLight(0xff9922, 2.2, 4); exhL.position.set(1.2, -.3, -1.5);scene.add(exhL);
+/* ─────────────────────────────────────────
+   LIGHTS
+───────────────────────────────────────── */
+scene.add(new THREE.AmbientLight(0xd0d8ff, 2.2));
+const keyL = new THREE.DirectionalLight(0xffffff, 10);
+keyL.position.set(5, 10, 7); scene.add(keyL);
+const fillL = new THREE.DirectionalLight(0xffe8d0, 4);
+fillL.position.set(-6, 4, 4); scene.add(fillL);
+const rimL = new THREE.DirectionalLight(0xaaccff, 7);
+rimL.position.set(0, 5, -8); scene.add(rimL);
+const frontL = new THREE.DirectionalLight(0xffffff, 5);
+frontL.position.set(0, 2, 10); scene.add(frontL);
+const orangeL = new THREE.PointLight(0xff5500, 3.5, 9);
+orangeL.position.set(0, -0.3, 0); scene.add(orangeL);
+const rimPt = new THREE.PointLight(0xff2200, 2.0, 6);
+rimPt.position.set(-2, 1, -2); scene.add(rimPt);
 
-/* ── FLOOR ── */
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(300, 300),
-  new THREE.MeshStandardMaterial({ color: 0x04060a, roughness: .92, metalness: .04 }));
-floor.rotation.x = -Math.PI / 2; floor.position.y = -1.05; scene.add(floor);
+/* ─────────────────────────────────────────
+   FLOOR
+───────────────────────────────────────── */
+const floorMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(400, 400),
+  new THREE.MeshStandardMaterial({ color: 0x04050a, roughness: 0.9, metalness: 0.05 })
+);
+floorMesh.rotation.x = -Math.PI / 2;
+floorMesh.position.y = -1.08;
+scene.add(floorMesh);
 
-const disc = new THREE.Mesh(new THREE.CircleGeometry(4.2, 96),
-  new THREE.MeshStandardMaterial({ color: 0x070a0f, roughness: .04, metalness: .98, envMapIntensity: 4 }));
-disc.rotation.x = -Math.PI / 2; disc.position.y = -1.03; scene.add(disc);
+// Reflective plinth disc
+const discMesh = new THREE.Mesh(
+  new THREE.CircleGeometry(5.5, 128),
+  new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.02, metalness: 0.99, envMapIntensity: 5 })
+);
+discMesh.rotation.x = -Math.PI / 2;
+discMesh.position.y = -1.06;
+scene.add(discMesh);
 
+// Animated grid
 const gridMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uT: { value: 0 } },
   vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader: `uniform float uT;varying vec2 vUv;void main(){vec2 uv=vUv*50.;uv.y+=uT*2.5;float gx=abs(fract(uv.x)-.5);float gy=abs(fract(uv.y)-.5);float g=1.-smoothstep(.02,.05,min(gx,gy));vec2 c=vUv-.5;float d=length(c)*2.;float fade=smoothstep(.06,.3,d)*smoothstep(1.,.45,d);gl_FragColor=vec4(0.,1.,.5,g*fade*.14);}`
+  fragmentShader: `uniform float uT;varying vec2 vUv;
+  void main(){
+    vec2 uv=vUv*60.;uv.y+=uT*2.;
+    float gx=abs(fract(uv.x)-.5);float gy=abs(fract(uv.y)-.5);
+    float g=1.-smoothstep(.02,.055,min(gx,gy));
+    vec2 c=vUv-.5;float d=length(c)*2.;
+    float fade=smoothstep(.05,.28,d)*smoothstep(1.,.42,d);
+    gl_FragColor=vec4(1.,.27,.0,g*fade*.18);
+  }`
 });
-const gridMesh = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), gridMat);
-gridMesh.rotation.x = -Math.PI / 2; gridMesh.position.y = -1.02; scene.add(gridMesh);
+const gridMesh = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), gridMat);
+gridMesh.rotation.x = -Math.PI / 2;
+gridMesh.position.y = -1.05;
+scene.add(gridMesh);
 
+// Spoke ring
 const spokeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uAngle: { value: 0 } },
   vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader: `uniform float uAngle;varying vec2 vUv;void main(){vec2 uv=vUv*2.-1.;float r=length(uv);float a=atan(uv.y,uv.x)+uAngle;float s=abs(fract(a/.785)*2.-1.);float ring=smoothstep(.05,.15,r)*smoothstep(1.,.65,r);gl_FragColor=vec4(0.,1.,.4,s*ring*.2);}`
+  fragmentShader: `uniform float uAngle;varying vec2 vUv;
+  void main(){
+    vec2 uv=vUv*2.-1.;float r=length(uv);
+    float a=atan(uv.y,uv.x)+uAngle;
+    float s=abs(fract(a/.628)*2.-1.);
+    float ring=smoothstep(.05,.18,r)*smoothstep(1.,.6,r);
+    gl_FragColor=vec4(1.,.4,.0,s*ring*.22);
+  }`
 });
-const spokeMesh = new THREE.Mesh(new THREE.CircleGeometry(4.1, 96), spokeMat);
-spokeMesh.rotation.x = -Math.PI / 2; spokeMesh.position.y = -1.015; scene.add(spokeMesh);
+const spokeMesh = new THREE.Mesh(new THREE.CircleGeometry(5.4, 128), spokeMat);
+spokeMesh.rotation.x = -Math.PI / 2;
+spokeMesh.position.y = -1.04;
+scene.add(spokeMesh);
 
+// Edge ring glow
 const edgeRing = new THREE.Mesh(
-  new THREE.RingGeometry(4.1, 4.9, 96),
-  new THREE.MeshBasicMaterial({ color: 0x00ff55, transparent: true, opacity: .1, side: THREE.DoubleSide })
+  new THREE.RingGeometry(5.4, 6.2, 128),
+  new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
 );
-edgeRing.rotation.x = -Math.PI / 2; edgeRing.position.y = -1.01; scene.add(edgeRing);
+edgeRing.rotation.x = -Math.PI / 2;
+edgeRing.position.y = -1.03;
+scene.add(edgeRing);
 
-/* ── PARTICLES ── */
-const PC = MOB ? 400 : 900;
-const pp = new Float32Array(PC * 3), pv = new Float32Array(PC * 3);
+/* ─────────────────────────────────────────
+   PARTICLES
+───────────────────────────────────────── */
+const PC = MOB ? 350 : 800;
+const pPos = new Float32Array(PC * 3);
+const pVel = new Float32Array(PC * 3);
 for (let i = 0; i < PC; i++) {
-  pp[i*3] = (Math.random()-.5)*80; pp[i*3+1] = Math.random()*15; pp[i*3+2] = (Math.random()-.5)*80;
-  pv[i*3] = (Math.random()-.5)*.003; pv[i*3+1] = Math.random()*.002+.0004; pv[i*3+2] = (Math.random()-.5)*.003;
+  pPos[i*3]   = (Math.random() - .5) * 100;
+  pPos[i*3+1] = Math.random() * 18;
+  pPos[i*3+2] = (Math.random() - .5) * 100;
+  pVel[i*3]   = (Math.random() - .5) * 0.003;
+  pVel[i*3+1] = Math.random() * 0.002 + 0.0005;
+  pVel[i*3+2] = (Math.random() - .5) * 0.003;
 }
 const pGeo = new THREE.BufferGeometry();
-pGeo.setAttribute('position', new THREE.BufferAttribute(pp, 3));
-scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ size:.04, color:0x44ff88, transparent:true, opacity:.4, blending:THREE.AdditiveBlending, depthWrite:false })));
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+  size: 0.05, color: 0xff6622, transparent: true, opacity: 0.35,
+  blending: THREE.AdditiveBlending, depthWrite: false
+})));
 
-/* ── EAGLE GROUP ── */
-const eagle = new THREE.Group();
-scene.add(eagle);
-
-/* ── FLIGHT PATH — touches down at y=0 ── */
+/* ─────────────────────────────────────────
+   EAGLE FLIGHT PATH
+   Eagle approaches from high/far, sweeps in
+   and lands exactly at origin (car position)
+───────────────────────────────────────── */
 const FLIGHT_PTS = [
-  new THREE.Vector3(   0, 160,  400),
-  new THREE.Vector3( 140, 130,  320),
-  new THREE.Vector3( 200,  95,  210),
-  new THREE.Vector3( 160,  70,  120),
-  new THREE.Vector3(  60,  45,   60),
-  new THREE.Vector3(-100,  28,   10),
-  new THREE.Vector3(-120,  16,  -20),
-  new THREE.Vector3( -60,   8,   40),
-  new THREE.Vector3(  20,   4,   20),
-  new THREE.Vector3(   5,   1.5,  8),
+  new THREE.Vector3(   0, 180,  450),
+  new THREE.Vector3( 160, 145,  360),
+  new THREE.Vector3( 220, 105,  240),
+  new THREE.Vector3( 170,  78,  140),
+  new THREE.Vector3(  70,  52,   75),
+  new THREE.Vector3(-110,  32,   14),
+  new THREE.Vector3(-130,  18,  -22),
+  new THREE.Vector3( -65,  10,   42),
+  new THREE.Vector3(  22,   5,   22),
+  new THREE.Vector3(   6,   2,    9),
   new THREE.Vector3(   0,   0,    0),   // TOUCHDOWN
 ];
-const flightPath = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', .5);
+const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
-/* ── SCROLL ZONES
-   0.00 – 0.44  eagle in flight
-   0.44 – 0.50  eagle landing + shrink
-   0.50 – 0.57  PAUSE: empty stage, pause card visible, camera holds
-   0.57 – 0.65  TRANSFORM: bike materialises
-   0.65 – 1.00  showroom orbit
-── */
-const CLOSEUP_START = 0.30;
-const LAND_START    = 0.44;
-const LAND_END      = 0.50;
-const PAUSE_END     = 0.57;   // ← pause zone ends here; bike begins
-const XFORM_START   = 0.57;
-const XFORM_END     = 0.65;
-const BIKE_SHOW     = 0.57;
+/* ─────────────────────────────────────────
+   CLOSEUP CAMERA SHOTS (post-transform)
+   Camera visits different dramatic angles
+   around the McLaren as the user scrolls
+───────────────────────────────────────── */
+const CAR_SHOTS = [
+  // [0] Front wide reveal
+  { p: 0.00, pos: new THREE.Vector3(0,    1.6, 7.5),  tar: new THREE.Vector3(0, 0.5, 0)  },
+  // [1] Low front 3/4
+  { p: 0.14, pos: new THREE.Vector3(4.5,  0.5, 5.5),  tar: new THREE.Vector3(0, 0.3, 0)  },
+  // [2] Side profile — long shot
+  { p: 0.28, pos: new THREE.Vector3(7.5,  1.2, 0),    tar: new THREE.Vector3(0, 0.4, 0)  },
+  // [3] Low rear 3/4
+  { p: 0.42, pos: new THREE.Vector3(4.0,  0.4,-5.0),  tar: new THREE.Vector3(0, 0.3, 0)  },
+  // [4] Rear hero
+  { p: 0.55, pos: new THREE.Vector3(0,    1.8,-7.0),  tar: new THREE.Vector3(0, 0.5, 0)  },
+  // [5] Low front left
+  { p: 0.68, pos: new THREE.Vector3(-4.5, 0.6, 5.0),  tar: new THREE.Vector3(0, 0.3, 0)  },
+  // [6] Top-down glamour
+  { p: 0.80, pos: new THREE.Vector3(0,    6.5, 2.5),  tar: new THREE.Vector3(0, 0,   0)  },
+  // [7] Final — front low dramatic
+  { p: 1.00, pos: new THREE.Vector3(1.5,  0.35,6.0),  tar: new THREE.Vector3(0, 0.25, 0) },
+];
 
-/* Camera offsets */
-const CAM_FAR_BACK   = 18, CAM_FAR_UP   = 6;
-const CAM_CLOSE_BACK =  5, CAM_CLOSE_UP = 1.8;
+/* ─────────────────────────────────────────
+   REUSABLE VECTORS
+───────────────────────────────────────── */
+const _ep      = new THREE.Vector3();
+const _eNext   = new THREE.Vector3();
+const _dir     = new THREE.Vector3();
+const _camDes  = new THREE.Vector3();
+const _camTar  = new THREE.Vector3();
+const _eagDir  = new THREE.Vector3();
+const _tmp     = new THREE.Vector3();
+const _dummy   = new THREE.Object3D();
+scene.add(_dummy);
 
-let flashFired = false, flashOpacity = 0;
-
-/* Reusable vectors */
-const _ep=new THREE.Vector3(), _eNext=new THREE.Vector3(), _dir=new THREE.Vector3();
-const _cp=new THREE.Vector3(), _camTar=new THREE.Vector3(), _camDesired=new THREE.Vector3(), _eagleDir=new THREE.Vector3();
-const _dummy=new THREE.Object3D(); scene.add(_dummy);
-
-/* ── LOADERS ── */
+/* ─────────────────────────────────────────
+   LOADERS
+───────────────────────────────────────── */
 const draco = new DRACOLoader();
 draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
-const loader = new GLTFLoader(); loader.setDRACOLoader(draco);
-const lbEl=document.getElementById('lb'), ltEl=document.getElementById('lt');
-const setP=(p,t)=>{lbEl.style.width=p+'%';ltEl.textContent=t;};
 
-let bike=null, bikeRotY=0;
-const ROT_SPEED=0.5;
+const lbEl = document.getElementById('lb');
+const ltEl = document.getElementById('lt');
+const setP = (p, t) => { lbEl.style.width = p + '%'; ltEl.textContent = t; };
 
-let loadDone=false;
-function dismissLoader(){
-  if(loadDone)return; loadDone=true;
+let loadedCount = 0;
+const TOTAL_LOADS = 2;
+function onLoaded() {
+  loadedCount++;
+  if (loadedCount >= TOTAL_LOADS) dismissLoader();
+}
+
+let loadDone = false;
+function dismissLoader() {
+  if (loadDone) return;
+  loadDone = true;
   document.getElementById('ld').classList.add('done');
-  showPanel('p0'); startAudio();
+  showPanel('p0');
+  startAudio();
 }
-setTimeout(dismissLoader,15000);
+setTimeout(dismissLoader, 18000);
 
-/* ── EAGLE GLB ── */
-let eagleWingL=null, eagleWingR=null;
-function findWings(root){
-  const entries=[];
-  root.traverse(c=>{
-    if(c===root)return;
-    let depth=0,p=c; while(p&&p!==root){depth++;p=p.parent;} if(depth>2)return;
-    const box=new THREE.Box3().setFromObject(c); if(box.isEmpty())return;
-    entries.push({obj:c,cx:(box.min.x+box.max.x)/2});
-  });
-  if(entries.length<2)return;
-  entries.sort((a,b)=>a.cx-b.cx);
-  eagleWingL=entries[0].obj;
-  eagleWingR=entries[entries.length-1].obj;
-}
-const eagleLoader=new GLTFLoader(); eagleLoader.setDRACOLoader(draco);
-eagleLoader.load('mechanical_eagle.glb', gltf=>{
-  const model=gltf.scene;
-  const box=new THREE.Box3().setFromObject(model);
-  const sz=box.getSize(new THREE.Vector3());
-  const s=(MOB?3.6:2.8)/Math.max(sz.x,sz.y,sz.z);
-  model.scale.setScalar(s);
-  const box2=new THREE.Box3().setFromObject(model);
-  model.position.sub(box2.getCenter(new THREE.Vector3()));
-  model.traverse(c=>{
-    if(!c.isMesh||!c.material)return;
-    c.frustumCulled=false;
-    const ms=Array.isArray(c.material)?c.material:[c.material];
-    ms.forEach(m=>{
-      if(!m.isMeshStandardMaterial&&!m.isMeshPhysicalMaterial)return;
-      m.envMapIntensity=3.5; m.metalness=Math.max(m.metalness,.7); m.roughness=Math.min(m.roughness,.4); m.needsUpdate=true;
+/* ─────────────────────────────────────────
+   EAGLE — animated GLB
+───────────────────────────────────────── */
+const eagleGroup = new THREE.Group();
+scene.add(eagleGroup);
+let eagleMixer = null;
+let eagleClip  = null;
+
+const eagleLoader = new GLTFLoader();
+eagleLoader.setDRACOLoader(draco);
+eagleLoader.load('animated_eagle.glb',
+  gltf => {
+    const model = gltf.scene;
+    // Scale to ~3 units wingspan
+    const box  = new THREE.Box3().setFromObject(model);
+    const sz   = box.getSize(new THREE.Vector3());
+    const s    = (MOB ? 3.8 : 3.0) / Math.max(sz.x, sz.y, sz.z);
+    model.scale.setScalar(s);
+    const box2 = new THREE.Box3().setFromObject(model);
+    model.position.sub(box2.getCenter(new THREE.Vector3()));
+
+    model.traverse(c => {
+      if (!c.isMesh || !c.material) return;
+      c.frustumCulled = false;
+      const ms = Array.isArray(c.material) ? c.material : [c.material];
+      ms.forEach(m => {
+        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
+        m.envMapIntensity = 4;
+        m.metalness = Math.max(m.metalness, 0.75);
+        m.roughness  = Math.min(m.roughness,  0.35);
+        m.needsUpdate = true;
+      });
     });
-  });
-  findWings(model);
-  eagle.add(model);
-},undefined,err=>console.warn('Eagle GLB failed:',err));
 
-/* ── BIKE GLB ── */
-loader.load('kawasaki-ninja-h2r-super-bike.glb', gltf=>{
-  bike=gltf.scene;
-  const box=new THREE.Box3().setFromObject(bike);
-  const sz=box.getSize(new THREE.Vector3());
-  const cn=box.getCenter(new THREE.Vector3());
-  const s=3.8/Math.max(sz.x,sz.y,sz.z);
-  bike.scale.setScalar(s);
-  const box2=new THREE.Box3().setFromObject(bike);
-  bike.position.set(-cn.x*s, -box2.min.y-1.05, -cn.z*s);
-  bike.traverse(c=>{
-    if(!c.isMesh||!c.material)return;
-    c.frustumCulled=false;
-    const ms=Array.isArray(c.material)?c.material:[c.material];
-    ms.forEach(m=>{
-      if(!m||!m.isMaterial)return;
-      m.wireframe=false; m.needsUpdate=true;
-      if(!m.isMeshStandardMaterial&&!m.isMeshPhysicalMaterial)return;
-      m.envMapIntensity=4.5;
-      const r=m.color.r,gr=m.color.g,b=m.color.b;
-      const lum=r*.299+gr*.587+b*.114;
-      const isGreen=gr>r+.06&&gr>b+.04;
-      const isSilver=lum>.35&&Math.abs(r-gr)<.12&&Math.abs(gr-b)<.12;
-      const isBlack=lum<.06;
-      const isRed=r>.35&&r>gr*1.8;
-      if(isGreen){m.color.setHex(0x00a550);if(m.emissive){m.emissive.setHex(0x003318);m.emissiveIntensity=.22;}m.roughness=.25;m.metalness=.4;}
-      else if(isBlack){m.color.setHex(0x0a0e0c);m.roughness=.07;m.metalness=.94;m.envMapIntensity=5.5;}
-      else if(isSilver){m.color.setHex(0xb8bfc4);m.roughness=.2;m.metalness=.9;}
-      else if(isRed){m.color.setHex(0xcc1111);m.roughness=.3;m.metalness=.65;}
-      else if(lum<.15){m.color.setHex(0x080808);m.roughness=.94;m.metalness=0;}
-      else{m.color.multiplyScalar(1.35);m.roughness=Math.min(m.roughness,.5);m.metalness=Math.max(m.metalness,.3);}
+    // Set up animation mixer — play the flight animation
+    if (gltf.animations && gltf.animations.length > 0) {
+      eagleMixer = new THREE.AnimationMixer(model);
+      eagleClip  = eagleMixer.clipAction(gltf.animations[0]);
+      eagleClip.play();
+    }
+
+    eagleGroup.add(model);
+    setP(50, 'Loading McLaren W1…');
+    onLoaded();
+  },
+  undefined,
+  err => { console.warn('Eagle load failed:', err); onLoaded(); }
+);
+
+/* ─────────────────────────────────────────
+   MCLAREN W1
+───────────────────────────────────────── */
+let car = null;
+let carRotY = 0;
+let carMixer = null;
+const CAR_ROT_SPEED = 0.22; // slow dignified rotation
+
+const carLoader = new GLTFLoader();
+carLoader.setDRACOLoader(draco);
+carLoader.load('mclaren_w1.glb',
+  gltf => {
+    car = gltf.scene;
+    const box  = new THREE.Box3().setFromObject(car);
+    const sz   = box.getSize(new THREE.Vector3());
+    const cn   = box.getCenter(new THREE.Vector3());
+    const s    = 4.2 / Math.max(sz.x, sz.y, sz.z);
+    car.scale.setScalar(s);
+    const box2 = new THREE.Box3().setFromObject(car);
+    car.position.set(-cn.x * s, -box2.min.y - 1.08, -cn.z * s);
+    car._floorY = car.position.y;
+
+    car.traverse(c => {
+      if (!c.isMesh || !c.material) return;
+      c.frustumCulled = false;
+      const ms = Array.isArray(c.material) ? c.material : [c.material];
+      ms.forEach(m => {
+        if (!m || !m.isMaterial) return;
+        m.wireframe = false;
+        m.needsUpdate = true;
+        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
+        m.envMapIntensity = 5.5;
+        const nm = (c.name + (m.name || '')).toLowerCase();
+        const r = m.color.r, g = m.color.g, b = m.color.b;
+        const lum = r*.299 + g*.587 + b*.114;
+        const isOrange = r > 0.4 && g > 0.15 && g < 0.55 && b < 0.15;
+        const isBlack  = lum < 0.06;
+        const isSilver = lum > 0.3 && Math.abs(r-g) < 0.1 && Math.abs(g-b) < 0.1;
+        const isGlass  = nm.includes('glass') || nm.includes('windsh') || nm.includes('window');
+        const isLight  = nm.includes('light') || nm.includes('lamp');
+        const isRed    = r > 0.4 && r > g * 2.0;
+        if (isGlass) {
+          m.transparent = true; m.opacity = 0.28;
+          m.roughness = 0.02; m.metalness = 0.1; m.envMapIntensity = 3;
+          m.color.setHex(0x1a2a3a);
+        } else if (isOrange) {
+          // McLaren papaya orange — keep and enhance
+          m.color.setHex(0xff5500); m.roughness = 0.22; m.metalness = 0.35;
+          if (m.emissive) { m.emissive.setHex(0x220800); m.emissiveIntensity = 0.08; }
+        } else if (isLight) {
+          m.color.setHex(0xffe8c0); m.roughness = 0.05; m.metalness = 0.0;
+          if (m.emissive) { m.emissive.setHex(0xffc060); m.emissiveIntensity = 0.6; }
+        } else if (isBlack) {
+          m.color.setHex(0x080a0e); m.roughness = 0.06; m.metalness = 0.95;
+          m.envMapIntensity = 6;
+        } else if (isSilver) {
+          m.color.setHex(0xbcc4cc); m.roughness = 0.18; m.metalness = 0.92;
+        } else if (isRed) {
+          m.color.setHex(0xff2200); m.roughness = 0.25; m.metalness = 0.6;
+        } else if (lum < 0.18) {
+          m.color.setHex(0x0a0c10); m.roughness = 0.9; m.metalness = 0.05;
+        } else {
+          m.color.multiplyScalar(1.3);
+          m.roughness = Math.min(m.roughness, 0.45);
+          m.metalness = Math.max(m.metalness, 0.25);
+        }
+      });
     });
-  });
-  bike._floorY=bike.position.y;
-  bike.visible=false;
-  scene.add(bike);
-  setP(100,'Ready');
-  dismissLoader();
-},p=>{if(p.total)setP(p.loaded/p.total*100,'Loading H2R…');},
-e=>{console.error('GLB error:',e);setP(100,'Ready');dismissLoader();});
 
-/* ── AUDIO ── */
-const aud=document.getElementById('aud');
-let audOn=false;
-function startAudio(){aud.volume=.28;aud.play().then(()=>{audOn=true;updSnd();}).catch(()=>{});}
-const sndBtn=document.getElementById('snd');
-function updSnd(){sndBtn.textContent=audOn?'♪ Sound On':'♫ Muted';sndBtn.classList.toggle('on',audOn);}
-sndBtn.addEventListener('click',()=>{audOn?(aud.pause(),audOn=false):(aud.play().catch(()=>{}),audOn=true);updSnd();});
+    // Wheel spin animation if present
+    if (gltf.animations && gltf.animations.length > 0) {
+      carMixer = new THREE.AnimationMixer(car);
+      const action = carMixer.clipAction(gltf.animations[0]);
+      action.play();
+    }
 
-/* ── PANEL LOGIC ── */
-const PANELS=['p0','p1','p2','p3','p4'];
-let activePanel='';
-function showPanel(id){
-  if(id===activePanel)return;
-  PANELS.forEach(p=>document.getElementById(p)?.classList.remove('vis'));
-  if(id)document.getElementById(id)?.classList.add('vis');
-  activePanel=id;
+    car.visible = false;
+    scene.add(car);
+    setP(100, 'Ready');
+    onLoaded();
+  },
+  p => { if (p.total) setP(50 + (p.loaded / p.total) * 50, 'Loading McLaren W1…'); },
+  err => { console.error('Car load error:', err); setP(100, 'Ready'); onLoaded(); }
+);
+
+/* ─────────────────────────────────────────
+   AUDIO
+───────────────────────────────────────── */
+const aud = document.getElementById('aud');
+let audOn = false;
+function startAudio() {
+  aud.volume = 0.32;
+  aud.play().then(() => { audOn = true; updSnd(); }).catch(() => {});
 }
-const PAN_TRIGGERS=[
-  {s:0.00,e:0.18,id:'p0'},
-  {s:0.65,e:0.76,id:'p1'},  // shifted right to match new XFORM_END
-  {s:0.76,e:0.85,id:'p2'},
-  {s:0.85,e:0.93,id:'p3'},
-  {s:0.93,e:1.01,id:'p4'},
-];
-const pauseCard=document.getElementById('pause-card');
-
-function updatePanels(p){
-  let show='';
-  for(const {s,e,id} of PAN_TRIGGERS) if(p>=s&&p<e){show=id;break;}
-  showPanel(show);
-
-  // Pause card: visible during pause zone (LAND_END → XFORM_START)
-  const pauseVis=p>=LAND_END&&p<XFORM_START;
-  pauseCard.classList.toggle('vis',pauseVis);
-
-  document.getElementById('cta')?.classList.toggle('vis',p>.95);
-  document.getElementById('pb').style.width=(p*100)+'%';
+const sndBtn = document.getElementById('snd');
+function updSnd() {
+  sndBtn.textContent = audOn ? '♪ Sound On' : '♫ Muted';
+  sndBtn.classList.toggle('on', audOn);
 }
-
-/* ── RESIZE ── */
-window.addEventListener('resize',()=>{
-  camera.aspect=innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
+sndBtn.addEventListener('click', () => {
+  if (audOn) { aud.pause(); audOn = false; }
+  else { aud.play().catch(() => {}); audOn = true; }
+  updSnd();
 });
 
-/* ── ANIMATE ── */
-const clock=new THREE.Clock();
+/* ─────────────────────────────────────────
+   PANEL LOGIC
+───────────────────────────────────────── */
+const PANEL_IDS = ['p0', 'p1', 'p2', 'p3', 'p4'];
+let activePanel = '';
 
-function animate(){
+function showPanel(id) {
+  if (id === activePanel) return;
+  PANEL_IDS.forEach(pid => document.getElementById(pid)?.classList.remove('vis'));
+  if (id) document.getElementById(id)?.classList.add('vis');
+  activePanel = id;
+}
+
+const PAN_ZONES = [
+  { s: 0.00, e: 0.16, id: 'p0' },
+  { s: 0.64, e: 0.74, id: 'p1' },
+  { s: 0.74, e: 0.82, id: 'p2' },
+  { s: 0.82, e: 0.91, id: 'p3' },
+  { s: 0.91, e: 1.01, id: 'p4' },
+];
+
+function updateUI(p) {
+  let show = '';
+  for (const z of PAN_ZONES) if (p >= z.s && p < z.e) { show = z.id; break; }
+  showPanel(show);
+  document.getElementById('cta')?.classList.toggle('vis', p > 0.96);
+  document.getElementById('pb').style.width = (p * 100) + '%';
+}
+
+/* ─────────────────────────────────────────
+   FLASH STATE
+───────────────────────────────────────── */
+let flashFired = false, flashOpacity = 0;
+const flashEl = document.getElementById('flash');
+
+/* ─────────────────────────────────────────
+   RESIZE
+───────────────────────────────────────── */
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ─────────────────────────────────────────
+   ANIMATE
+───────────────────────────────────────── */
+const clock = new THREE.Clock();
+
+function animate() {
   requestAnimationFrame(animate);
-  const dt=Math.min(clock.getDelta(),.05);
-  const t=clock.elapsedTime;
+  const dt  = Math.min(clock.getDelta(), 0.05);
+  const t   = clock.elapsedTime;
 
-  if(!isDragging&&Math.abs(touchVel)>.05){
-    targetS=Math.max(0,Math.min(1,targetS+touchVel*SPEED*1.4));
-    touchVel*=.86;
+  // Touch inertia
+  if (!isDragging && Math.abs(touchVel) > 0.05) {
+    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED * 1.4));
+    touchVel *= 0.84;
   }
 
-  currentS+=(targetS-currentS)*LERPF;
-  if(Math.abs(targetS-currentS)<.00004)currentS=targetS;
-  updatePanels(currentS);
+  // Smooth scroll
+  currentS += (targetS - currentS) * LERP_F;
+  if (Math.abs(targetS - currentS) < 0.00003) currentS = targetS;
+  const s = currentS;
 
-  const rawT=currentS;
+  updateUI(s);
 
-  /* ── EAGLE POSITION ── */
-  flightPath.getPoint(Math.min(rawT,1),_ep);
-  eagle.position.copy(_ep);
+  /* ── EAGLE ANIMATION MIXER ── */
+  if (eagleMixer) eagleMixer.update(dt);
 
-  /* ── EAGLE ORIENTATION ── */
-  const lat=Math.min(rawT+.015,1);
-  flightPath.getPoint(lat,_eNext);
-  _dir.subVectors(_eNext,_ep);
-  if(_dir.length()>.001){
+  /* ── EAGLE POSITION ON FLIGHT CURVE ── */
+  const eagleT = Math.min(s / ZONES.FLIGHT_END, 1.0);
+  flightCurve.getPoint(Math.min(eagleT, 1), _ep);
+  eagleGroup.position.copy(_ep);
+
+  /* ── EAGLE ORIENTATION — stable quaternion slerp ── */
+  const lookT = Math.min(eagleT + 0.018, 1);
+  flightCurve.getPoint(lookT, _eNext);
+  _dir.subVectors(_eNext, _ep);
+  if (_dir.length() > 0.001) {
     _dummy.position.copy(_ep);
     _dummy.lookAt(_eNext);
-    _dummy.rotateY(Math.PI);
-    eagle.quaternion.slerp(_dummy.quaternion,.12);
+    _dummy.rotateY(Math.PI); // flip to face forward
+    eagleGroup.quaternion.slerp(_dummy.quaternion, 0.14);
   }
 
-  /* ── WING FLAP ── */
-  const fp=Math.min(rawT,.44)/.44;
-  const flapFreq=4.5-fp*2.5, flapAmp=.28-fp*.12;
-  let wingAngle;
-  if(rawT>LAND_START){
-    const lp=Math.min((rawT-LAND_START)/(LAND_END-LAND_START),1);
-    wingAngle=lp*.45;
-  }else{wingAngle=Math.sin(t*flapFreq)*flapAmp;}
-  if(eagleWingL)eagleWingL.rotation.z= wingAngle;
-  if(eagleWingR)eagleWingR.rotation.z=-wingAngle;
-
-  /* ── EAGLE SCALE ── */
-  if(rawT>=LAND_END){
-    eagle.scale.setScalar(0);
-    if(!flashFired){
-      flashFired=true; flashOpacity=1.0;
-      greenL.intensity=32; exhL.intensity=22;
+  /* ── EAGLE SCALE — shrink during landing ── */
+  if (s >= ZONES.LAND_END) {
+    eagleGroup.scale.setScalar(0);
+    if (!flashFired) {
+      flashFired = true;
+      flashOpacity = 1.0;
+      orangeL.intensity = 38;
+      rimPt.intensity   = 20;
     }
-  }else if(rawT>LAND_START){
-    const lp=(rawT-LAND_START)/(LAND_END-LAND_START);
-    eagle.scale.setScalar(Math.max(1-lp*lp,.005));
-  }else{
-    eagle.scale.setScalar(1);
+  } else if (s > ZONES.LAND_START) {
+    const lp = (s - ZONES.LAND_START) / (ZONES.LAND_END - ZONES.LAND_START);
+    eagleGroup.scale.setScalar(Math.max(1 - lp * lp, 0.004));
+  } else {
+    eagleGroup.scale.setScalar(1);
   }
 
   // Flash decay
-  if(flashOpacity>0){
-    flashOpacity=Math.max(0,flashOpacity-dt*3.5);
-    document.getElementById('flash').style.opacity=flashOpacity;
+  if (flashOpacity > 0) {
+    flashOpacity = Math.max(0, flashOpacity - dt * 3.8);
+    flashEl.style.opacity = flashOpacity;
   }
 
-  /* ── BIKE — ground-pinned materialise ── */
-  if(bike){
-    if(rawT<XFORM_START){
-      bike.visible=false;
-    }else{
-      bike.visible=true;
-      const xp=Math.min((rawT-XFORM_START)/(XFORM_END-XFORM_START),1);
-      const xEased=1-Math.pow(1-xp,3);
-      bike.scale.setScalar(xEased);
-      bike.position.x=0;
-      bike.position.y=bike._floorY!==undefined?bike._floorY:0;
-      bike.position.z=0;
-      const spinBoost=(1-xp)*10;
-      bikeRotY+=(ROT_SPEED+spinBoost)*dt;
-      bike.rotation.y=bikeRotY;
+  /* ── CAR MATERIALISE ── */
+  if (car) {
+    if (s < ZONES.XFORM_START) {
+      car.visible = false;
+    } else {
+      car.visible = true;
+      const xp = Math.min((s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START), 1);
+      const xEased = 1 - Math.pow(1 - xp, 3);
+
+      car.scale.setScalar(xEased);
+      // Pin to floor — never float
+      car.position.x = 0;
+      car.position.y = car._floorY;
+      car.position.z = 0;
+
+      // Rotate continuously on plinth
+      carRotY += CAR_ROT_SPEED * dt;
+      car.rotation.y = carRotY;
     }
+
+    // Car animation mixer (wheels etc.)
+    if (carMixer) carMixer.update(dt);
   }
 
-  /* ── CAMERA ── */
-  if(rawT<LAND_END){
-    /* Chase cam: far-follow → tight closeup */
-    const closeupBlend=rawT<CLOSEUP_START?0:Math.min((rawT-CLOSEUP_START)/(LAND_START-CLOSEUP_START),1);
-    const cb=closeupBlend*closeupBlend*(3-2*closeupBlend);
-    const backDist=CAM_FAR_BACK+(CAM_CLOSE_BACK-CAM_FAR_BACK)*cb;
-    const upDist  =CAM_FAR_UP  +(CAM_CLOSE_UP  -CAM_FAR_UP  )*cb;
-    const lac=Math.min(rawT+.02,1);
-    flightPath.getPoint(lac,_camTar);
-    _eagleDir.subVectors(_camTar,_ep).normalize();
-    _camDesired.copy(_ep).addScaledVector(_eagleDir,-backDist).add(new THREE.Vector3(0,upDist,0));
-    camera.position.lerp(_camDesired,.06+cb*.06);
+  /* ─────────────────────────────────────
+     CAMERA LOGIC
+     Phase 1: Eagle chase cam (back-mounted, tracks path)
+     Phase 2: Hold shot at landing (pause)
+     Phase 3: Pull-back reveal as car materialises
+     Phase 4: Cinematic closeup orbit around car
+  ───────────────────────────────────────── */
+
+  if (s < ZONES.LAND_END) {
+    /* ── PHASE 1: Eagle chase camera
+       Camera sits directly behind and slightly above the eagle.
+       As eagle approaches (s > 0.28) camera tightens from far to close.
+    */
+    const closeBlend = s < 0.28 ? 0 : Math.min((s - 0.28) / (ZONES.LAND_START - 0.28), 1);
+    const cb = closeBlend * closeBlend * (3 - 2 * closeBlend); // smoothstep
+
+    // Far: 20 back, 7 up   →   Close: 6 back, 2 up
+    const BACK = 20 + (6  - 20) * cb;
+    const UP   =  7 + (2  -  7) * cb;
+
+    // Eagle's forward direction
+    const lookAheadT2 = Math.min(eagleT + 0.025, 1);
+    flightCurve.getPoint(lookAheadT2, _tmp);
+    _eagDir.subVectors(_tmp, _ep).normalize();
+
+    // Place camera BEHIND eagle along its travel direction
+    _camDes.copy(_ep)
+      .addScaledVector(_eagDir, -BACK)
+      .add(new THREE.Vector3(0, UP, 0));
+
+    // Lean slightly to the right for cinematic offset
+    const lateralOffset = new THREE.Vector3().crossVectors(_eagDir, new THREE.Vector3(0,1,0)).normalize();
+    _camDes.addScaledVector(lateralOffset, cb * 1.2);
+
+    camera.position.lerp(_camDes, 0.055 + cb * 0.055);
+    // Look AT the eagle so it fills the frame
     camera.lookAt(_ep);
 
-  }else if(rawT<XFORM_START){
-    /* PAUSE ZONE — camera holds still at low dramatic angle above landing spot */
-    /* Lerp to a cinematic hold position and stay there */
-    const holdPos=new THREE.Vector3(MOB?3:4.5, MOB?1.8:2.2, MOB?5:5.5);
-    camera.position.lerp(holdPos,.05);
-    camera.lookAt(0,.2,0);
+  } else if (s < ZONES.XFORM_START) {
+    /* ── PHASE 2: Landing pause — dramatic low angle hold ── */
+    const holdPos = new THREE.Vector3(MOB ? 4 : 5.5, MOB ? 1.6 : 2.0, MOB ? 5.5 : 6.5);
+    camera.position.lerp(holdPos, 0.045);
+    camera.lookAt(0, 0.15, 0);
 
-  }else if(rawT<XFORM_END){
-    /* Transform reveal — starts from hold pos, pulls back to showroom */
-    const xp=(rawT-XFORM_START)/(XFORM_END-XFORM_START);
-    const xEased=xp*xp*(3-2*xp);
-    const closePos=new THREE.Vector3(MOB?3:4.5,MOB?1.8:2.2,MOB?5:5.5);
-    const openPos =new THREE.Vector3(0,1.5,MOB?7.5:6);
-    _camDesired.lerpVectors(closePos,openPos,xEased);
-    camera.position.lerp(_camDesired,.1);
-    camera.lookAt(0,.3,0);
+  } else if (s < ZONES.XFORM_END) {
+    /* ── PHASE 3: Car materialise — camera pulls back to front reveal ── */
+    const xp = (s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START);
+    const xe = xp * xp * (3 - 2 * xp);
+    const startPos = new THREE.Vector3(MOB ? 4 : 5.5, MOB ? 1.6 : 2.0, MOB ? 5.5 : 6.5);
+    const endPos   = new THREE.Vector3(0, 1.5, MOB ? 9 : 7.5);
+    _camDes.lerpVectors(startPos, endPos, xe);
+    camera.position.lerp(_camDes, 0.09);
+    camera.lookAt(0, 0.4, 0);
 
-  }else{
-    /* Showroom orbit */
-    const bikeProg=(rawT-XFORM_END)/(1-XFORM_END);
-    const mZ=MOB?2:0;
-    const BK=[
-      {p:0.00,pos:new THREE.Vector3(0,   1.5,6+mZ),tar:new THREE.Vector3(0,.45,0)},
-      {p:0.25,pos:new THREE.Vector3(4.8, 1.0,1.5), tar:new THREE.Vector3(0,.5, 0)},
-      {p:0.50,pos:new THREE.Vector3(3.0, 2.2,-4.0),tar:new THREE.Vector3(0,.4, 0)},
-      {p:0.75,pos:new THREE.Vector3(-4.8,.9, 1.0), tar:new THREE.Vector3(0,.5, 0)},
-      {p:1.00,pos:new THREE.Vector3(0,   5.5,1.8), tar:new THREE.Vector3(0, 0, 0)},
-    ];
-    let a=BK[0],b=BK[1];
-    for(let i=0;i<BK.length-1;i++){if(bikeProg>=BK[i].p&&bikeProg<=BK[i+1].p){a=BK[i];b=BK[i+1];break;}}
-    const raw2=a.p===b.p?0:(bikeProg-a.p)/(b.p-a.p);
-    const tt=raw2*raw2*(3-2*raw2);
-    _cp.lerpVectors(a.pos,b.pos,tt);
-    _camTar.lerpVectors(a.tar,b.tar,tt);
-    camera.position.lerp(_cp,.08);
+  } else {
+    /* ── PHASE 4: Closeup orbit — glide between dramatic shots ── */
+    const orbitT = (s - ZONES.XFORM_END) / (1.0 - ZONES.XFORM_END);
+
+    // Find bracketing shots
+    let shotA = CAR_SHOTS[0];
+    let shotB = CAR_SHOTS[1];
+    for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
+      if (orbitT >= CAR_SHOTS[i].p && orbitT <= CAR_SHOTS[i+1].p) {
+        shotA = CAR_SHOTS[i];
+        shotB = CAR_SHOTS[i+1];
+        break;
+      }
+    }
+    const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
+    const ease   = localT * localT * (3 - 2 * localT);
+
+    _camDes.lerpVectors(shotA.pos, shotB.pos, ease);
+    _camTar.lerpVectors(shotA.tar, shotB.tar, ease);
+
+    // Account for car rotation — offset look target by car's current rotation
+    const carRotOffset = new THREE.Vector3(
+      Math.sin(carRotY) * 0.3,
+      0,
+      Math.cos(carRotY) * 0.3
+    );
+    _camTar.add(carRotOffset);
+
+    camera.position.lerp(_camDes, 0.06);
     camera.lookAt(_camTar);
   }
 
   /* ── PARTICLES ── */
-  const pa=pGeo.attributes.position;
-  for(let i=0;i<PC;i++){
-    pa.array[i*3]+=pv[i*3]; pa.array[i*3+1]+=pv[i*3+1]; pa.array[i*3+2]+=pv[i*3+2];
-    if(pa.array[i*3+1]>15){
-      pa.array[i*3+1]=0;
-      pa.array[i*3]=(Math.random()-.5)*80;
-      pa.array[i*3+2]=(Math.random()-.5)*80;
+  const pa = pGeo.attributes.position;
+  for (let i = 0; i < PC; i++) {
+    pa.array[i*3]   += pVel[i*3];
+    pa.array[i*3+1] += pVel[i*3+1];
+    pa.array[i*3+2] += pVel[i*3+2];
+    if (pa.array[i*3+1] > 18) {
+      pa.array[i*3+1] = 0;
+      pa.array[i*3]   = (Math.random() - .5) * 100;
+      pa.array[i*3+2] = (Math.random() - .5) * 100;
     }
   }
-  pa.needsUpdate=true;
+  pa.needsUpdate = true;
 
-  /* ── FLOOR SHADERS ── */
-  gridMat.uniforms.uT.value=t;
-  spokeMat.uniforms.uAngle.value=bikeRotY;
-  edgeRing.material.opacity=.07+Math.sin(t*1.4)*.04;
+  /* ── FLOOR SHADER UPDATE ── */
+  gridMat.uniforms.uT.value = t;
+  spokeMat.uniforms.uAngle.value = carRotY;
+  edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.045;
 
   /* ── PULSE LIGHTS ── */
-  if(!flashFired||greenL.intensity<=3){
-    greenL.intensity=2.2+Math.sin(t*1.1)*.5;
-    exhL.intensity  =1.9+Math.sin(t*2.3)*.55;
-  }else{
-    greenL.intensity=Math.max(greenL.intensity-dt*45,2.2+Math.sin(t*1.1)*.5);
-    exhL.intensity  =Math.max(exhL.intensity  -dt*30,1.9+Math.sin(t*2.3)*.55);
+  if (!flashFired || orangeL.intensity <= 4) {
+    orangeL.intensity = 3.0 + Math.sin(t * 1.2) * 0.6;
+    rimPt.intensity   = 1.8 + Math.sin(t * 2.1) * 0.5;
+  } else {
+    orangeL.intensity = Math.max(orangeL.intensity - dt * 50, 3.0 + Math.sin(t * 1.2) * 0.6);
+    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 35, 1.8 + Math.sin(t * 2.1) * 0.5);
   }
 
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 animate();
 </script>

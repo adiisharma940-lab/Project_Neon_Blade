@@ -39,13 +39,12 @@ canvas{position:fixed;inset:0;display:block;}
 .hint-arrow{width:1px;height:28px;background:linear-gradient(to bottom,#ff4400,transparent);margin:0 auto;animation:pulse-arrow 1.6s ease-in-out infinite;}
 @keyframes pulse-arrow{0%,100%{opacity:.3;transform:scaleY(.6);}50%{opacity:1;transform:scaleY(1);}}
 
-/* ── TEXT PANELS ── */
+/* ── TEXT PANELS — DESKTOP ── */
 .tp{
   position:fixed;opacity:0;pointer-events:none;z-index:20;
   transition:opacity .7s cubic-bezier(.22,.68,0,1.15), transform .7s cubic-bezier(.22,.68,0,1.15);
 }
 
-/* DESKTOP */
 @media(min-width:641px){
   .tp{
     width:min(400px,36vw);
@@ -68,17 +67,57 @@ canvas{position:fixed;inset:0;display:block;}
   .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
 }
 
-/* MOBILE */
+/* ── TEXT PANELS — MOBILE: slide in from left/right ── */
 @media(max-width:640px){
   .tp{
-    left:0;right:0;bottom:0;width:100%!important;
-    padding:.8rem 1rem 1.5rem;text-align:center;
-    background:linear-gradient(to top,rgba(5,5,8,.98) 50%,transparent);
-    transform:translateY(16px);
-    max-height:58vh;overflow-y:auto;scrollbar-width:none;
+    width:calc(100% - 2.4rem)!important;
+    padding:.85rem 1rem 1.4rem;
+    bottom:3.5vh;
+    max-height:52vh;
+    overflow-y:auto;
+    scrollbar-width:none;
+    background:linear-gradient(to top,rgba(5,5,8,.97) 55%,rgba(5,5,8,.6));
+    border-top:1px solid rgba(255,68,0,.2);
+    /* default off-screen directions */
+    top:auto;
+    left:1.2rem;
+    right:1.2rem;
   }
   .tp::-webkit-scrollbar{display:none;}
-  .tp.vis{opacity:1;transform:translateY(0);}
+
+  /* Left panels slide in from left */
+  .tp.L{
+    transform:translateX(-60px);
+    opacity:0;
+  }
+  .tp.L.vis{
+    opacity:1;
+    transform:translateX(0);
+  }
+
+  /* Right panels slide in from right */
+  .tp.R{
+    transform:translateX(60px);
+    opacity:0;
+    text-align:left;
+  }
+  .tp.R.vis{
+    opacity:1;
+    transform:translateX(0);
+  }
+
+  /* Centre panels slide up */
+  .tp.C{
+    left:1.2rem!important;
+    right:1.2rem!important;
+    top:auto;
+    transform:translateY(20px);
+    text-align:center;
+  }
+  .tp.C.vis{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
 /* TYPOGRAPHY */
@@ -125,7 +164,6 @@ canvas{position:fixed;inset:0;display:block;}
   border:1px solid rgba(255,68,0,.28);padding:.12rem .4rem;
 }
 
-/* Right panel alignment */
 @media(min-width:641px){
   .tp.R .fact-row{justify-content:flex-end;}
   .tp.R .tag-row{justify-content:flex-end;}
@@ -193,15 +231,6 @@ canvas{position:fixed;inset:0;display:block;}
   <div class="hint-arrow"></div>
 </div>
 
-<!-- ═══════════════════════════════════════
-     TEXT PANELS
-     p0: intro (0–17%)
-     p1: Legacy (65–74%)
-     p2: Hybrid Heart (74–82%)
-     p3: Aerodynamics (82–90%)
-     p4: The Hunt (90–100%)
-════════════════════════════════════════ -->
-
 <div class="tp C" id="p0">
   <span class="ey">McLaren Automotive · 2024</span>
   <div class="hd">THE EAGLE<br/>HUNTS <em>ITS OWN</em></div>
@@ -216,7 +245,7 @@ canvas{position:fixed;inset:0;display:block;}
   <span class="ey">Heritage · F1 Bloodline · 2024</span>
   <div class="hd">WHERE THE<br/><em>F1</em> LEFT OFF</div>
   <div class="bd">The McLaren W1 is not the successor to the P1. It is the successor to the <em>F1</em> — the 1992 Gordon Murray masterpiece that was the fastest production car on earth for a decade. The W1 carries that lineage deliberately: a central driving position, an engine developed by McLaren's own powertrain team, and an obsessive commitment to the idea that a road car should feel like nothing else has ever felt.</div>
-  <div class="bd">Thirty-two years separate the F1 and the W1. In that time McLaren learned to win Formula 1 championships, survived near bankruptcy, built the P1 and the Senna and the Speedtail, and emerged with something rare in the hypercar world: <strong>genuine engineering conviction</strong>. The W1 is what happens when a company stops trying to compete and starts trying to be correct.</div>
+  <div class="bd">Thirty-two years separate the F1 and the W1. In that time McLaren learned to win Formula 1 championships, survived near bankruptcy, built the P1 and the Senna and the Speedtail, and emerged with something rare in the hypercar world: <strong>genuine engineering conviction</strong>.</div>
   <div class="fact-row">
     <div class="fact"><div class="fv">928</div><div class="fl">Combined HP</div></div>
     <div class="fact"><div class="fv">1399</div><div class="fl">kg Kerb Weight</div></div>
@@ -230,9 +259,8 @@ canvas{position:fixed;inset:0;display:block;}
 <div class="tp R" id="p2">
   <span class="ey">Powertrain · Hybrid · E-Turbo</span>
   <div class="hd">THE HEART<br/>IS <em>ELECTRIFIED</em><br/>FURY</div>
-  <div class="bd">At the centre of the W1 is a <strong>4.0-litre twin-turbocharged V8</strong> — a clean-sheet design by McLaren Automotive's own powertrain engineers, not a unit shared with any other vehicle. It produces <strong>727 horsepower</strong> alone. But McLaren didn't stop there. They fitted the turbocharger shafts with electric motors — a technology borrowed directly from Formula 1 — creating what they call an <em>E-Turbo system</em>.</div>
-  <div class="bd">The electric motors eliminate turbo lag entirely. Before the exhaust gases have even begun to spool the compressor, the electric motor has already spun it to operating speed. There is no delay. There is no step. There is just torque — <strong>900Nm</strong> — available from the moment you ask for it, from idle all the way to the 8,500 RPM redline.</div>
-  <div class="bd">A second electric motor drives the rear axle directly, adding <strong>201 horsepower</strong> of electric thrust for a combined system output of 928 horsepower. The battery is a 1.196 kWh unit — deliberately small, because the W1 is not an EV. It is a combustion engine with electric supercharging and an instantaneous torque-fill system. <strong>Every joule is a weapon.</strong></div>
+  <div class="bd">At the centre of the W1 is a <strong>4.0-litre twin-turbocharged V8</strong> — a clean-sheet design by McLaren Automotive's own powertrain engineers. It produces <strong>727 horsepower</strong> alone, with E-Turbo technology borrowed directly from Formula 1 to eliminate turbo lag entirely.</div>
+  <div class="bd">A second electric motor drives the rear axle directly, adding <strong>201 horsepower</strong> for a combined system output of 928 horsepower and <strong>900 Nm</strong> of torque available from idle to the 8,500 RPM redline. <strong>Every joule is a weapon.</strong></div>
   <div class="fact-row">
     <div class="fact"><div class="fv">727</div><div class="fl">ICE Horsepower</div></div>
     <div class="fact"><div class="fv">201</div><div class="fl">Electric HP</div></div>
@@ -246,9 +274,8 @@ canvas{position:fixed;inset:0;display:block;}
 <div class="tp L" id="p3">
   <span class="ey">Aerodynamics · Active · Downforce</span>
   <div class="hd">AIR IS<br/><em>SCULPTED</em><br/>NOT MANAGED</div>
-  <div class="bd">McLaren has always been suspicious of wings. Big fixed wings are a lazy solution — they generate downforce but also drag, and drag is the enemy of speed. The W1 takes a different philosophy: <em>every surface generates downforce, and every surface is active</em>. The car reshapes itself in real time, driven by algorithms that read road conditions, speed, and driver inputs 1,000 times per second.</div>
-  <div class="bd">The front underbody features a <strong>Ground Effect Tunnel</strong> — a venturi channel that accelerates air under the car, creating a low-pressure zone that literally sucks the W1 to the road. At 150 mph, the W1 generates <strong>1,000 kg of downforce</strong> — more than the car weighs. At that moment it would drive on the ceiling. This is not a metaphor. This is physics being exploited by engineers who refused to accept compromise.</div>
-  <div class="bd">An active rear wing adjusts its angle continuously, working in concert with an active front splitter and adjustable ride height. In Race mode, the suspension drops, the aerodynamics tighten, and the W1 transforms from a grand tourer into something that shares more DNA with an LMP1 prototype than anything sold by a road car manufacturer.</div>
+  <div class="bd">The W1 takes a radical philosophy: <em>every surface generates downforce, and every surface is active</em>. Algorithms read road conditions 1,000 times per second. The Ground Effect Tunnel creates a low-pressure zone that generates <strong>1,000 kg of downforce at 150 mph</strong> — more than the car's own weight.</div>
+  <div class="bd">An active rear wing, front splitter, and adjustable ride height work in concert. In Race mode the W1 transforms into something that shares more DNA with an LMP1 prototype than any road car manufacturer has ever offered.</div>
   <div class="fact-row">
     <div class="fact"><div class="fv">1,000<small>kg</small></div><div class="fl">Downforce @ 150mph</div></div>
     <div class="fact"><div class="fv">1000<small>Hz</small></div><div class="fl">Aero Update Rate</div></div>
@@ -263,9 +290,8 @@ canvas{position:fixed;inset:0;display:block;}
 <div class="tp R" id="p4">
   <span class="ey">The W1 · 106 Built · Sold Out</span>
   <div class="hd"><em>W1</em><br/>THE LAST<br/>ARGUMENT</div>
-  <div class="bd">McLaren built 106 examples of the W1. Every one was allocated before the public announcement. The people who own them understand something that numbers alone cannot communicate — that this car represents the closing argument of a company that spent three decades proving that a small British manufacturer could build cars that embarrassed Ferrari, Porsche, and Bugatti on their best days.</div>
-  <div class="bd">The W1 has a <strong>carbon fibre MonoCell III-T</strong> tub — the third generation of McLaren's signature chassis technology, stiffened specifically for the W1's increased power and downforce loads. The body panels are carbon fibre. The roof is carbon fibre. The floor is carbon fibre. The car is, at its core, a structure so rigid that its torsional stiffness exceeds many dedicated racing cars.</div>
-  <div class="bd">It costs £2.1 million before options. It goes 0–200 mph in under 15 seconds — a figure that puts it in a category with machines that cost twice as much. But price is not the point. <em>The point is that every W1 owner knows they own the closest thing to a racing car that has ever been granted a number plate.</em> That knowledge has no market value. It is simply true.</div>
+  <div class="bd">McLaren built 106 examples of the W1. Every one was allocated before the public announcement. The <strong>carbon fibre MonoCell III-T</strong> tub is so rigid its torsional stiffness exceeds many dedicated racing cars. It costs £2.1 million before options.</div>
+  <div class="bd"><em>Every W1 owner knows they own the closest thing to a racing car that has ever been granted a number plate.</em> That knowledge has no market value. It is simply true.</div>
   <div class="fact-row">
     <div class="fact"><div class="fv">106</div><div class="fl">Units — All Sold</div></div>
     <div class="fact"><div class="fv">£2.1M</div><div class="fl">Base Price</div></div>
@@ -299,104 +325,87 @@ import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ─────────────────────────────────────────
-   CONSTANTS & GLOBALS
-───────────────────────────────────────── */
+/* ─── CONSTANTS ─── */
 const MOB = innerWidth < 768;
 
-// Scroll zones (0–1)
 const ZONES = {
-  FLIGHT_END  : 0.48,   // eagle arrives above car position
-  LAND_START  : 0.42,   // eagle begins final descent / shrink
-  LAND_END    : 0.50,   // eagle gone, flash fires
-  PAUSE_END   : 0.56,   // camera holds, nothing visible
-  XFORM_START : 0.56,   // car begins materialising
-  XFORM_END   : 0.64,   // car fully revealed
-  // Closeup orbit starts at XFORM_END
+  FLIGHT_END  : 0.48,
+  LAND_START  : 0.42,
+  LAND_END    : 0.50,
+  PAUSE_END   : 0.56,
+  XFORM_START : 0.56,
+  XFORM_END   : 0.64,
 };
 
-/* ─────────────────────────────────────────
-   SCROLL
-───────────────────────────────────────── */
+/* ─── SCROLL ─── */
 let targetS = 0, currentS = 0;
 let isDragging = false, lastTY = 0, touchVel = 0;
 const SCROLL_SPEED = MOB ? 0.00052 : 0.00036;
 const LERP_F = MOB ? 0.07 : 0.055;
 
+const hintEl = document.getElementById('hint');
 window.addEventListener('wheel', e => {
   e.preventDefault();
   targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED));
   hintEl.classList.add('gone');
 }, { passive: false });
-
 window.addEventListener('touchstart', e => {
   lastTY = e.touches[0].clientY; touchVel = 0; isDragging = true;
   hintEl.classList.add('gone');
 }, { passive: true });
-
 window.addEventListener('touchmove', e => {
   if (!isDragging) return;
   const dy = lastTY - e.touches[0].clientY;
   touchVel = dy; lastTY = e.touches[0].clientY;
   targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED * 1.8));
 }, { passive: true });
-
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
-const hintEl = document.getElementById('hint');
-
-/* ─────────────────────────────────────────
-   RENDERER
-───────────────────────────────────────── */
+/* ─── RENDERER ─── */
 const renderer = new THREE.WebGLRenderer({
-  antialias: !MOB, powerPreference: 'high-performance', stencil: false
+  antialias: !MOB,
+  powerPreference: 'high-performance',
+  stencil: false
 });
 renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 2.0;
+renderer.toneMappingExposure = 1.8;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
 
-/* ─────────────────────────────────────────
-   SCENE
-───────────────────────────────────────── */
+/* ─── SCENE ─── */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050508);
-scene.fog = new THREE.FogExp2(0x050508, MOB ? 0.013 : 0.008);
+scene.fog = new THREE.FogExp2(0x050508, MOB ? 0.010 : 0.006);
 
-const camera = new THREE.PerspectiveCamera(MOB ? 65 : 52, innerWidth / innerHeight, 0.05, 600);
+const camera = new THREE.PerspectiveCamera(MOB ? 65 : 52, innerWidth / innerHeight, 0.05, 800);
 camera.position.set(0, 50, 150);
 camera.lookAt(0, 0, 0);
 
-/* ─────────────────────────────────────────
-   ENVIRONMENT
-───────────────────────────────────────── */
+/* ─── ENVIRONMENT ─── */
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.05).texture;
 pmrem.dispose();
 
-/* ─────────────────────────────────────────
-   LIGHTS
-───────────────────────────────────────── */
-scene.add(new THREE.AmbientLight(0xd0d8ff, 2.2));
-const keyL = new THREE.DirectionalLight(0xffffff, 10);
+/* ─── LIGHTS ─── */
+scene.add(new THREE.AmbientLight(0xd0d8ff, 3.0));
+const keyL = new THREE.DirectionalLight(0xffffff, 12);
 keyL.position.set(5, 10, 7); scene.add(keyL);
-const fillL = new THREE.DirectionalLight(0xffe8d0, 4);
+const fillL = new THREE.DirectionalLight(0xffe8d0, 6);
 fillL.position.set(-6, 4, 4); scene.add(fillL);
-const rimL = new THREE.DirectionalLight(0xaaccff, 7);
+const rimL = new THREE.DirectionalLight(0xaaccff, 8);
 rimL.position.set(0, 5, -8); scene.add(rimL);
-const frontL = new THREE.DirectionalLight(0xffffff, 5);
+const frontL = new THREE.DirectionalLight(0xffffff, 7);
 frontL.position.set(0, 2, 10); scene.add(frontL);
-const orangeL = new THREE.PointLight(0xff5500, 3.5, 9);
+// Under-car accent — subtle, don't overwhelm colours
+const orangeL = new THREE.PointLight(0xff5500, 2.5, 9);
 orangeL.position.set(0, -0.3, 0); scene.add(orangeL);
-const rimPt = new THREE.PointLight(0xff2200, 2.0, 6);
+const rimPt = new THREE.PointLight(0xff2200, 1.5, 6);
 rimPt.position.set(-2, 1, -2); scene.add(rimPt);
 
-/* ─────────────────────────────────────────
-   FLOOR
-───────────────────────────────────────── */
+/* ─── FLOOR ─── */
 const floorMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(400, 400),
   new THREE.MeshStandardMaterial({ color: 0x04050a, roughness: 0.9, metalness: 0.05 })
@@ -405,7 +414,6 @@ floorMesh.rotation.x = -Math.PI / 2;
 floorMesh.position.y = -1.08;
 scene.add(floorMesh);
 
-// Reflective plinth disc
 const discMesh = new THREE.Mesh(
   new THREE.CircleGeometry(5.5, 128),
   new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.02, metalness: 0.99, envMapIntensity: 5 })
@@ -414,7 +422,6 @@ discMesh.rotation.x = -Math.PI / 2;
 discMesh.position.y = -1.06;
 scene.add(discMesh);
 
-// Animated grid
 const gridMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uT: { value: 0 } },
@@ -434,7 +441,6 @@ gridMesh.rotation.x = -Math.PI / 2;
 gridMesh.position.y = -1.05;
 scene.add(gridMesh);
 
-// Spoke ring
 const spokeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uAngle: { value: 0 } },
@@ -453,7 +459,6 @@ spokeMesh.rotation.x = -Math.PI / 2;
 spokeMesh.position.y = -1.04;
 scene.add(spokeMesh);
 
-// Edge ring glow
 const edgeRing = new THREE.Mesh(
   new THREE.RingGeometry(5.4, 6.2, 128),
   new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
@@ -462,10 +467,8 @@ edgeRing.rotation.x = -Math.PI / 2;
 edgeRing.position.y = -1.03;
 scene.add(edgeRing);
 
-/* ─────────────────────────────────────────
-   PARTICLES
-───────────────────────────────────────── */
-const PC = MOB ? 350 : 800;
+/* ─── PARTICLES ─── */
+const PC = MOB ? 300 : 700;
 const pPos = new Float32Array(PC * 3);
 const pVel = new Float32Array(PC * 3);
 for (let i = 0; i < PC; i++) {
@@ -483,11 +486,7 @@ scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
   blending: THREE.AdditiveBlending, depthWrite: false
 })));
 
-/* ─────────────────────────────────────────
-   EAGLE FLIGHT PATH
-   Eagle approaches from high/far, sweeps in
-   and lands exactly at origin (car position)
-───────────────────────────────────────── */
+/* ─── EAGLE FLIGHT PATH ─── */
 const FLIGHT_PTS = [
   new THREE.Vector3(   0, 180,  450),
   new THREE.Vector3( 160, 145,  360),
@@ -499,50 +498,69 @@ const FLIGHT_PTS = [
   new THREE.Vector3( -65,  10,   42),
   new THREE.Vector3(  22,   5,   22),
   new THREE.Vector3(   6,   2,    9),
-  new THREE.Vector3(   0,   0,    0),   // TOUCHDOWN
+  new THREE.Vector3(   0,   0,    0),
 ];
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
-/* ─────────────────────────────────────────
-   CLOSEUP CAMERA SHOTS (post-transform)
-   Camera visits different dramatic angles
-   around the McLaren as the user scrolls
-───────────────────────────────────────── */
+/* ─── CLOSEUP CAMERA SHOTS ───
+   Pulled back significantly so full car is visible.
+   Desktop: ~10-14 units away. Mobile: ~12-16 units.
+─── */
+const D = MOB ? 1.55 : 1.0; // distance multiplier — pull back more on mobile
 const CAR_SHOTS = [
-  // [0] Front wide reveal
-  { p: 0.00, pos: new THREE.Vector3(0,    1.6, 7.5),  tar: new THREE.Vector3(0, 0.5, 0)  },
-  // [1] Low front 3/4
-  { p: 0.14, pos: new THREE.Vector3(4.5,  0.5, 5.5),  tar: new THREE.Vector3(0, 0.3, 0)  },
-  // [2] Side profile — long shot
-  { p: 0.28, pos: new THREE.Vector3(7.5,  1.2, 0),    tar: new THREE.Vector3(0, 0.4, 0)  },
-  // [3] Low rear 3/4
-  { p: 0.42, pos: new THREE.Vector3(4.0,  0.4,-5.0),  tar: new THREE.Vector3(0, 0.3, 0)  },
-  // [4] Rear hero
-  { p: 0.55, pos: new THREE.Vector3(0,    1.8,-7.0),  tar: new THREE.Vector3(0, 0.5, 0)  },
-  // [5] Low front left
-  { p: 0.68, pos: new THREE.Vector3(-4.5, 0.6, 5.0),  tar: new THREE.Vector3(0, 0.3, 0)  },
-  // [6] Top-down glamour
-  { p: 0.80, pos: new THREE.Vector3(0,    6.5, 2.5),  tar: new THREE.Vector3(0, 0,   0)  },
-  // [7] Final — front low dramatic
-  { p: 1.00, pos: new THREE.Vector3(1.5,  0.35,6.0),  tar: new THREE.Vector3(0, 0.25, 0) },
+  { p: 0.00, pos: new THREE.Vector3(0,     2.2,  11*D),  tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.14, pos: new THREE.Vector3(7*D,   1.2,   9*D),  tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.28, pos: new THREE.Vector3(12*D,  2.0,   1  ),  tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.42, pos: new THREE.Vector3(6*D,   1.0,  -8*D),  tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.55, pos: new THREE.Vector3(0,     2.2, -11*D),  tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.68, pos: new THREE.Vector3(-7*D,  1.2,   8*D),  tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.80, pos: new THREE.Vector3(0,     9.0,   4  ),  tar: new THREE.Vector3(0, 0,   0) },
+  { p: 1.00, pos: new THREE.Vector3(3*D,   1.0,  10*D),  tar: new THREE.Vector3(0, 0.3, 0) },
 ];
 
-/* ─────────────────────────────────────────
-   REUSABLE VECTORS
-───────────────────────────────────────── */
-const _ep      = new THREE.Vector3();
-const _eNext   = new THREE.Vector3();
-const _dir     = new THREE.Vector3();
-const _camDes  = new THREE.Vector3();
-const _camTar  = new THREE.Vector3();
-const _eagDir  = new THREE.Vector3();
-const _tmp     = new THREE.Vector3();
-const _dummy   = new THREE.Object3D();
-scene.add(_dummy);
+/* ─── REUSABLE VECTORS ─── */
+const _ep     = new THREE.Vector3();
+const _eNext  = new THREE.Vector3();
+const _dir    = new THREE.Vector3();
+const _camDes = new THREE.Vector3();
+const _camTar = new THREE.Vector3();
+const _eagDir = new THREE.Vector3();
+const _tmp    = new THREE.Vector3();
 
-/* ─────────────────────────────────────────
-   LOADERS
-───────────────────────────────────────── */
+/* ─── EAGLE ORIENTATION HELPER ───
+   We build a proper look-at quaternion without Three's Object3D overhead
+   so we can control the "up" vector and avoid gimbal flip.
+   Eagles fly beak-first (+Z in most rigs). We find the forward vector
+   from the curve tangent and construct a quaternion from it.
+─── */
+const _eagleQ  = new THREE.Quaternion();
+const _eagleM  = new THREE.Matrix4();
+const _fwd     = new THREE.Vector3();
+const _right   = new THREE.Vector3();
+const _up2     = new THREE.Vector3();
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+
+function setEagleFacing(group, from, to) {
+  _fwd.subVectors(to, from);
+  if (_fwd.lengthSq() < 0.000001) return;
+  _fwd.normalize();
+
+  // Right = fwd × worldUp, then true up = right × fwd
+  _right.crossVectors(_fwd, WORLD_UP).normalize();
+  if (_right.lengthSq() < 0.0001) {
+    // Degenerate: flying straight up/down — use a fallback
+    _right.set(1, 0, 0);
+  }
+  _up2.crossVectors(_right, _fwd).normalize();
+
+  // Build rotation matrix: columns are right, up, -fwd
+  // (GLB models typically have +Z as forward, so -fwd = model's backward = -Z col)
+  _eagleM.makeBasis(_right, _up2, _fwd.clone().negate());
+  _eagleQ.setFromRotationMatrix(_eagleM);
+  group.quaternion.slerp(_eagleQ, 0.12);
+}
+
+/* ─── LOADERS ─── */
 const draco = new DRACOLoader();
 draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
 
@@ -561,26 +579,24 @@ let loadDone = false;
 function dismissLoader() {
   if (loadDone) return;
   loadDone = true;
+  // Pre-warm renderer to eliminate first-frame stutter
+  renderer.render(scene, camera);
   document.getElementById('ld').classList.add('done');
   showPanel('p0');
   startAudio();
 }
 setTimeout(dismissLoader, 18000);
 
-/* ─────────────────────────────────────────
-   EAGLE — animated GLB
-───────────────────────────────────────── */
+/* ─── EAGLE ─── */
 const eagleGroup = new THREE.Group();
 scene.add(eagleGroup);
 let eagleMixer = null;
-let eagleClip  = null;
 
 const eagleLoader = new GLTFLoader();
 eagleLoader.setDRACOLoader(draco);
 eagleLoader.load('animated_eagle.glb',
   gltf => {
     const model = gltf.scene;
-    // Scale to ~3 units wingspan
     const box  = new THREE.Box3().setFromObject(model);
     const sz   = box.getSize(new THREE.Vector3());
     const s    = (MOB ? 3.8 : 3.0) / Math.max(sz.x, sz.y, sz.z);
@@ -601,11 +617,10 @@ eagleLoader.load('animated_eagle.glb',
       });
     });
 
-    // Set up animation mixer — play the flight animation
     if (gltf.animations && gltf.animations.length > 0) {
       eagleMixer = new THREE.AnimationMixer(model);
-      eagleClip  = eagleMixer.clipAction(gltf.animations[0]);
-      eagleClip.play();
+      const clip = eagleMixer.clipAction(gltf.animations[0]);
+      clip.play();
     }
 
     eagleGroup.add(model);
@@ -616,13 +631,15 @@ eagleLoader.load('animated_eagle.glb',
   err => { console.warn('Eagle load failed:', err); onLoaded(); }
 );
 
-/* ─────────────────────────────────────────
-   MCLAREN W1
-───────────────────────────────────────── */
+/* ─── MCLAREN W1 ───
+   KEY FIX: Do NOT override the model's authored colours.
+   Only fix glass opacity and ensure env map intensity is high.
+   This preserves the actual McLaren paint, carbon, and interior colours.
+─── */
 let car = null;
 let carRotY = 0;
 let carMixer = null;
-const CAR_ROT_SPEED = 0.22; // slow dignified rotation
+const CAR_ROT_SPEED = 0.18;
 
 const carLoader = new GLTFLoader();
 carLoader.setDRACOLoader(draco);
@@ -645,51 +662,43 @@ carLoader.load('mclaren_w1.glb',
       ms.forEach(m => {
         if (!m || !m.isMaterial) return;
         m.wireframe = false;
-        m.needsUpdate = true;
-        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
-        m.envMapIntensity = 5.5;
-        const nm = (c.name + (m.name || '')).toLowerCase();
-        const r = m.color.r, g = m.color.g, b = m.color.b;
-        const lum = r*.299 + g*.587 + b*.114;
-        const isOrange = r > 0.4 && g > 0.15 && g < 0.55 && b < 0.15;
-        const isBlack  = lum < 0.06;
-        const isSilver = lum > 0.3 && Math.abs(r-g) < 0.1 && Math.abs(g-b) < 0.1;
-        const isGlass  = nm.includes('glass') || nm.includes('windsh') || nm.includes('window');
-        const isLight  = nm.includes('light') || nm.includes('lamp');
-        const isRed    = r > 0.4 && r > g * 2.0;
-        if (isGlass) {
-          m.transparent = true; m.opacity = 0.28;
-          m.roughness = 0.02; m.metalness = 0.1; m.envMapIntensity = 3;
-          m.color.setHex(0x1a2a3a);
-        } else if (isOrange) {
-          // McLaren papaya orange — keep and enhance
-          m.color.setHex(0xff5500); m.roughness = 0.22; m.metalness = 0.35;
-          if (m.emissive) { m.emissive.setHex(0x220800); m.emissiveIntensity = 0.08; }
-        } else if (isLight) {
-          m.color.setHex(0xffe8c0); m.roughness = 0.05; m.metalness = 0.0;
-          if (m.emissive) { m.emissive.setHex(0xffc060); m.emissiveIntensity = 0.6; }
-        } else if (isBlack) {
-          m.color.setHex(0x080a0e); m.roughness = 0.06; m.metalness = 0.95;
-          m.envMapIntensity = 6;
-        } else if (isSilver) {
-          m.color.setHex(0xbcc4cc); m.roughness = 0.18; m.metalness = 0.92;
-        } else if (isRed) {
-          m.color.setHex(0xff2200); m.roughness = 0.25; m.metalness = 0.6;
-        } else if (lum < 0.18) {
-          m.color.setHex(0x0a0c10); m.roughness = 0.9; m.metalness = 0.05;
-        } else {
-          m.color.multiplyScalar(1.3);
-          m.roughness = Math.min(m.roughness, 0.45);
-          m.metalness = Math.max(m.metalness, 0.25);
+
+        // Only touch PBR materials — preserve authored colours exactly
+        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) {
+          m.needsUpdate = true;
+          return;
         }
+
+        // Boost environment map so reflections read in dark scene
+        m.envMapIntensity = (m.envMapIntensity || 1.0) * 1.6;
+        m.envMapIntensity = Math.min(m.envMapIntensity, 8);
+
+        // Fix glass only — make it transparent
+        const nm = (c.name + ' ' + (m.name || '')).toLowerCase();
+        const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens');
+        if (isGlass) {
+          m.transparent = true;
+          m.opacity = 0.25;
+          m.roughness = 0.02;
+          m.metalness = 0.05;
+          m.envMapIntensity = 3;
+          m.needsUpdate = true;
+          return;
+        }
+
+        // Emissive boost for light elements
+        const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head');
+        if (isLight && m.emissive) {
+          m.emissiveIntensity = (m.emissiveIntensity || 0) + 0.4;
+        }
+
+        m.needsUpdate = true;
       });
     });
 
-    // Wheel spin animation if present
     if (gltf.animations && gltf.animations.length > 0) {
       carMixer = new THREE.AnimationMixer(car);
-      const action = carMixer.clipAction(gltf.animations[0]);
-      action.play();
+      carMixer.clipAction(gltf.animations[0]).play();
     }
 
     car.visible = false;
@@ -701,9 +710,7 @@ carLoader.load('mclaren_w1.glb',
   err => { console.error('Car load error:', err); setP(100, 'Ready'); onLoaded(); }
 );
 
-/* ─────────────────────────────────────────
-   AUDIO
-───────────────────────────────────────── */
+/* ─── AUDIO ─── */
 const aud = document.getElementById('aud');
 let audOn = false;
 function startAudio() {
@@ -721,19 +728,15 @@ sndBtn.addEventListener('click', () => {
   updSnd();
 });
 
-/* ─────────────────────────────────────────
-   PANEL LOGIC
-───────────────────────────────────────── */
+/* ─── PANEL LOGIC ─── */
 const PANEL_IDS = ['p0', 'p1', 'p2', 'p3', 'p4'];
 let activePanel = '';
-
 function showPanel(id) {
   if (id === activePanel) return;
   PANEL_IDS.forEach(pid => document.getElementById(pid)?.classList.remove('vis'));
   if (id) document.getElementById(id)?.classList.add('vis');
   activePanel = id;
 }
-
 const PAN_ZONES = [
   { s: 0.00, e: 0.16, id: 'p0' },
   { s: 0.64, e: 0.74, id: 'p1' },
@@ -741,7 +744,6 @@ const PAN_ZONES = [
   { s: 0.82, e: 0.91, id: 'p3' },
   { s: 0.91, e: 1.01, id: 'p4' },
 ];
-
 function updateUI(p) {
   let show = '';
   for (const z of PAN_ZONES) if (p >= z.s && p < z.e) { show = z.id; break; }
@@ -750,30 +752,26 @@ function updateUI(p) {
   document.getElementById('pb').style.width = (p * 100) + '%';
 }
 
-/* ─────────────────────────────────────────
-   FLASH STATE
-───────────────────────────────────────── */
+/* ─── FLASH STATE ─── */
 let flashFired = false, flashOpacity = 0;
 const flashEl = document.getElementById('flash');
 
-/* ─────────────────────────────────────────
-   RESIZE
-───────────────────────────────────────── */
+/* ─── RESIZE ─── */
 window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
 
-/* ─────────────────────────────────────────
-   ANIMATE
-───────────────────────────────────────── */
+/* ─── ANIMATE ─── */
 const clock = new THREE.Clock();
+// Pre-warm: render two blank frames before showing UI to avoid first-frame stutter
+let warmFrames = 0;
 
 function animate() {
   requestAnimationFrame(animate);
-  const dt  = Math.min(clock.getDelta(), 0.05);
-  const t   = clock.elapsedTime;
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t  = clock.elapsedTime;
 
   // Touch inertia
   if (!isDragging && Math.abs(touchVel) > 0.05) {
@@ -781,40 +779,35 @@ function animate() {
     touchVel *= 0.84;
   }
 
-  // Smooth scroll
   currentS += (targetS - currentS) * LERP_F;
   if (Math.abs(targetS - currentS) < 0.00003) currentS = targetS;
   const s = currentS;
 
   updateUI(s);
 
-  /* ── EAGLE ANIMATION MIXER ── */
+  /* ── EAGLE ANIMATION ── */
   if (eagleMixer) eagleMixer.update(dt);
 
-  /* ── EAGLE POSITION ON FLIGHT CURVE ── */
+  /* ── EAGLE POSITION ── */
   const eagleT = Math.min(s / ZONES.FLIGHT_END, 1.0);
   flightCurve.getPoint(Math.min(eagleT, 1), _ep);
+
+  // ── EAGLE FACING FIX ──
+  // Use the tangent at this point for stable forward direction
+  // Then build an orthonormal basis so the eagle always faces its travel direction
+  const lookAheadT = Math.min(eagleT + 0.012, 1);
+  flightCurve.getPoint(lookAheadT, _eNext);
+  setEagleFacing(eagleGroup, _ep, _eNext);
   eagleGroup.position.copy(_ep);
 
-  /* ── EAGLE ORIENTATION — stable quaternion slerp ── */
-  const lookT = Math.min(eagleT + 0.018, 1);
-  flightCurve.getPoint(lookT, _eNext);
-  _dir.subVectors(_eNext, _ep);
-  if (_dir.length() > 0.001) {
-    _dummy.position.copy(_ep);
-    _dummy.lookAt(_eNext);
-    _dummy.rotateY(Math.PI); // flip to face forward
-    eagleGroup.quaternion.slerp(_dummy.quaternion, 0.14);
-  }
-
-  /* ── EAGLE SCALE — shrink during landing ── */
+  /* ── EAGLE SCALE / LANDING ── */
   if (s >= ZONES.LAND_END) {
     eagleGroup.scale.setScalar(0);
     if (!flashFired) {
       flashFired = true;
       flashOpacity = 1.0;
-      orangeL.intensity = 38;
-      rimPt.intensity   = 20;
+      orangeL.intensity = 30;
+      rimPt.intensity   = 15;
     }
   } else if (s > ZONES.LAND_START) {
     const lp = (s - ZONES.LAND_START) / (ZONES.LAND_END - ZONES.LAND_START);
@@ -825,7 +818,7 @@ function animate() {
 
   // Flash decay
   if (flashOpacity > 0) {
-    flashOpacity = Math.max(0, flashOpacity - dt * 3.8);
+    flashOpacity = Math.max(0, flashOpacity - dt * 3.5);
     flashEl.style.opacity = flashOpacity;
   }
 
@@ -837,88 +830,68 @@ function animate() {
       car.visible = true;
       const xp = Math.min((s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START), 1);
       const xEased = 1 - Math.pow(1 - xp, 3);
-
       car.scale.setScalar(xEased);
-      // Pin to floor — never float
       car.position.x = 0;
       car.position.y = car._floorY;
       car.position.z = 0;
-
-      // Rotate continuously on plinth
       carRotY += CAR_ROT_SPEED * dt;
       car.rotation.y = carRotY;
     }
-
-    // Car animation mixer (wheels etc.)
     if (carMixer) carMixer.update(dt);
   }
 
-  /* ─────────────────────────────────────
-     CAMERA LOGIC
-     Phase 1: Eagle chase cam (back-mounted, tracks path)
-     Phase 2: Hold shot at landing (pause)
-     Phase 3: Pull-back reveal as car materialises
-     Phase 4: Cinematic closeup orbit around car
-  ───────────────────────────────────────── */
-
+  /* ─── CAMERA ─── */
   if (s < ZONES.LAND_END) {
-    /* ── PHASE 1: Eagle chase camera
-       Camera sits directly behind and slightly above the eagle.
-       As eagle approaches (s > 0.28) camera tightens from far to close.
-    */
+    /* PHASE 1: Eagle chase cam */
     const closeBlend = s < 0.28 ? 0 : Math.min((s - 0.28) / (ZONES.LAND_START - 0.28), 1);
-    const cb = closeBlend * closeBlend * (3 - 2 * closeBlend); // smoothstep
+    const cb = closeBlend * closeBlend * (3 - 2 * closeBlend);
 
-    // Far: 20 back, 7 up   →   Close: 6 back, 2 up
-    const BACK = 20 + (6  - 20) * cb;
-    const UP   =  7 + (2  -  7) * cb;
+    // Wider chase: 28→10 back, 10→3 up  (more breathing room during descent)
+    const BACK = 28 + (10 - 28) * cb;
+    const UP   = 10 + ( 3 - 10) * cb;
 
-    // Eagle's forward direction
     const lookAheadT2 = Math.min(eagleT + 0.025, 1);
     flightCurve.getPoint(lookAheadT2, _tmp);
     _eagDir.subVectors(_tmp, _ep).normalize();
 
-    // Place camera BEHIND eagle along its travel direction
     _camDes.copy(_ep)
       .addScaledVector(_eagDir, -BACK)
       .add(new THREE.Vector3(0, UP, 0));
 
-    // Lean slightly to the right for cinematic offset
+    // Cinematic lateral offset — stays gentle
     const lateralOffset = new THREE.Vector3().crossVectors(_eagDir, new THREE.Vector3(0,1,0)).normalize();
-    _camDes.addScaledVector(lateralOffset, cb * 1.2);
+    _camDes.addScaledVector(lateralOffset, cb * 1.5);
 
-    camera.position.lerp(_camDes, 0.055 + cb * 0.055);
-    // Look AT the eagle so it fills the frame
-    camera.lookAt(_ep);
+    camera.position.lerp(_camDes, 0.045 + cb * 0.04);
+    // Look slightly ahead of eagle so it's not dead-centre
+    _tmp.copy(_ep).addScaledVector(_eagDir, 3);
+    camera.lookAt(_tmp);
 
   } else if (s < ZONES.XFORM_START) {
-    /* ── PHASE 2: Landing pause — dramatic low angle hold ── */
-    const holdPos = new THREE.Vector3(MOB ? 4 : 5.5, MOB ? 1.6 : 2.0, MOB ? 5.5 : 6.5);
-    camera.position.lerp(holdPos, 0.045);
-    camera.lookAt(0, 0.15, 0);
+    /* PHASE 2: Landing hold — wider/further so you see the context */
+    const holdPos = new THREE.Vector3(MOB ? 6 : 8, MOB ? 2.5 : 3.0, MOB ? 8 : 10);
+    camera.position.lerp(holdPos, 0.04);
+    camera.lookAt(0, 0.3, 0);
 
   } else if (s < ZONES.XFORM_END) {
-    /* ── PHASE 3: Car materialise — camera pulls back to front reveal ── */
+    /* PHASE 3: Reveal pull-back */
     const xp = (s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START);
     const xe = xp * xp * (3 - 2 * xp);
-    const startPos = new THREE.Vector3(MOB ? 4 : 5.5, MOB ? 1.6 : 2.0, MOB ? 5.5 : 6.5);
-    const endPos   = new THREE.Vector3(0, 1.5, MOB ? 9 : 7.5);
+    const startPos = new THREE.Vector3(MOB ? 6 : 8, MOB ? 2.5 : 3.0, MOB ? 8 : 10);
+    const endPos   = new THREE.Vector3(0, 2.0, MOB ? 14 : 11);
     _camDes.lerpVectors(startPos, endPos, xe);
-    camera.position.lerp(_camDes, 0.09);
-    camera.lookAt(0, 0.4, 0);
+    camera.position.lerp(_camDes, 0.08);
+    camera.lookAt(0, 0.5, 0);
 
   } else {
-    /* ── PHASE 4: Closeup orbit — glide between dramatic shots ── */
+    /* PHASE 4: Cinematic orbit */
     const orbitT = (s - ZONES.XFORM_END) / (1.0 - ZONES.XFORM_END);
 
-    // Find bracketing shots
     let shotA = CAR_SHOTS[0];
     let shotB = CAR_SHOTS[1];
     for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
       if (orbitT >= CAR_SHOTS[i].p && orbitT <= CAR_SHOTS[i+1].p) {
-        shotA = CAR_SHOTS[i];
-        shotB = CAR_SHOTS[i+1];
-        break;
+        shotA = CAR_SHOTS[i]; shotB = CAR_SHOTS[i+1]; break;
       }
     }
     const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
@@ -927,15 +900,7 @@ function animate() {
     _camDes.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTar.lerpVectors(shotA.tar, shotB.tar, ease);
 
-    // Account for car rotation — offset look target by car's current rotation
-    const carRotOffset = new THREE.Vector3(
-      Math.sin(carRotY) * 0.3,
-      0,
-      Math.cos(carRotY) * 0.3
-    );
-    _camTar.add(carRotOffset);
-
-    camera.position.lerp(_camDes, 0.06);
+    camera.position.lerp(_camDes, 0.05);
     camera.lookAt(_camTar);
   }
 
@@ -953,18 +918,18 @@ function animate() {
   }
   pa.needsUpdate = true;
 
-  /* ── FLOOR SHADER UPDATE ── */
+  /* ── FLOOR SHADERS ── */
   gridMat.uniforms.uT.value = t;
   spokeMat.uniforms.uAngle.value = carRotY;
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.045;
 
   /* ── PULSE LIGHTS ── */
-  if (!flashFired || orangeL.intensity <= 4) {
-    orangeL.intensity = 3.0 + Math.sin(t * 1.2) * 0.6;
-    rimPt.intensity   = 1.8 + Math.sin(t * 2.1) * 0.5;
+  if (!flashFired || orangeL.intensity <= 3) {
+    orangeL.intensity = 2.5 + Math.sin(t * 1.2) * 0.5;
+    rimPt.intensity   = 1.5 + Math.sin(t * 2.1) * 0.4;
   } else {
-    orangeL.intensity = Math.max(orangeL.intensity - dt * 50, 3.0 + Math.sin(t * 1.2) * 0.6);
-    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 35, 1.8 + Math.sin(t * 2.1) * 0.5);
+    orangeL.intensity = Math.max(orangeL.intensity - dt * 45, 2.5 + Math.sin(t * 1.2) * 0.5);
+    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 30, 1.5 + Math.sin(t * 2.1) * 0.4);
   }
 
   renderer.render(scene, camera);

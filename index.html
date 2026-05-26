@@ -20,14 +20,14 @@ canvas{position:fixed;inset:0;display:block;}
   background:linear-gradient(to bottom,rgba(5,5,8,.92),transparent);
 }
 .logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.95rem,3.5vw,1.25rem);letter-spacing:.28em;color:#eef2f6;}
-.logo span{color:#ff4400;}
+.logo span{color:#cc1010;}
 #snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.18);color:#a0b0c0;
   font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.2em;
   padding:.35rem .85rem;text-transform:uppercase;transition:all .3s;}
-#snd.on{border-color:#ff4400;color:#ff4400;}
+#snd.on{border-color:#cc1010;color:#cc1010;}
 
 /* ── PROGRESS ── */
-#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#cc2200,#ff4400,#ff6600);width:0%;z-index:30;transition:width .08s linear;}
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#880808,#cc1010,#ee2020);width:0%;z-index:30;transition:width .08s linear;}
 
 /* ── SCROLL HINT ── */
 #hint{
@@ -60,7 +60,7 @@ canvas{position:fixed;inset:0;display:block;}
     bottom:14vh;
     max-height:44vh;overflow-y:auto;scrollbar-width:none;
     background:linear-gradient(to top,rgba(5,5,8,.97) 55%,rgba(5,5,8,.6));
-    border-top:1px solid rgba(255,68,0,.30);top:auto;left:1.2rem;right:1.2rem;}
+    border-top:1px solid rgba(180,12,12,.30);top:auto;left:1.2rem;right:1.2rem;}
   .tp::-webkit-scrollbar{display:none;}
   .tp.L{transform:translateX(-60px);opacity:0;}
   .tp.L.vis{opacity:1;transform:translateX(0);}
@@ -71,26 +71,26 @@ canvas{position:fixed;inset:0;display:block;}
 }
 
 /* TYPOGRAPHY */
-.ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);letter-spacing:.42em;color:#ff5500;text-transform:uppercase;margin-bottom:.4rem;display:block;}
+.ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);letter-spacing:.42em;color:#dd1818;text-transform:uppercase;margin-bottom:.4rem;display:block;}
 .hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);line-height:.91;color:#ffffff;margin-bottom:.6rem;}
-.hd em{color:#ff4400;font-style:normal;}
+.hd em{color:#cc1010;font-style:normal;}
 .bd{font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;color:#a8bfd0;font-weight:300;letter-spacing:.025em;}
 .bd+.bd{margin-top:.55rem;}
 .bd strong{color:#ddeeff;font-weight:500;}
-.bd em{color:#ff5500;font-style:normal;}
+.bd em{color:#dd1818;font-style:normal;}
 
 /* FACT GRID */
-.fact-row{display:flex;flex-wrap:wrap;gap:.4rem .7rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid rgba(255,68,0,.28);}
+.fact-row{display:flex;flex-wrap:wrap;gap:.4rem .7rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid rgba(180,12,12,.28);}
 .fact{flex:1 1 calc(50% - .35rem);min-width:90px;}
-.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#ff4400;line-height:1.05;}
+.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#cc1010;line-height:1.05;}
 .fv small{font-size:.5em;color:#90a8c0;}
 .fl{font-family:'Cinzel',serif;font-size:clamp(.33rem,.88vw,.43rem);letter-spacing:.2em;color:#90a8c0;text-transform:uppercase;margin-top:.05rem;}
-.stat-stamp{margin-top:.8rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2rem);color:#ff4400;letter-spacing:.07em;}
+.stat-stamp{margin-top:.8rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2rem);color:#cc1010;letter-spacing:.07em;}
 .stat-stamp small{font-family:'Rajdhani',sans-serif;font-size:.52em;color:#90a8c0;letter-spacing:.14em;display:block;}
 
 /* TAG CHIPS */
 .tag-row{display:flex;flex-wrap:wrap;gap:.28rem;margin-top:.65rem;}
-.tag{font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;color:#ff5500;text-transform:uppercase;border:1px solid rgba(255,68,0,.45);padding:.12rem .4rem;}
+.tag{font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;color:#dd1818;text-transform:uppercase;border:1px solid rgba(180,12,12,.45);padding:.12rem .4rem;}
 
 @media(min-width:641px){
   .tp.R .fact-row{justify-content:flex-end;}
@@ -103,9 +103,9 @@ canvas{position:fixed;inset:0;display:block;}
 /* ── LOADING ── */
 #ld{position:fixed;inset:0;z-index:50;background:#050508;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;transition:opacity .7s ease .1s,visibility .7s ease .1s;}
 #ld.done{opacity:0;visibility:hidden;pointer-events:none;}
-.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#ff4400;}
+.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#cc1010;}
 .lbw{width:min(220px,65vw);height:1px;background:rgba(255,255,255,.08);}
-.lb{height:100%;background:linear-gradient(90deg,#cc2200,#ff4400);width:0%;transition:width .25s;}
+.lb{height:100%;background:linear-gradient(90deg,#880808,#cc1010);width:0%;transition:width .25s;}
 .lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#90a8c0;}
 
 /* ── VIGNETTE ── */
@@ -113,7 +113,7 @@ canvas{position:fixed;inset:0;display:block;}
 
 /* ── FLASH ── */
 #flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(255,60,0,.35) 0%,rgba(140,20,0,.15) 45%,transparent 72%);
+  background:radial-gradient(ellipse at center,rgba(200,10,10,.40) 0%,rgba(100,5,5,.18) 45%,transparent 72%);
   transition:opacity .05s ease;}
 
 /* ── CTA — mobile safe zone ── */
@@ -141,7 +141,7 @@ canvas{position:fixed;inset:0;display:block;}
 .cb{font-family:'Bebas Neue',sans-serif;
   font-size:clamp(1.8rem,5vw,5.5rem);   /* smaller on mobile */
   letter-spacing:.1em;line-height:.9;
-  background:linear-gradient(135deg,#cc2200,#ff5500);
+  background:linear-gradient(135deg,#880808,#cc1010);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 @media(max-width:640px){
   .cl{font-size:clamp(.38rem,2.8vw,.48rem);}
@@ -157,18 +157,18 @@ canvas{position:fixed;inset:0;display:block;}
 #shotdots.vis{opacity:1;}
 .sdot{
   width:4px;height:4px;border-radius:50%;
-  background:rgba(255,68,0,.25);
+  background:rgba(180,12,12,.25);
   transition:background .3s, transform .3s, height .3s;
 }
 .sdot.active{
-  background:#ff4400;
+  background:#cc1010;
   height:16px;border-radius:2px;
-  box-shadow:0 0 8px rgba(255,68,0,.7);
+  box-shadow:0 0 8px rgba(180,12,12,.7);
 }
 #shotlabel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   font-family:'Cinzel',serif;font-size:clamp(.38rem,1.2vw,.50rem);letter-spacing:.55em;
-  color:#ff4400;text-transform:uppercase;opacity:0;transition:opacity .5s;z-index:20;
-  pointer-events:none;text-shadow:0 0 12px rgba(255,68,0,.6);}
+  color:#cc1010;text-transform:uppercase;opacity:0;transition:opacity .5s;z-index:20;
+  pointer-events:none;text-shadow:0 0 12px rgba(180,12,12,.6);}
 #shotlabel.vis{opacity:1;}
 </style>
 </head>
@@ -300,8 +300,8 @@ window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 const ZONES = {
   SWOOP_PAST   : 0.40,
   EAGLE_EXIT   : 0.50,
-  CAM_SETTLE   : 0.58,
-  ORBIT_START  : 0.60,
+  CAM_SETTLE   : 0.52,   // was 0.58 — settle starts immediately after eagle exits
+  ORBIT_START  : 0.55,   // was 0.60 — orbit begins sooner, no dead gap
 };
 
 /* Panel zones */
@@ -342,8 +342,8 @@ window.addEventListener('touchend', () => { isDragging = false; }, { passive: tr
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
-renderer.toneMapping = THREE.ReinhardToneMapping;
-renderer.toneMappingExposure = 0.9;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;  // slightly brighter to compensate for ACES contrast
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
@@ -362,36 +362,48 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS — neutral studio, let paint colour read naturally ─── */
-scene.add(new THREE.AmbientLight(0xfff8f0, 0.55));
+/* ─── LIGHTS — tuned for deep red paint ─────────────────────────────
+   Strategy: warm key from front-right saturates the red; cool blue rim
+   from behind creates crisp silhouette separation (blue vs red = maximum
+   contrast). Fill from left prevents shadow side going completely black.
+   Under-car red bounce adds depth without flooding. ──────────────────── */
 
-const keyL = new THREE.DirectionalLight(0xfff4e8, 3.2);
-keyL.position.set(6, 12, 8);
+/* Dim warm ambient — lifts shadow floors, keeps detail visible in recesses */
+scene.add(new THREE.AmbientLight(0x1a0505, 1.8));
+
+/* Key — warm white slightly front-right, main illumination of body panels */
+const keyL = new THREE.DirectionalLight(0xfff0e8, 4.0);
+keyL.position.set(7, 14, 9);
 scene.add(keyL);
 
-const fillL = new THREE.DirectionalLight(0xe8f0ff, 0.9);
-fillL.position.set(-7, 5, 5);
+/* Fill — cool neutral, shadow side, low so dark panels stay dark */
+const fillL = new THREE.DirectionalLight(0xd8e8ff, 1.1);
+fillL.position.set(-8, 6, 5);
 scene.add(fillL);
 
-const rimL = new THREE.DirectionalLight(0xd0e4ff, 2.2);
-rimL.position.set(0, 4, -9);
+/* Rim — cold blue from rear: makes red silhouette pop dramatically */
+const rimL = new THREE.DirectionalLight(0x8ab0ff, 3.0);
+rimL.position.set(0, 5, -10);
 scene.add(rimL);
 
-const frontL = new THREE.DirectionalLight(0xfff8f0, 1.2);
-frontL.position.set(0, 3, 11);
+/* Front soft — lifts the nose and front splitter */
+const frontL = new THREE.DirectionalLight(0xfff8f8, 1.4);
+frontL.position.set(0, 3, 12);
 scene.add(frontL);
 
-/* Very subtle under-car bounce — low so it doesn't flood orange onto everything */
-const orangeL = new THREE.PointLight(0xff5500, 1.6, 8);
-orangeL.position.set(0, -0.5, 0);
+/* Under-car red bounce — saturates deep panel gaps and undercuts with red */
+const orangeL = new THREE.PointLight(0xcc0808, 2.2, 9);
+orangeL.position.set(0, -0.6, 0);
 scene.add(orangeL);
 
-const rimPt = new THREE.PointLight(0xffe0c0, 1.2, 7);
-rimPt.position.set(-2, 1.5, -3);
+/* Left rear accent — warm fill for rear haunch detailing */
+const rimPt = new THREE.PointLight(0xff4040, 1.5, 8);
+rimPt.position.set(-3, 1.5, -3);
 scene.add(rimPt);
 
-const topOrange = new THREE.PointLight(0xfff0e8, 1.4, 10);
-topOrange.position.set(1, 4, 1);
+/* Top warm — catches roof and bonnet highlights */
+const topOrange = new THREE.PointLight(0xff2020, 1.8, 11);
+topOrange.position.set(1, 5, 1);
 scene.add(topOrange);
 
 /* ─── FLOOR ─── */
@@ -422,7 +434,7 @@ const gridMat = new THREE.ShaderMaterial({
     float g=1.-smoothstep(.02,.055,min(gx,gy));
     vec2 c=vUv-.5;float d=length(c)*2.;
     float fade=smoothstep(.05,.28,d)*smoothstep(1.,.42,d);
-    gl_FragColor=vec4(.95,.27,.0,g*fade*.20);
+    gl_FragColor=vec4(.65,.04,.04,g*fade*.22);
   }`
 });
 const gridMesh = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), gridMat);
@@ -440,7 +452,7 @@ const spokeMat = new THREE.ShaderMaterial({
     float a=atan(uv.y,uv.x)+uAngle;
     float s=abs(fract(a/.628)*2.-1.);
     float ring=smoothstep(.05,.18,r)*smoothstep(1.,.6,r);
-    gl_FragColor=vec4(.95,.30,.0,s*ring*.24);
+    gl_FragColor=vec4(.70,.05,.05,s*ring*.24);
   }`
 });
 const spokeMesh = new THREE.Mesh(new THREE.CircleGeometry(5.4, 128), spokeMat);
@@ -450,7 +462,7 @@ scene.add(spokeMesh);
 
 const edgeRing = new THREE.Mesh(
   new THREE.RingGeometry(5.4, 6.2, 128),
-  new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.14, side: THREE.DoubleSide })
+  new THREE.MeshBasicMaterial({ color: 0xcc1010, transparent: true, opacity: 0.14, side: THREE.DoubleSide })
 );
 edgeRing.rotation.x = -Math.PI / 2;
 edgeRing.position.y = -1.03;
@@ -487,7 +499,7 @@ for (let i = 0; i < PC; i++) {
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
 scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
-  size: 0.05, color: 0xff4400, transparent: true, opacity: 0.35,
+  size: 0.05, color: 0xcc1010, transparent: true, opacity: 0.35,
   blending: THREE.AdditiveBlending, depthWrite: false
 })));
 
@@ -701,12 +713,13 @@ eagleLoader.load('animated_eagle.glb',
 );
 
 /* ─── COLOUR CONSTANTS ─── */
-const PAPAYA         = new THREE.Color(0xFF4400);
-const PAPAYA_DEEP    = new THREE.Color(0xCC2800);
-const CARBON_BLACK   = new THREE.Color(0x0A0A0C);
-// Silver alloy wheel colour
-const WHEEL_SILVER   = new THREE.Color(0xB8BEC8);
-const TYRE_BLACK     = new THREE.Color(0x111115);
+/* Deep gloss red — saturated hero panels with darker shadow tone for depth */
+const PAPAYA         = new THREE.Color(0xC8100A);  // hero red
+const PAPAYA_DEEP    = new THREE.Color(0x6A0505);  // deep shadow / undercut panels
+const CARBON_BLACK   = new THREE.Color(0x0D0D0F);
+/* Wheels AND tyres — gloss black, matching 720S reference */
+const WHEEL_BLACK    = new THREE.Color(0x0E0E10);
+const TYRE_BLACK     = new THREE.Color(0x080808);
 
 /* ─── MCLAREN W1 ─── */
 let car = null, carRotY = 0, carFloorY = 0, carMixer = null;
@@ -746,25 +759,24 @@ carLoader.load('mclaren_w1.glb',
           m.needsUpdate = true; return;
         }
 
-        /* ── TYRES / RUBBER ── stay dark black */
+        /* ── TYRES / RUBBER — matte black ── */
         const isTyre = nm.includes('tyre') || nm.includes('tire') || nm.includes('rubber');
         if (isTyre) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
           m.color = TYRE_BLACK.clone();
-          m.roughness = 0.92; m.metalness = 0.02;
-          m.envMapIntensity = 0.3; m.needsUpdate = true; return;
+          m.roughness = 0.95; m.metalness = 0.0;
+          m.envMapIntensity = 0.1; m.needsUpdate = true; return;
         }
 
-        /* ── WHEELS / RIMS / SPOKES — SILVER ALLOY ──
-           Matches the dark silver multi-spoke alloys on the 720S in the reference image */
+        /* ── WHEELS / RIMS / SPOKES — GLOSS BLACK ── */
         const isWheel = nm.includes('wheel') || nm.includes('rim') || nm.includes('spoke') || nm.includes('alloy') || nm.includes('hub');
         if (isWheel) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
-          m.color = WHEEL_SILVER.clone();
-          m.roughness = 0.28;       // semi-gloss brushed alloy
-          m.metalness = 0.92;       // very metallic
-          m.envMapIntensity = 2.2;  // picks up reflections
-          if (m.isMeshPhysicalMaterial) { m.clearcoat = 0.6; m.clearcoatRoughness = 0.15; }
+          m.color = WHEEL_BLACK.clone();
+          m.roughness = 0.12;   // gloss black — catches specular highlights
+          m.metalness = 0.80;
+          m.envMapIntensity = 1.8;
+          if (m.isMeshPhysicalMaterial) { m.clearcoat = 0.8; m.clearcoatRoughness = 0.06; }
           m.needsUpdate = true; return;
         }
 
@@ -772,7 +784,7 @@ carLoader.load('mclaren_w1.glb',
         const isBrake = nm.includes('brake') || nm.includes('caliper') || nm.includes('rotor') || nm.includes('disc');
         if (isBrake) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
-          m.color = new THREE.Color(0xff2200); // orange calipers like real McLaren
+          m.color = new THREE.Color(0xaa0808); // orange calipers like real McLaren
           m.roughness = 0.5; m.metalness = 0.4;
           m.envMapIntensity = 1.0; m.needsUpdate = true; return;
         }
@@ -790,24 +802,27 @@ carLoader.load('mclaren_w1.glb',
         const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head') || nm.includes('led');
         if (isLight) {
           if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
-            m.emissive = new THREE.Color(0xff3300);
+            m.emissive = new THREE.Color(0xbb0c0c);
             m.emissiveIntensity = 1.2;
-            m.color = new THREE.Color(0xff4400);
+            m.color = new THREE.Color(0xcc1010);
           }
           m.needsUpdate = true; return;
         }
 
-        /* ── BODY PANELS — PAPAYA ORANGE ── */
+        /* ── BODY PANELS — McLaren Papaya paint ── */
         if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
           const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin') || nm.includes('sill') || nm.includes('floor');
           m.color = isDeep ? PAPAYA_DEEP.clone() : PAPAYA.clone();
-          m.roughness = 0.22;
-          m.metalness = 0.0;
-          m.envMapIntensity = 0.8;
+          /* Red automotive paint: low roughness for deep gloss, slight metalness
+             for the wet-look depth. High clearcoat makes highlights pop white
+             over the red base — this is the Ferrari/McLaren GT paint look. */
+          m.roughness = isDeep ? 0.45 : 0.14;   // shadow panels rougher = absorb light
+          m.metalness = isDeep ? 0.05 : 0.10;
+          m.envMapIntensity = isDeep ? 0.6 : 1.8;
           if (m.emissive) { m.emissive.set(0,0,0); m.emissiveIntensity = 0; }
           if (m.isMeshPhysicalMaterial) {
-            m.clearcoat = 1.0;
-            m.clearcoatRoughness = 0.05;
+            m.clearcoat = isDeep ? 0.3 : 1.0;        // shadow panels less shiny
+            m.clearcoatRoughness = isDeep ? 0.3 : 0.03;
           }
         }
         m.needsUpdate = true;
@@ -905,7 +920,7 @@ function animate() {
     eagleGroup.scale.setScalar(0);
     if (!flashFired) {
       flashFired = true; flashOpacity = 0.7;
-      orangeL.intensity = 20; rimPt.intensity = 12; topOrange.intensity = 15;
+      orangeL.intensity = 8; rimPt.intensity = 5; topOrange.intensity = 6;
     }
   } else if (s > ZONES.SWOOP_PAST) {
     const ep = (s - ZONES.SWOOP_PAST) / (ZONES.EAGLE_EXIT - ZONES.SWOOP_PAST);
@@ -955,7 +970,7 @@ function animate() {
     const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
     const ease2 = t2 * t2 * (3 - 2 * t2);
     const carFacingPos = MOB ? _camDesV.set(-8, 6, 30) : _camDesV.set(-10, 5, 32);
-    camera.position.lerp(carFacingPos, 0.06 + ease2 * 0.06);
+    camera.position.lerp(carFacingPos, 0.10 + ease2 * 0.10);  // faster snap to car
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
 
@@ -963,7 +978,7 @@ function animate() {
     const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
     const ease3 = t3 * t3 * (3 - 2 * t3);
     const settlePos = MOB ? _camDesV.set(0, 4, 26) : _camDesV.set(0, 3.5, 24);
-    camera.position.lerp(settlePos, 0.05 + ease3 * 0.05);
+    camera.position.lerp(settlePos, 0.09 + ease3 * 0.08);  // faster settle
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
 
@@ -1027,14 +1042,14 @@ function animate() {
   spokeMat.uniforms.uAngle.value = carRotY;
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
-  if (!flashFired || orangeL.intensity <= 6.0) {
-    orangeL.intensity  = 6.0  + Math.sin(t * 1.2) * 1.2;
-    rimPt.intensity    = 3.5  + Math.sin(t * 2.1) * 0.8;
-    topOrange.intensity= 4.0  + Math.sin(t * 0.9) * 0.9;
+  if (!flashFired || orangeL.intensity <= 1.6) {
+    orangeL.intensity  = 1.6  + Math.sin(t * 1.2) * 0.4;
+    rimPt.intensity    = 1.2  + Math.sin(t * 2.1) * 0.3;
+    topOrange.intensity= 1.4  + Math.sin(t * 0.9) * 0.3;
   } else {
-    orangeL.intensity  = Math.max(orangeL.intensity  - dt * 35, 6.0  + Math.sin(t * 1.2) * 1.2);
-    rimPt.intensity    = Math.max(rimPt.intensity    - dt * 25, 3.5  + Math.sin(t * 2.1) * 0.8);
-    topOrange.intensity= Math.max(topOrange.intensity- dt * 20, 4.0  + Math.sin(t * 0.9) * 0.9);
+    orangeL.intensity  = Math.max(orangeL.intensity  - dt * 35, 1.6  + Math.sin(t * 1.2) * 0.4);
+    rimPt.intensity    = Math.max(rimPt.intensity    - dt * 25, 1.2  + Math.sin(t * 2.1) * 0.3);
+    topOrange.intensity= Math.max(topOrange.intensity- dt * 20, 1.4  + Math.sin(t * 0.9) * 0.3);
   }
 
   renderer.render(scene, camera);

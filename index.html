@@ -316,9 +316,9 @@ const PAN_ZONES = [
 /* ─── SCROLL — reduced sensitivity for more deliberate pacing ─── */
 let targetS = 0, currentS = 0;
 let isDragging = false, lastTY = 0, touchVel = 0;
-const SCROLL_SPEED_WHEEL = 0.00018;  // was 0.00036 — halved for slower feel
-const SCROLL_SPEED_TOUCH = 0.00026;  // was 0.00052 — halved
-const LERP_F = 0.042;                // was 0.055 — slightly smoother
+const SCROLL_SPEED_WHEEL = 0.000075;  // very slow — each wheel tick barely moves
+const SCROLL_SPEED_TOUCH = 0.00010;   // very slow touch drag
+const LERP_F = 0.028;                 // slower catch-up for smoother feel
 
 const hintEl = document.getElementById('hint');
 window.addEventListener('wheel', e => {
@@ -334,7 +334,7 @@ window.addEventListener('touchmove', e => {
   if (!isDragging) return;
   const dy = lastTY - e.touches[0].clientY;
   touchVel = dy; lastTY = e.touches[0].clientY;
-  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.4)); // was 1.8
+  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.0));
 }, { passive: true });
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
@@ -531,51 +531,51 @@ const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 
 ─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
   {
-    p:0.00, hold:0.70,
+    p:0.00, hold:0.82,
     pos:new THREE.Vector3(  8,  4.5,  22),
     tar:new THREE.Vector3(  0,  0.8,   0),
     label:''
   },
   {
     // LEFT FRONT TYRE — camera on left side (negative X), wheel height, close
-    p:0.12, hold:0.72,
+    p:0.12, hold:0.85,
     pos:new THREE.Vector3( -4.2, 0.18, 3.2),
     tar:new THREE.Vector3( -1.8,-0.25, 3.0),
     label:'Front Tyre · Left · Pirelli P Zero'
   },
   {
-    p:0.25, hold:0.65,
+    p:0.25, hold:0.82,
     pos:new THREE.Vector3( 20,  1.8,   0),
     tar:new THREE.Vector3(  0,  0.5,   0),
     label:''
   },
   {
     // RIGHT REAR TYRE — close, rear haunch
-    p:0.38, hold:0.70,
+    p:0.38, hold:0.85,
     pos:new THREE.Vector3(-4.8, 0.15,-3.8),
     tar:new THREE.Vector3(-1.8,-0.3,-3.2),
     label:'Rear Tyre · 305/30 ZR20'
   },
   {
-    p:0.51, hold:0.65,
+    p:0.51, hold:0.82,
     pos:new THREE.Vector3( 10,  3.0, -20),
     tar:new THREE.Vector3(  0,  1.0,   0),
     label:''
   },
   {
-    p:0.63, hold:0.65,
+    p:0.63, hold:0.82,
     pos:new THREE.Vector3(  0,  4.0, -24),
     tar:new THREE.Vector3(  0,  0.8,   0),
     label:''
   },
   {
-    p:0.74, hold:0.65,
+    p:0.74, hold:0.82,
     pos:new THREE.Vector3(-20,  2.5,  10),
     tar:new THREE.Vector3(  0,  0.6,   0),
     label:''
   },
   {
-    p:0.85, hold:0.65,
+    p:0.85, hold:0.82,
     pos:new THREE.Vector3(  3, 18.0,   5),
     tar:new THREE.Vector3(  0,  0,     0),
     label:''
@@ -884,8 +884,8 @@ function animate() {
   const MOB = getMob();
 
   if (!isDragging && Math.abs(touchVel) > 0.05) {
-    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 1.0)); // damped
-    touchVel *= 0.80; // stronger momentum damping
+    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 0.6)); // coast
+    touchVel *= 0.72; // heavy damping — momentum dies quickly
   }
   currentS += (targetS - currentS) * LERP_F;
   if (Math.abs(targetS - currentS) < 0.00003) currentS = targetS;
@@ -1005,7 +1005,7 @@ function animate() {
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
 
     /* tighter lerp when holding (snap to angle), looser when moving */
-    const lerpSpeed = localT === 0.0 ? 0.09 : 0.038;
+    const lerpSpeed = localT === 0.0 ? 0.07 : 0.022;  // very slow glide between shots
     camera.position.lerp(_camDesV, lerpSpeed);
     camera.lookAt(_camTarV);
 

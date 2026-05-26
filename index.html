@@ -315,28 +315,59 @@ const PAN_ZONES = [
 
 /* ─── SCROLL — reduced sensitivity for more deliberate pacing ─── */
 let targetS = 0, currentS = 0;
-let isDragging = false, lastTY = 0, touchVel = 0;
-const SCROLL_SPEED_WHEEL = 0.000075;  // very slow — each wheel tick barely moves
-const SCROLL_SPEED_TOUCH = 0.00010;   // very slow touch drag
-const LERP_F = 0.028;                 // slower catch-up for smoother feel
+
+/* ── Wheel ── */
+const SCROLL_SPEED_WHEEL = 0.00018;  // 0.00028→0.00018: still responsive, shots don't blur past
+
+/* ── Touch — physics-based, no fixed speed constant ──
+   We track raw pixel velocity per frame and convert to scroll units
+   using screen height so the experience is identical on all devices */
+let touchStartY = 0, touchLastY = 0, touchLastT = 0;
+let touchVelPx = 0;   // pixels/ms at moment of lift
+let isDragging = false;
+
+/* LERP: adaptive — faster when far from target (snappy start),
+   slower when close (silky ease-in). Avoids the "sticky mud" feel
+   of a single low LERP_F while still being smooth. */
+const LERP_NEAR = 0.055;
+const LERP_FAR  = 0.12;
 
 const hintEl = document.getElementById('hint');
+
 window.addEventListener('wheel', e => {
   e.preventDefault();
-  targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED_WHEEL));
+  /* normalise across trackpad (small deltaY) and wheel (large deltaY) */
+  const norm = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 120);
+  targetS = Math.max(0, Math.min(1, targetS + norm * SCROLL_SPEED_WHEEL));
   hintEl.classList.add('gone');
 }, { passive: false });
+
 window.addEventListener('touchstart', e => {
-  lastTY = e.touches[0].clientY; touchVel = 0; isDragging = true;
+  touchStartY = touchLastY = e.touches[0].clientY;
+  touchLastT  = performance.now();
+  touchVelPx  = 0;
+  isDragging  = true;
   hintEl.classList.add('gone');
 }, { passive: true });
+
 window.addEventListener('touchmove', e => {
   if (!isDragging) return;
-  const dy = lastTY - e.touches[0].clientY;
-  touchVel = dy; lastTY = e.touches[0].clientY;
-  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.0));
+  const now = performance.now();
+  const dt  = Math.max(now - touchLastT, 1);
+  const dy  = touchLastY - e.touches[0].clientY;   // positive = scroll forward
+  /* velocity in px/ms — exponential smoothing so it's stable */
+  touchVelPx = touchVelPx * 0.6 + (dy / dt) * 0.4;
+  touchLastY = e.touches[0].clientY;
+  touchLastT = now;
+  /* Direct drag: 1 screen-height of drag = full experience */
+  const dragRatio = dy / window.innerHeight;
+  targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.28));  // 0.55→0.28: slower drag travel
 }, { passive: true });
-window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
+
+window.addEventListener('touchend', () => {
+  isDragging = false;
+  /* convert px/ms velocity → scroll units and fling */
+}, { passive: true });
 
 /* ─── RENDERER ─── */
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
@@ -539,51 +570,51 @@ const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 
 ─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
   {
-    p:0.00, hold:0.82,
+    p:0.00, hold:0.88,
     pos:new THREE.Vector3(  8,  4.5,  22),
     tar:new THREE.Vector3(  0,  0.8,   0),
     label:''
   },
   {
     // LEFT FRONT TYRE — camera on left side (negative X), wheel height, close
-    p:0.12, hold:0.85,
+    p:0.12, hold:0.90,
     pos:new THREE.Vector3( -4.2, 0.18, 3.2),
     tar:new THREE.Vector3( -1.8,-0.25, 3.0),
     label:'Front Tyre · Left · Pirelli P Zero'
   },
   {
-    p:0.25, hold:0.82,
+    p:0.25, hold:0.88,
     pos:new THREE.Vector3( 20,  1.8,   0),
     tar:new THREE.Vector3(  0,  0.5,   0),
     label:''
   },
   {
     // RIGHT REAR TYRE — close, rear haunch
-    p:0.38, hold:0.85,
+    p:0.38, hold:0.90,
     pos:new THREE.Vector3(-4.8, 0.15,-3.8),
     tar:new THREE.Vector3(-1.8,-0.3,-3.2),
     label:'Rear Tyre · 305/30 ZR20'
   },
   {
-    p:0.51, hold:0.82,
+    p:0.51, hold:0.88,
     pos:new THREE.Vector3( 10,  3.0, -20),
     tar:new THREE.Vector3(  0,  1.0,   0),
     label:''
   },
   {
-    p:0.63, hold:0.82,
+    p:0.63, hold:0.88,
     pos:new THREE.Vector3(  0,  4.0, -24),
     tar:new THREE.Vector3(  0,  0.8,   0),
     label:''
   },
   {
-    p:0.74, hold:0.82,
+    p:0.74, hold:0.88,
     pos:new THREE.Vector3(-20,  2.5,  10),
     tar:new THREE.Vector3(  0,  0.6,   0),
     label:''
   },
   {
-    p:0.85, hold:0.82,
+    p:0.85, hold:0.88,
     pos:new THREE.Vector3(  3, 18.0,   5),
     tar:new THREE.Vector3(  0,  0,     0),
     label:''
@@ -894,12 +925,20 @@ function animate() {
   const t   = clock.elapsedTime;
   const MOB = getMob();
 
-  if (!isDragging && Math.abs(touchVel) > 0.05) {
-    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 0.6)); // coast
-    touchVel *= 0.72; // heavy damping — momentum dies quickly
+  /* ── Fling momentum on mobile ── */
+  if (!isDragging && Math.abs(touchVelPx) > 0.02) {
+    /* touchVelPx is px/ms → convert to scroll units via screen height */
+    const flingDelta = touchVelPx / window.innerHeight * 0.28;  // match drag ratio
+    targetS   = Math.max(0, Math.min(1, targetS + flingDelta));
+    touchVelPx *= 0.82;  /* stronger decay — fling slows quickly in orbit */
+    if (Math.abs(touchVelPx) < 0.005) touchVelPx = 0;
   }
-  currentS += (targetS - currentS) * LERP_F;
-  if (Math.abs(targetS - currentS) < 0.00003) currentS = targetS;
+
+  /* ── Adaptive lerp: fast when far, silky when close ── */
+  const gap = targetS - currentS;
+  const lf  = Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR;
+  currentS += gap * lf;
+  if (Math.abs(gap) < 0.00002) currentS = targetS;
   const s = currentS;
 
   updateUI(s);
@@ -1016,7 +1055,7 @@ function animate() {
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
 
     /* tighter lerp when holding (snap to angle), looser when moving */
-    const lerpSpeed = localT === 0.0 ? 0.07 : 0.022;  // very slow glide between shots
+    const lerpSpeed = localT === 0.0 ? 0.06 : 0.016;  // 0.022→0.016: longer cinematic glide
     camera.position.lerp(_camDesV, lerpSpeed);
     camera.lookAt(_camTarV);
 

@@ -123,7 +123,23 @@ canvas{position:fixed;inset:0;display:block;}
   background:linear-gradient(135deg,#cc2200,#ff5500);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
-/* ── SHOT LABEL ── */
+/* ── SHOT DOTS — shows which shot is active ── */
+#shotdots{
+  position:fixed;right:1.8vw;top:50%;transform:translateY(-50%);
+  z-index:20;display:flex;flex-direction:column;gap:.55rem;
+  opacity:0;transition:opacity .6s;pointer-events:none;
+}
+#shotdots.vis{opacity:1;}
+.sdot{
+  width:4px;height:4px;border-radius:50%;
+  background:rgba(255,68,0,.25);
+  transition:background .3s, transform .3s, height .3s;
+}
+.sdot.active{
+  background:#ff4400;
+  height:16px;border-radius:2px;
+  box-shadow:0 0 8px rgba(255,68,0,.7);
+}
 #shotlabel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
   font-family:'Cinzel',serif;font-size:clamp(.38rem,1.2vw,.50rem);letter-spacing:.55em;
   color:#ff4400;text-transform:uppercase;opacity:0;transition:opacity .5s;z-index:20;
@@ -146,6 +162,7 @@ canvas{position:fixed;inset:0;display:block;}
 <div id="pb"></div>
 <div id="vig"></div>
 <div id="flash"></div>
+<div id="shotdots"></div>
 <div id="shotlabel"></div>
 
 <div id="hint">
@@ -494,39 +511,45 @@ const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 
    0.84  top-down hero — see the full plan
    1.00  front nose ground-level — menacing low angle
 ─────────────────────────────────────────────────────────────────── */
+/* ─── CINEMATIC CAR SHOTS ───────────────────────────────────────────
+   hold = fraction of each inter-shot gap that is a locked HOLD.
+   Only the (1-hold) tail fraction is the actual camera move.
+   This makes each angle feel like a deliberate "cut and settle".
+─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
-  // Wide front 3/4 — full car visible
-  { p: 0.00, pos: new THREE.Vector3(  8,  4.5,  22), tar: new THREE.Vector3(0, 0.8,  0), label: '' },
-
-  // FRONT TYRE — extreme close, camera at road level, to the right of front-right wheel
-  // wheel is at approx (2.0, -0.6, 3.0) in car-local space
-  // camera: x=4.5 (outside wheel), y=0.15 (road level), z=3.5 (at wheel), looking inward
-  { p: 0.10, pos: new THREE.Vector3( 4.5,  0.15,  3.5), tar: new THREE.Vector3( 1.8, -0.3,  3.0), label: 'Front Tyre · Pirelli P Zero' },
-
-  // Low side profile — camera at hip height
-  { p: 0.22, pos: new THREE.Vector3( 20,  1.8,   0), tar: new THREE.Vector3(0, 0.5, 0), label: '' },
-
-  // REAR TYRE — tucked right behind rear-left haunch
-  // rear-left wheel approx (-2.0, -0.6, -3.2), cam tucked tight
-  { p: 0.34, pos: new THREE.Vector3(-4.8,  0.15, -3.8), tar: new THREE.Vector3(-1.8, -0.3, -3.2), label: 'Rear Tyre · 305/30 ZR20' },
-
-  // Rear 3/4 — wing + diffuser
-  { p: 0.46, pos: new THREE.Vector3( 10,  3.0, -20), tar: new THREE.Vector3(0, 1.0, 0), label: '' },
-
-  // Dead rear — diffuser, exhausts, rear wing full view
-  { p: 0.60, pos: new THREE.Vector3(  0,  4.0, -24), tar: new THREE.Vector3(0, 0.8, 0), label: '' },
-
-  // Opposite side profile
-  { p: 0.72, pos: new THREE.Vector3(-20,  2.5,  10), tar: new THREE.Vector3(0, 0.6, 0), label: '' },
-
-  // Top-down hero — see plan view
-  { p: 0.84, pos: new THREE.Vector3(  3, 18.0,   5), tar: new THREE.Vector3(0, 0,   0), label: '' },
-
-  // Front nose ground level — menacing angle
-  { p: 1.00, pos: new THREE.Vector3(  0,  0.3,   9), tar: new THREE.Vector3(0, 0.5, 0), label: '' },
+  { p:0.00, hold:0.50, pos:new THREE.Vector3(  8,  4.5,  22), tar:new THREE.Vector3( 0,  0.8,  0), label:'' },
+  { p:0.12, hold:0.60, pos:new THREE.Vector3( 4.5, 0.15, 3.5), tar:new THREE.Vector3( 1.8,-0.3, 3.0), label:'Front Tyre · Pirelli P Zero' },
+  { p:0.25, hold:0.50, pos:new THREE.Vector3( 20,  1.8,   0), tar:new THREE.Vector3( 0,  0.5,  0), label:'' },
+  { p:0.38, hold:0.60, pos:new THREE.Vector3(-4.8, 0.15,-3.8), tar:new THREE.Vector3(-1.8,-0.3,-3.2), label:'Rear Tyre · 305/30 ZR20' },
+  { p:0.51, hold:0.50, pos:new THREE.Vector3( 10,  3.0, -20), tar:new THREE.Vector3( 0,  1.0,  0), label:'' },
+  { p:0.63, hold:0.50, pos:new THREE.Vector3(  0,  4.0, -24), tar:new THREE.Vector3( 0,  0.8,  0), label:'' },
+  { p:0.74, hold:0.50, pos:new THREE.Vector3(-20,  2.5,  10), tar:new THREE.Vector3( 0,  0.6,  0), label:'' },
+  { p:0.85, hold:0.50, pos:new THREE.Vector3(  3, 18.0,   5), tar:new THREE.Vector3( 0,  0,    0), label:'' },
+  { p:1.00, hold:1.00, pos:new THREE.Vector3(  0,  0.3,   9), tar:new THREE.Vector3( 0,  0.5,  0), label:'' },
 ];
 
-/* ─── SHOT LABEL LOGIC ─── */
+/* ─── SHOT DOTS INIT ─── */
+const shotDotsEl = document.getElementById('shotdots');
+CAR_SHOTS.slice(0,-1).forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'sdot';
+  d.id = 'sdot' + i;
+  shotDotsEl.appendChild(d);
+});
+let activeDotIdx = -1;
+function updateShotDots(orbitT, inOrbit) {
+  shotDotsEl.classList.toggle('vis', inOrbit);
+  if (!inOrbit) return;
+  let idx = 0;
+  for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
+    if (orbitT >= CAR_SHOTS[i].p) idx = i;
+  }
+  if (idx === activeDotIdx) return;
+  activeDotIdx = idx;
+  shotDotsEl.querySelectorAll('.sdot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+
 const shotLabelEl = document.getElementById('shotlabel');
 let activeShotLabel = '';
 function updateShotLabel(label) {
@@ -795,6 +818,9 @@ function animate() {
   const s = currentS;
 
   updateUI(s);
+  const inOrbit = s >= ZONES.ORBIT_START;
+  const orbitTForDots = inOrbit ? (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START) : 0;
+  updateShotDots(orbitTForDots, inOrbit);
 
   /* ── EAGLE ── */
   if (eagleMixer) eagleMixer.update(dt);
@@ -872,33 +898,52 @@ function animate() {
     updateShotLabel('');
 
   } else {
-    /* ── Cinematic orbit with close-up shots ── */
+    /* ── Cinematic orbit with HOLD pauses ── */
     const orbitT = (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START);
-    let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1];
+
+    /* Find which inter-shot segment we're in */
+    let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1], segIdx = 0;
     for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
       if (orbitT >= CAR_SHOTS[i].p && orbitT <= CAR_SHOTS[i+1].p) {
-        shotA = CAR_SHOTS[i]; shotB = CAR_SHOTS[i+1]; break;
+        shotA = CAR_SHOTS[i]; shotB = CAR_SHOTS[i+1]; segIdx = i; break;
       }
     }
-    const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
-    const ease   = localT * localT * (3 - 2 * localT);
 
-    /* ── FOV: very narrow (telephoto) for tyre close-ups, normal for wide ── */
-    const isTyreShotA = shotA.label && shotA.label.length > 0;
-    const isTyreShotB = shotB.label && shotB.label.length > 0;
-    const targetFOV = (isTyreShotA || (ease > 0.5 && isTyreShotB)) ? 22 : 48;
+    /* raw 0→1 progress through this segment */
+    const segSpan = shotB.p - shotA.p;
+    const rawT    = segSpan < 0.0001 ? 1.0 : (orbitT - shotA.p) / segSpan;
+
+    /* Apply hold: first (hold) fraction → localT stays 0 (locked on shotA)
+       remaining (1-hold) fraction → localT goes 0→1 (move to shotB)    */
+    const holdFrac = shotA.hold ?? 0.5;
+    let localT;
+    if (rawT <= holdFrac) {
+      localT = 0.0;           // HOLD — camera locked on shotA
+    } else {
+      localT = (rawT - holdFrac) / (1.0 - holdFrac);   // remap tail to 0→1
+    }
+    /* smooth ease only on the moving portion */
+    const ease = localT * localT * (3 - 2 * localT);
+
+    /* ── FOV: telephoto for tyre close-ups ── */
+    const isTyreShotA = !!(shotA.label);
+    const isTyreShotB = !!(shotB.label);
+    /* during hold we show tyre-FOV if on a tyre shot; during move, transition */
+    const targetFOV = (isTyreShotA && localT < 0.7) || (isTyreShotB && localT > 0.3 && ease > 0.4) ? 22 : 48;
     camera.fov += (targetFOV - camera.fov) * 0.07;
     camera.updateProjectionMatrix();
 
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
-    camera.position.lerp(_camDesV, 0.045);
+
+    /* tighter lerp during hold (camera snaps to position), looser during move */
+    const lerpSpeed = localT === 0.0 ? 0.09 : 0.045;
+    camera.position.lerp(_camDesV, lerpSpeed);
     camera.lookAt(_camTarV);
 
-    /* Show shot label when we're deep in a named shot */
-    const atShotA = isTyreShotA && localT < 0.6;
-    const atShotB = isTyreShotB && localT > 0.4;
-    updateShotLabel(atShotA ? shotA.label : (atShotB ? shotB.label : ''));
+    /* Show label while we're in the hold phase of a named shot */
+    const showLabel = isTyreShotA && localT < 0.55;
+    updateShotLabel(showLabel ? shotA.label : '');
   }
 
   /* ── PARTICLES ── */

@@ -55,7 +55,10 @@ canvas{position:fixed;inset:0;display:block;}
   .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
 }
 @media(max-width:640px){
-  .tp{width:calc(100% - 2.4rem)!important;padding:.85rem 1rem 1.4rem;bottom:3.5vh;max-height:52vh;overflow-y:auto;scrollbar-width:none;
+  .tp{width:calc(100% - 2.4rem)!important;padding:.85rem 1rem 1.4rem;
+    /* pushed up more so it doesn't collide with CTA */
+    bottom:14vh;
+    max-height:44vh;overflow-y:auto;scrollbar-width:none;
     background:linear-gradient(to top,rgba(5,5,8,.97) 55%,rgba(5,5,8,.6));
     border-top:1px solid rgba(255,68,0,.30);top:auto;left:1.2rem;right:1.2rem;}
   .tp::-webkit-scrollbar{display:none;}
@@ -67,11 +70,10 @@ canvas{position:fixed;inset:0;display:block;}
   .tp.C.vis{opacity:1;transform:translateY(0);}
 }
 
-/* TYPOGRAPHY — bumped opacity/brightness across all text */
+/* TYPOGRAPHY */
 .ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);letter-spacing:.42em;color:#ff5500;text-transform:uppercase;margin-bottom:.4rem;display:block;}
 .hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);line-height:.91;color:#ffffff;margin-bottom:.6rem;}
 .hd em{color:#ff4400;font-style:normal;}
-/* body text: was #7a8fa8 → now #a8bfd0 — much more readable */
 .bd{font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;color:#a8bfd0;font-weight:300;letter-spacing:.025em;}
 .bd+.bd{margin-top:.55rem;}
 .bd strong{color:#ddeeff;font-weight:500;}
@@ -82,7 +84,6 @@ canvas{position:fixed;inset:0;display:block;}
 .fact{flex:1 1 calc(50% - .35rem);min-width:90px;}
 .fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#ff4400;line-height:1.05;}
 .fv small{font-size:.5em;color:#90a8c0;}
-/* fact labels: was #7a8fa8 → #90a8c0 */
 .fl{font-family:'Cinzel',serif;font-size:clamp(.33rem,.88vw,.43rem);letter-spacing:.2em;color:#90a8c0;text-transform:uppercase;margin-top:.05rem;}
 .stat-stamp{margin-top:.8rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2rem);color:#ff4400;letter-spacing:.07em;}
 .stat-stamp small{font-family:'Rajdhani',sans-serif;font-size:.52em;color:#90a8c0;letter-spacing:.14em;display:block;}
@@ -115,15 +116,39 @@ canvas{position:fixed;inset:0;display:block;}
   background:radial-gradient(ellipse at center,rgba(255,60,0,.35) 0%,rgba(140,20,0,.15) 45%,transparent 72%);
   transition:opacity .05s ease;}
 
-/* ── CTA ── */
-#cta{position:fixed;bottom:7vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .9s;white-space:nowrap;z-index:20;pointer-events:none;}
+/* ── CTA — mobile safe zone ── */
+#cta{
+  position:fixed;
+  /* desktop: stays at bottom; mobile: well above panel area */
+  bottom:2.5vh;
+  left:50%;transform:translateX(-50%);
+  text-align:center;opacity:0;transition:opacity .9s;
+  white-space:nowrap;z-index:15;   /* below panels (z:20) so panels always win */
+  pointer-events:none;
+}
 #cta.vis{opacity:1;}
-.cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.4em;color:#90a8c0;text-transform:uppercase;margin-bottom:.7rem;}
-.cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5.5rem);letter-spacing:.1em;line-height:.9;
+@media(max-width:640px){
+  #cta{
+    bottom:auto;
+    /* sit just above the very bottom edge, well below the panel area */
+    top:auto;
+    /* anchor to bottom but leave room — panel is at bottom:14vh, max-h:44vh
+       so panel top is around 58vh. CTA at bottom: keep it in bottom 10% */
+    bottom:1.5vh;
+  }
+}
+.cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.4em;color:#90a8c0;text-transform:uppercase;margin-bottom:.4rem;}
+.cb{font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(1.8rem,5vw,5.5rem);   /* smaller on mobile */
+  letter-spacing:.1em;line-height:.9;
   background:linear-gradient(135deg,#cc2200,#ff5500);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+@media(max-width:640px){
+  .cl{font-size:clamp(.38rem,2.8vw,.48rem);}
+  .cb{font-size:clamp(1.4rem,8vw,2.2rem);}
+}
 
-/* ── SHOT DOTS — shows which shot is active ── */
+/* ── SHOT DOTS ── */
 #shotdots{
   position:fixed;right:1.8vw;top:50%;transform:translateY(-50%);
   z-index:20;display:flex;flex-direction:column;gap:.55rem;
@@ -170,6 +195,7 @@ canvas{position:fixed;inset:0;display:block;}
   <div class="hint-arrow"></div>
 </div>
 
+<!-- TEXT PANELS -->
 <div class="tp C" id="p0">
   <span class="ey">McLaren Automotive · 2024</span>
   <div class="hd">THE EAGLE<br/>HUNTS <em>ITS OWN</em></div>
@@ -243,6 +269,7 @@ canvas{position:fixed;inset:0;display:block;}
   <div class="stat-stamp">928 HP<small>The Last Great Analogue Hypercar</small></div>
 </div>
 
+<!-- CTA sits BELOW panels in z-order (z-index:15 vs panels z-index:20) -->
 <div id="cta">
   <div class="cl">McLaren W1 — 106 of 106</div>
   <div class="cb">BEYOND<br/>LIMITS</div>
@@ -286,12 +313,12 @@ const PAN_ZONES = [
   { s: ZONES.ORBIT_START + 0.28,      e: 1.01,                          id: 'p4' },
 ];
 
-/* ─── SCROLL ─── */
+/* ─── SCROLL — reduced sensitivity for more deliberate pacing ─── */
 let targetS = 0, currentS = 0;
 let isDragging = false, lastTY = 0, touchVel = 0;
-const SCROLL_SPEED_WHEEL = 0.00036;
-const SCROLL_SPEED_TOUCH = 0.00052;
-const LERP_F = 0.055;
+const SCROLL_SPEED_WHEEL = 0.00018;  // was 0.00036 — halved for slower feel
+const SCROLL_SPEED_TOUCH = 0.00026;  // was 0.00052 — halved
+const LERP_F = 0.042;                // was 0.055 — slightly smoother
 
 const hintEl = document.getElementById('hint');
 window.addEventListener('wheel', e => {
@@ -307,7 +334,7 @@ window.addEventListener('touchmove', e => {
   if (!isDragging) return;
   const dy = lastTY - e.touches[0].clientY;
   touchVel = dy; lastTY = e.touches[0].clientY;
-  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.8));
+  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.4)); // was 1.8
 }, { passive: true });
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
@@ -335,42 +362,38 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS ───
-   Strategy: keep white lights LOW so they define form without washing out
-   the orange. Orange/warm lights dominate to keep the Papaya hue vivid. ─── */
-scene.add(new THREE.AmbientLight(0x180c04, 1.0));  // very dim warm ambient
+/* ─── LIGHTS — warm Papaya-friendly ─── */
+scene.add(new THREE.AmbientLight(0x180c04, 1.0));
 
-/* Key — toned down, slightly warm so it complements orange */
 const keyL = new THREE.DirectionalLight(0xffe0c0, 2.8);
 keyL.position.set(5, 10, 7);
 scene.add(keyL);
 
-/* Fill — cool-neutral, low so shadow side keeps depth */
 const fillL = new THREE.DirectionalLight(0xc0d0ff, 1.0);
 fillL.position.set(-6, 4, 4);
 scene.add(fillL);
 
-/* Rim — cool blue for silhouette separation */
 const rimL = new THREE.DirectionalLight(0x4466aa, 2.5);
 rimL.position.set(0, 5, -8);
 scene.add(rimL);
 
-/* Front soft fill */
 const frontL = new THREE.DirectionalLight(0xffd0a0, 1.5);
 frontL.position.set(0, 2, 10);
 scene.add(frontL);
 
-/* Orange undercar glow — the hero light that saturates the paint */
+/* Left-side fill — extra warm to mimic sunlight on Papaya panels */
+const leftWarm = new THREE.DirectionalLight(0xff8040, 1.8);
+leftWarm.position.set(-8, 5, 4);
+scene.add(leftWarm);
+
 const orangeL = new THREE.PointLight(0xff3300, 6.0, 12);
 orangeL.position.set(0, -0.3, 0);
 scene.add(orangeL);
 
-/* Orange side accent */
 const rimPt = new THREE.PointLight(0xff2200, 3.5, 8);
 rimPt.position.set(-2, 1, -2);
 scene.add(rimPt);
 
-/* Extra orange top-side to saturate the roof */
 const topOrange = new THREE.PointLight(0xff4400, 4.0, 10);
 topOrange.position.set(1, 3, 1);
 scene.add(topOrange);
@@ -493,39 +516,76 @@ const FLIGHT_PTS = [
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
 /* ─── CINEMATIC CAR SHOTS ───────────────────────────────────────────
-   Car is scaled to 6.8 units (was 4.2) — all positions adjusted.
-   Approximate geometry at this scale:
-     - Length ≈ 9 units  (z: -4.5 to +4.5)
-     - Width  ≈ 5 units  (x: -2.5 to +2.5)
-     - Height ≈ 2.5 units
-     - Wheel centres: front ≈ (±2.0, -0.6, +3.0), rear ≈ (±2.0, -0.6, -3.2)
-   
-   Shot sequence (orbitT 0→1 = scroll 0.60→1.00):
-   0.00  wide front 3/4 — establishes the whole car
-   0.10  FRONT TYRE close-up — slammed to the ground, extreme angle
-   0.22  low side profile — dramatic silhouette
-   0.34  REAR TYRE close-up — cam tucked behind rear haunch
-   0.46  rear 3/4 — wing and diffuser drama
-   0.60  dead rear — diffuser + exhausts
-   0.72  opposite side profile
-   0.84  top-down hero — see the full plan
-   1.00  front nose ground-level — menacing low angle
-─────────────────────────────────────────────────────────────────── */
-/* ─── CINEMATIC CAR SHOTS ───────────────────────────────────────────
-   hold = fraction of each inter-shot gap that is a locked HOLD.
-   Only the (1-hold) tail fraction is the actual camera move.
-   This makes each angle feel like a deliberate "cut and settle".
+   Increased hold values so each angle has a long comfortable pause
+   before the camera moves to the next position.
+
+   Shot 0:  wide front 3/4         hold 0.70 → very long establish
+   Shot 1:  LEFT FRONT TYRE        hold 0.72 → close-up lingers
+   Shot 2:  front 3/4 low          hold 0.65
+   Shot 3:  right front tyre       hold 0.70
+   Shot 4:  rear 3/4               hold 0.65
+   Shot 5:  dead rear              hold 0.65
+   Shot 6:  left side profile      hold 0.65
+   Shot 7:  top-down hero          hold 0.65
+   Shot 8:  ground-level nose      hold 1.00 (final)
 ─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
-  { p:0.00, hold:0.50, pos:new THREE.Vector3(  8,  4.5,  22), tar:new THREE.Vector3( 0,  0.8,  0), label:'' },
-  { p:0.12, hold:0.60, pos:new THREE.Vector3( 4.5, 0.15, 3.5), tar:new THREE.Vector3( 1.8,-0.3, 3.0), label:'Front Tyre · Pirelli P Zero' },
-  { p:0.25, hold:0.50, pos:new THREE.Vector3( 20,  1.8,   0), tar:new THREE.Vector3( 0,  0.5,  0), label:'' },
-  { p:0.38, hold:0.60, pos:new THREE.Vector3(-4.8, 0.15,-3.8), tar:new THREE.Vector3(-1.8,-0.3,-3.2), label:'Rear Tyre · 305/30 ZR20' },
-  { p:0.51, hold:0.50, pos:new THREE.Vector3( 10,  3.0, -20), tar:new THREE.Vector3( 0,  1.0,  0), label:'' },
-  { p:0.63, hold:0.50, pos:new THREE.Vector3(  0,  4.0, -24), tar:new THREE.Vector3( 0,  0.8,  0), label:'' },
-  { p:0.74, hold:0.50, pos:new THREE.Vector3(-20,  2.5,  10), tar:new THREE.Vector3( 0,  0.6,  0), label:'' },
-  { p:0.85, hold:0.50, pos:new THREE.Vector3(  3, 18.0,   5), tar:new THREE.Vector3( 0,  0,    0), label:'' },
-  { p:1.00, hold:1.00, pos:new THREE.Vector3(  0,  0.3,   9), tar:new THREE.Vector3( 0,  0.5,  0), label:'' },
+  {
+    p:0.00, hold:0.70,
+    pos:new THREE.Vector3(  8,  4.5,  22),
+    tar:new THREE.Vector3(  0,  0.8,   0),
+    label:''
+  },
+  {
+    // LEFT FRONT TYRE — camera on left side (negative X), wheel height, close
+    p:0.12, hold:0.72,
+    pos:new THREE.Vector3( -4.2, 0.18, 3.2),
+    tar:new THREE.Vector3( -1.8,-0.25, 3.0),
+    label:'Front Tyre · Left · Pirelli P Zero'
+  },
+  {
+    p:0.25, hold:0.65,
+    pos:new THREE.Vector3( 20,  1.8,   0),
+    tar:new THREE.Vector3(  0,  0.5,   0),
+    label:''
+  },
+  {
+    // RIGHT REAR TYRE — close, rear haunch
+    p:0.38, hold:0.70,
+    pos:new THREE.Vector3(-4.8, 0.15,-3.8),
+    tar:new THREE.Vector3(-1.8,-0.3,-3.2),
+    label:'Rear Tyre · 305/30 ZR20'
+  },
+  {
+    p:0.51, hold:0.65,
+    pos:new THREE.Vector3( 10,  3.0, -20),
+    tar:new THREE.Vector3(  0,  1.0,   0),
+    label:''
+  },
+  {
+    p:0.63, hold:0.65,
+    pos:new THREE.Vector3(  0,  4.0, -24),
+    tar:new THREE.Vector3(  0,  0.8,   0),
+    label:''
+  },
+  {
+    p:0.74, hold:0.65,
+    pos:new THREE.Vector3(-20,  2.5,  10),
+    tar:new THREE.Vector3(  0,  0.6,   0),
+    label:''
+  },
+  {
+    p:0.85, hold:0.65,
+    pos:new THREE.Vector3(  3, 18.0,   5),
+    tar:new THREE.Vector3(  0,  0,     0),
+    label:''
+  },
+  {
+    p:1.00, hold:1.00,
+    pos:new THREE.Vector3(  0,  0.3,   9),
+    tar:new THREE.Vector3(  0,  0.5,   0),
+    label:''
+  },
 ];
 
 /* ─── SHOT DOTS INIT ─── */
@@ -548,7 +608,6 @@ function updateShotDots(orbitT, inOrbit) {
   activeDotIdx = idx;
   shotDotsEl.querySelectorAll('.sdot').forEach((d, i) => d.classList.toggle('active', i === idx));
 }
-
 
 const shotLabelEl = document.getElementById('shotlabel');
 let activeShotLabel = '';
@@ -645,20 +704,17 @@ eagleLoader.load('animated_eagle.glb',
   err => { console.warn('Eagle load failed:', err); onLoaded(); }
 );
 
-/* ─── MCLAREN W1 ───────────────────────────────────────────────────
-   AGGRESSIVE ORANGE: every body panel gets McLaren Papaya orange.
-   We identify non-glass, non-black, non-tyre meshes and override
-   their colour to the iconic Papaya orange (#FF4400 / #E8500A).
-   Glass, rubber, and dark trim are kept or darkened.
-─────────────────────────────────────────────────────────────────── */
+/* ─── COLOUR CONSTANTS ─── */
+const PAPAYA         = new THREE.Color(0xFF4400);
+const PAPAYA_DEEP    = new THREE.Color(0xCC2800);
+const CARBON_BLACK   = new THREE.Color(0x0A0A0C);
+// Silver alloy wheel colour
+const WHEEL_SILVER   = new THREE.Color(0xB8BEC8);
+const TYRE_BLACK     = new THREE.Color(0x111115);
+
+/* ─── MCLAREN W1 ─── */
 let car = null, carRotY = 0, carFloorY = 0, carMixer = null;
 const CAR_ROT_SPEED = 0.16;
-
-// McLaren Papaya orange — the most aggressive shade
-const PAPAYA         = new THREE.Color(0xFF4400);   // hero orange
-const PAPAYA_DEEP    = new THREE.Color(0xCC2800);   // shadowed panels
-const CARBON_BLACK   = new THREE.Color(0x0A0A0C);   // carbon fibre trim
-const WHEEL_DARK     = new THREE.Color(0x111115);   // wheels/tyres
 
 const carLoader = new GLTFLoader();
 carLoader.setDRACOLoader(draco);
@@ -684,7 +740,7 @@ carLoader.load('mclaren_w1.glb',
 
         const nm = (c.name + ' ' + (m.name || '')).toLowerCase();
 
-        /* ── GLASS ── keep transparent */
+        /* ── GLASS ── */
         const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens') || nm.includes('screen');
         if (isGlass) {
           m.transparent = true; m.opacity = 0.18;
@@ -694,16 +750,38 @@ carLoader.load('mclaren_w1.glb',
           m.needsUpdate = true; return;
         }
 
-        /* ── TYRES / RUBBER ── stay dark */
-        const isTyre = nm.includes('tyre') || nm.includes('tire') || nm.includes('rubber') || nm.includes('wheel') || nm.includes('rim') || nm.includes('brake') || nm.includes('caliper') || nm.includes('rotor') || nm.includes('disc');
+        /* ── TYRES / RUBBER ── stay dark black */
+        const isTyre = nm.includes('tyre') || nm.includes('tire') || nm.includes('rubber');
         if (isTyre) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
-          m.color = WHEEL_DARK.clone();
-          m.roughness = 0.88; m.metalness = 0.05;
-          m.envMapIntensity = 0.5; m.needsUpdate = true; return;
+          m.color = TYRE_BLACK.clone();
+          m.roughness = 0.92; m.metalness = 0.02;
+          m.envMapIntensity = 0.3; m.needsUpdate = true; return;
         }
 
-        /* ── CARBON TRIM / DIFFUSER ── stay dark */
+        /* ── WHEELS / RIMS / SPOKES — SILVER ALLOY ──
+           Matches the dark silver multi-spoke alloys on the 720S in the reference image */
+        const isWheel = nm.includes('wheel') || nm.includes('rim') || nm.includes('spoke') || nm.includes('alloy') || nm.includes('hub');
+        if (isWheel) {
+          if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
+          m.color = WHEEL_SILVER.clone();
+          m.roughness = 0.28;       // semi-gloss brushed alloy
+          m.metalness = 0.92;       // very metallic
+          m.envMapIntensity = 2.2;  // picks up reflections
+          if (m.isMeshPhysicalMaterial) { m.clearcoat = 0.6; m.clearcoatRoughness = 0.15; }
+          m.needsUpdate = true; return;
+        }
+
+        /* ── BRAKE / CALIPER / ROTOR ── orange caliper accent */
+        const isBrake = nm.includes('brake') || nm.includes('caliper') || nm.includes('rotor') || nm.includes('disc');
+        if (isBrake) {
+          if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
+          m.color = new THREE.Color(0xff2200); // orange calipers like real McLaren
+          m.roughness = 0.5; m.metalness = 0.4;
+          m.envMapIntensity = 1.0; m.needsUpdate = true; return;
+        }
+
+        /* ── CARBON TRIM / DIFFUSER ── */
         const isCarbon = nm.includes('carbon') || nm.includes('diffuser') || nm.includes('splitter') || nm.includes('undertray') || nm.includes('floor');
         if (isCarbon) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
@@ -712,7 +790,7 @@ carLoader.load('mclaren_w1.glb',
           m.envMapIntensity = 2; m.needsUpdate = true; return;
         }
 
-        /* ── LIGHTS ── emissive orange glow */
+        /* ── LIGHTS ── */
         const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head') || nm.includes('led');
         if (isLight) {
           if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
@@ -723,18 +801,14 @@ carLoader.load('mclaren_w1.glb',
           m.needsUpdate = true; return;
         }
 
-        /* ── BODY PANELS — AGGRESSIVE DEEP ORANGE ──
-           clearcoat = glossy layer on TOP of colour so you see orange paint
-           underneath, not just white reflections. metalness=0 keeps saturation.
-           envMapIntensity LOW so environment doesn't grey it out. */
+        /* ── BODY PANELS — PAPAYA ORANGE ── */
         if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
           const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin') || nm.includes('sill') || nm.includes('floor');
           m.color = isDeep ? PAPAYA_DEEP.clone() : PAPAYA.clone();
-          m.roughness = 0.22;      // slight roughness shows orange, not just mirror
-          m.metalness = 0.0;       // zero metalness = full colour saturation
-          m.envMapIntensity = 0.8; // LOW — prevents grey env from desaturating
+          m.roughness = 0.22;
+          m.metalness = 0.0;
+          m.envMapIntensity = 0.8;
           if (m.emissive) { m.emissive.set(0,0,0); m.emissiveIntensity = 0; }
-          /* Upgrade to Physical for clearcoat if possible */
           if (m.isMeshPhysicalMaterial) {
             m.clearcoat = 1.0;
             m.clearcoatRoughness = 0.05;
@@ -810,8 +884,8 @@ function animate() {
   const MOB = getMob();
 
   if (!isDragging && Math.abs(touchVel) > 0.05) {
-    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 1.4));
-    touchVel *= 0.84;
+    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 1.0)); // damped
+    touchVel *= 0.80; // stronger momentum damping
   }
   currentS += (targetS - currentS) * LERP_F;
   if (Math.abs(targetS - currentS) < 0.00003) currentS = targetS;
@@ -901,34 +975,28 @@ function animate() {
     /* ── Cinematic orbit with HOLD pauses ── */
     const orbitT = (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START);
 
-    /* Find which inter-shot segment we're in */
-    let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1], segIdx = 0;
+    let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1];
     for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
       if (orbitT >= CAR_SHOTS[i].p && orbitT <= CAR_SHOTS[i+1].p) {
-        shotA = CAR_SHOTS[i]; shotB = CAR_SHOTS[i+1]; segIdx = i; break;
+        shotA = CAR_SHOTS[i]; shotB = CAR_SHOTS[i+1]; break;
       }
     }
 
-    /* raw 0→1 progress through this segment */
     const segSpan = shotB.p - shotA.p;
     const rawT    = segSpan < 0.0001 ? 1.0 : (orbitT - shotA.p) / segSpan;
+    const holdFrac = shotA.hold ?? 0.65;
 
-    /* Apply hold: first (hold) fraction → localT stays 0 (locked on shotA)
-       remaining (1-hold) fraction → localT goes 0→1 (move to shotB)    */
-    const holdFrac = shotA.hold ?? 0.5;
     let localT;
     if (rawT <= holdFrac) {
-      localT = 0.0;           // HOLD — camera locked on shotA
+      localT = 0.0;
     } else {
-      localT = (rawT - holdFrac) / (1.0 - holdFrac);   // remap tail to 0→1
+      localT = (rawT - holdFrac) / (1.0 - holdFrac);
     }
-    /* smooth ease only on the moving portion */
     const ease = localT * localT * (3 - 2 * localT);
 
-    /* ── FOV: telephoto for tyre close-ups ── */
+    /* FOV: telephoto for tyre close-ups */
     const isTyreShotA = !!(shotA.label);
     const isTyreShotB = !!(shotB.label);
-    /* during hold we show tyre-FOV if on a tyre shot; during move, transition */
     const targetFOV = (isTyreShotA && localT < 0.7) || (isTyreShotB && localT > 0.3 && ease > 0.4) ? 22 : 48;
     camera.fov += (targetFOV - camera.fov) * 0.07;
     camera.updateProjectionMatrix();
@@ -936,13 +1004,12 @@ function animate() {
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
 
-    /* tighter lerp during hold (camera snaps to position), looser during move */
-    const lerpSpeed = localT === 0.0 ? 0.09 : 0.045;
+    /* tighter lerp when holding (snap to angle), looser when moving */
+    const lerpSpeed = localT === 0.0 ? 0.09 : 0.038;
     camera.position.lerp(_camDesV, lerpSpeed);
     camera.lookAt(_camTarV);
 
-    /* Show label while we're in the hold phase of a named shot */
-    const showLabel = isTyreShotA && localT < 0.55;
+    const showLabel = isTyreShotA && localT < 0.60;
     updateShotLabel(showLabel ? shotA.label : '');
   }
 
@@ -960,12 +1027,10 @@ function animate() {
   }
   pa.needsUpdate = true;
 
-  /* ── FLOOR SHADERS ── */
   gridMat.uniforms.uT.value = t;
   spokeMat.uniforms.uAngle.value = carRotY;
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
-  /* ── PULSE LIGHTS ── */
   if (!flashFired || orangeL.intensity <= 6.0) {
     orangeL.intensity  = 6.0  + Math.sin(t * 1.2) * 1.2;
     rimPt.intensity    = 3.5  + Math.sin(t * 2.1) * 0.8;

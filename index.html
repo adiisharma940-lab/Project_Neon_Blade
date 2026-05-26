@@ -298,8 +298,8 @@ window.addEventListener('touchend', () => { isDragging = false; }, { passive: tr
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 0.9;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
@@ -318,26 +318,45 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS ─── */
-scene.add(new THREE.AmbientLight(0xd0d8ff, 2.2));
-const keyL = new THREE.DirectionalLight(0xffffff, 9);
+/* ─── LIGHTS ───
+   Strategy: keep white lights LOW so they define form without washing out
+   the orange. Orange/warm lights dominate to keep the Papaya hue vivid. ─── */
+scene.add(new THREE.AmbientLight(0x180c04, 1.0));  // very dim warm ambient
+
+/* Key — toned down, slightly warm so it complements orange */
+const keyL = new THREE.DirectionalLight(0xffe0c0, 2.8);
 keyL.position.set(5, 10, 7);
 scene.add(keyL);
-const fillL = new THREE.DirectionalLight(0xe8eeff, 4);
+
+/* Fill — cool-neutral, low so shadow side keeps depth */
+const fillL = new THREE.DirectionalLight(0xc0d0ff, 1.0);
 fillL.position.set(-6, 4, 4);
 scene.add(fillL);
-const rimL = new THREE.DirectionalLight(0x99bbee, 6);
+
+/* Rim — cool blue for silhouette separation */
+const rimL = new THREE.DirectionalLight(0x4466aa, 2.5);
 rimL.position.set(0, 5, -8);
 scene.add(rimL);
-const frontL = new THREE.DirectionalLight(0xffffff, 5);
+
+/* Front soft fill */
+const frontL = new THREE.DirectionalLight(0xffd0a0, 1.5);
 frontL.position.set(0, 2, 10);
 scene.add(frontL);
-const orangeL = new THREE.PointLight(0xff4400, 2.5, 10);
+
+/* Orange undercar glow — the hero light that saturates the paint */
+const orangeL = new THREE.PointLight(0xff3300, 6.0, 12);
 orangeL.position.set(0, -0.3, 0);
 scene.add(orangeL);
-const rimPt = new THREE.PointLight(0xff2200, 1.8, 6);
+
+/* Orange side accent */
+const rimPt = new THREE.PointLight(0xff2200, 3.5, 8);
 rimPt.position.set(-2, 1, -2);
 scene.add(rimPt);
+
+/* Extra orange top-side to saturate the roof */
+const topOrange = new THREE.PointLight(0xff4400, 4.0, 10);
+topOrange.position.set(1, 3, 1);
+scene.add(topOrange);
 
 /* ─── FLOOR ─── */
 const floorMesh = new THREE.Mesh(
@@ -457,47 +476,54 @@ const FLIGHT_PTS = [
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
 /* ─── CINEMATIC CAR SHOTS ───────────────────────────────────────────
-   NEW SEQUENCE (orbitT 0→1 maps to s 0.60→1.00):
-
-   0.00  – wide front-3/4 (same as before)
-   0.10  – FRONT TYRE close-up  (driver side front wheel arch)
-   0.20  – side profile low shot
-   0.30  – REAR TYRE close-up  (passenger side rear wheel)
-   0.42  – rear 3/4 dramatic
-   0.56  – dead rear bumper / diffuser
-   0.70  – passenger side profile
-   0.84  – top-down hero
-   1.00  – front nose low
+   Car is scaled to 6.8 units (was 4.2) — all positions adjusted.
+   Approximate geometry at this scale:
+     - Length ≈ 9 units  (z: -4.5 to +4.5)
+     - Width  ≈ 5 units  (x: -2.5 to +2.5)
+     - Height ≈ 2.5 units
+     - Wheel centres: front ≈ (±2.0, -0.6, +3.0), rear ≈ (±2.0, -0.6, -3.2)
+   
+   Shot sequence (orbitT 0→1 = scroll 0.60→1.00):
+   0.00  wide front 3/4 — establishes the whole car
+   0.10  FRONT TYRE close-up — slammed to the ground, extreme angle
+   0.22  low side profile — dramatic silhouette
+   0.34  REAR TYRE close-up — cam tucked behind rear haunch
+   0.46  rear 3/4 — wing and diffuser drama
+   0.60  dead rear — diffuser + exhausts
+   0.72  opposite side profile
+   0.84  top-down hero — see the full plan
+   1.00  front nose ground-level — menacing low angle
 ─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
-  // wide front 3/4
-  { p: 0.00, pos: new THREE.Vector3(  0,  3.5,  18), tar: new THREE.Vector3(0, 0.5,  0), label: '' },
+  // Wide front 3/4 — full car visible
+  { p: 0.00, pos: new THREE.Vector3(  8,  4.5,  22), tar: new THREE.Vector3(0, 0.8,  0), label: '' },
 
-  // FRONT TYRE: tight shot — camera very close to front-right wheel
-  // x≈3.2 (right side), y≈0.2 (wheel height), z≈4 (slightly forward)
-  { p: 0.10, pos: new THREE.Vector3(  3.8,  0.4,  5.2), tar: new THREE.Vector3( 2.8,  0.1,  3.8), label: 'Front Tyre · Pirelli P Zero' },
+  // FRONT TYRE — extreme close, camera at road level, to the right of front-right wheel
+  // wheel is at approx (2.0, -0.6, 3.0) in car-local space
+  // camera: x=4.5 (outside wheel), y=0.15 (road level), z=3.5 (at wheel), looking inward
+  { p: 0.10, pos: new THREE.Vector3( 4.5,  0.15,  3.5), tar: new THREE.Vector3( 1.8, -0.3,  3.0), label: 'Front Tyre · Pirelli P Zero' },
 
-  // side profile, low and close
-  { p: 0.22, pos: new THREE.Vector3( 14,  1.5,   0), tar: new THREE.Vector3(0, 0.6, 0), label: '' },
+  // Low side profile — camera at hip height
+  { p: 0.22, pos: new THREE.Vector3( 20,  1.8,   0), tar: new THREE.Vector3(0, 0.5, 0), label: '' },
 
-  // REAR TYRE: tight shot — camera behind and beside rear-left wheel
-  // rear of car ≈ z −3.5; rear wheel x≈−3.0
-  { p: 0.34, pos: new THREE.Vector3( -4.0,  0.5, -4.5), tar: new THREE.Vector3(-2.8,  0.15, -3.6), label: 'Rear Tyre · 305/30 ZR20' },
+  // REAR TYRE — tucked right behind rear-left haunch
+  // rear-left wheel approx (-2.0, -0.6, -3.2), cam tucked tight
+  { p: 0.34, pos: new THREE.Vector3(-4.8,  0.15, -3.8), tar: new THREE.Vector3(-1.8, -0.3, -3.2), label: 'Rear Tyre · 305/30 ZR20' },
 
-  // rear 3/4 dramatic
-  { p: 0.44, pos: new THREE.Vector3( 10,  2.0, -15), tar: new THREE.Vector3(0, 0.4, 0), label: '' },
+  // Rear 3/4 — wing + diffuser
+  { p: 0.46, pos: new THREE.Vector3( 10,  3.0, -20), tar: new THREE.Vector3(0, 1.0, 0), label: '' },
 
-  // dead rear / diffuser
-  { p: 0.58, pos: new THREE.Vector3(  0,  3.5, -18), tar: new THREE.Vector3(0, 0.5, 0), label: '' },
+  // Dead rear — diffuser, exhausts, rear wing full view
+  { p: 0.60, pos: new THREE.Vector3(  0,  4.0, -24), tar: new THREE.Vector3(0, 0.8, 0), label: '' },
 
-  // passenger side
-  { p: 0.70, pos: new THREE.Vector3(-13,  2.5,  14), tar: new THREE.Vector3(0, 0.4, 0), label: '' },
+  // Opposite side profile
+  { p: 0.72, pos: new THREE.Vector3(-20,  2.5,  10), tar: new THREE.Vector3(0, 0.6, 0), label: '' },
 
-  // top-down hero
-  { p: 0.84, pos: new THREE.Vector3(  0, 13.0,   4), tar: new THREE.Vector3(0, 0,   0), label: '' },
+  // Top-down hero — see plan view
+  { p: 0.84, pos: new THREE.Vector3(  3, 18.0,   5), tar: new THREE.Vector3(0, 0,   0), label: '' },
 
-  // front nose low close
-  { p: 1.00, pos: new THREE.Vector3(  0,  0.8,   7), tar: new THREE.Vector3(0, 0.2, 0), label: '' },
+  // Front nose ground level — menacing angle
+  { p: 1.00, pos: new THREE.Vector3(  0,  0.3,   9), tar: new THREE.Vector3(0, 0.5, 0), label: '' },
 ];
 
 /* ─── SHOT LABEL LOGIC ─── */
@@ -619,7 +645,7 @@ carLoader.load('mclaren_w1.glb',
     const box  = new THREE.Box3().setFromObject(car);
     const sz   = box.getSize(new THREE.Vector3());
     const cn   = box.getCenter(new THREE.Vector3());
-    const s    = 4.2 / Math.max(sz.x, sz.y, sz.z);
+    const s    = 6.8 / Math.max(sz.x, sz.y, sz.z);
     car.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(car);
     car.position.set(-cn.x * s, -box2.min.y - 1.08, -cn.z * s);
@@ -674,17 +700,22 @@ carLoader.load('mclaren_w1.glb',
           m.needsUpdate = true; return;
         }
 
-        /* ── BODY PANELS — AGGRESSIVE ORANGE ──
-           Everything else (body, hood, doors, wings, sideskirts, mirrors)
-           gets the full Papaya orange treatment */
+        /* ── BODY PANELS — AGGRESSIVE DEEP ORANGE ──
+           clearcoat = glossy layer on TOP of colour so you see orange paint
+           underneath, not just white reflections. metalness=0 keeps saturation.
+           envMapIntensity LOW so environment doesn't grey it out. */
         if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
-          // Slight variation: use deeper orange for darker/shadowed panels
-          const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin');
+          const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin') || nm.includes('sill') || nm.includes('floor');
           m.color = isDeep ? PAPAYA_DEEP.clone() : PAPAYA.clone();
-          m.roughness = 0.08;      // high-gloss clear coat
-          m.metalness = 0.0;       // pure paint, not metallic
-          m.envMapIntensity = 3.5; // strong reflections in the orange
-          if (m.emissive) m.emissiveIntensity = 0;
+          m.roughness = 0.22;      // slight roughness shows orange, not just mirror
+          m.metalness = 0.0;       // zero metalness = full colour saturation
+          m.envMapIntensity = 0.8; // LOW — prevents grey env from desaturating
+          if (m.emissive) { m.emissive.set(0,0,0); m.emissiveIntensity = 0; }
+          /* Upgrade to Physical for clearcoat if possible */
+          if (m.isMeshPhysicalMaterial) {
+            m.clearcoat = 1.0;
+            m.clearcoatRoughness = 0.05;
+          }
         }
         m.needsUpdate = true;
       });
@@ -777,8 +808,8 @@ function animate() {
   if (s >= ZONES.EAGLE_EXIT) {
     eagleGroup.scale.setScalar(0);
     if (!flashFired) {
-      flashFired = true; flashOpacity = 0.6;
-      orangeL.intensity = 12; rimPt.intensity = 7;
+      flashFired = true; flashOpacity = 0.7;
+      orangeL.intensity = 20; rimPt.intensity = 12; topOrange.intensity = 15;
     }
   } else if (s > ZONES.SWOOP_PAST) {
     const ep = (s - ZONES.SWOOP_PAST) / (ZONES.EAGLE_EXIT - ZONES.SWOOP_PAST);
@@ -827,7 +858,7 @@ function animate() {
   } else if (s < ZONES.CAM_SETTLE) {
     const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
     const ease2 = t2 * t2 * (3 - 2 * t2);
-    const carFacingPos = MOB ? _camDesV.set(-5, 4, 20) : _camDesV.set(-8, 4, 22);
+    const carFacingPos = MOB ? _camDesV.set(-8, 6, 30) : _camDesV.set(-10, 5, 32);
     camera.position.lerp(carFacingPos, 0.06 + ease2 * 0.06);
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
@@ -835,7 +866,7 @@ function animate() {
   } else if (s < ZONES.ORBIT_START) {
     const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
     const ease3 = t3 * t3 * (3 - 2 * t3);
-    const settlePos = MOB ? _camDesV.set(0, 3, 18) : _camDesV.set(0, 2.5, 16);
+    const settlePos = MOB ? _camDesV.set(0, 4, 26) : _camDesV.set(0, 3.5, 24);
     camera.position.lerp(settlePos, 0.05 + ease3 * 0.05);
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
@@ -852,11 +883,11 @@ function animate() {
     const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
     const ease   = localT * localT * (3 - 2 * localT);
 
-    /* ── FOV: narrow (zoom) for tyre close-ups, wide otherwise ── */
+    /* ── FOV: very narrow (telephoto) for tyre close-ups, normal for wide ── */
     const isTyreShotA = shotA.label && shotA.label.length > 0;
     const isTyreShotB = shotB.label && shotB.label.length > 0;
-    const targetFOV = (isTyreShotA || (ease > 0.5 && isTyreShotB)) ? 28 : 52;
-    camera.fov += (targetFOV - camera.fov) * 0.06;
+    const targetFOV = (isTyreShotA || (ease > 0.5 && isTyreShotB)) ? 22 : 48;
+    camera.fov += (targetFOV - camera.fov) * 0.07;
     camera.updateProjectionMatrix();
 
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
@@ -890,12 +921,14 @@ function animate() {
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
   /* ── PULSE LIGHTS ── */
-  if (!flashFired || orangeL.intensity <= 2.5) {
-    orangeL.intensity = 2.5 + Math.sin(t * 1.2) * 0.6;
-    rimPt.intensity   = 1.8 + Math.sin(t * 2.1) * 0.4;
+  if (!flashFired || orangeL.intensity <= 6.0) {
+    orangeL.intensity  = 6.0  + Math.sin(t * 1.2) * 1.2;
+    rimPt.intensity    = 3.5  + Math.sin(t * 2.1) * 0.8;
+    topOrange.intensity= 4.0  + Math.sin(t * 0.9) * 0.9;
   } else {
-    orangeL.intensity = Math.max(orangeL.intensity - dt * 35, 2.5 + Math.sin(t * 1.2) * 0.6);
-    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 25, 1.8 + Math.sin(t * 2.1) * 0.4);
+    orangeL.intensity  = Math.max(orangeL.intensity  - dt * 35, 6.0  + Math.sin(t * 1.2) * 1.2);
+    rimPt.intensity    = Math.max(rimPt.intensity    - dt * 25, 3.5  + Math.sin(t * 2.1) * 0.8);
+    topOrange.intensity= Math.max(topOrange.intensity- dt * 20, 4.0  + Math.sin(t * 0.9) * 0.9);
   }
 
   renderer.render(scene, camera);

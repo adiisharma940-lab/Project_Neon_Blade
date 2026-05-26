@@ -17,17 +17,19 @@ canvas{position:fixed;inset:0;display:block;}
   position:fixed;top:0;left:0;right:0;z-index:25;
   padding:clamp(.6rem,2vw,1.1rem) clamp(.8rem,4vw,2.2rem);
   display:flex;justify-content:space-between;align-items:center;
-  background:linear-gradient(to bottom,rgba(5,5,8,.9),transparent);
+  background:linear-gradient(to bottom,rgba(5,5,8,.92),transparent);
 }
 .logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.95rem,3.5vw,1.25rem);letter-spacing:.28em;color:#e8eef4;}
-.logo span{color:#ff4400;}
+/* colour fix: logo accent → true McLaren papaya dark-orange */
+.logo span{color:#d94400;}
 #snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.18);color:#7a8fa8;
   font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.2em;
   padding:.35rem .85rem;text-transform:uppercase;transition:all .3s;}
-#snd.on{border-color:#ff4400;color:#ff4400;}
+#snd.on{border-color:#d94400;color:#d94400;}
 
 /* ── PROGRESS ── */
-#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#ff4400,#ff8800,#ffcc00);width:0%;z-index:30;transition:width .08s linear;}
+/* colour fix: gradient ends at dark-orange, not yellow */
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#b83300,#d94400,#f05500);width:0%;z-index:30;transition:width .08s linear;}
 
 /* ── SCROLL HINT ── */
 #hint{
@@ -35,8 +37,8 @@ canvas{position:fixed;inset:0;display:block;}
   z-index:20;opacity:1;transition:opacity .8s;pointer-events:none;text-align:center;
 }
 #hint.gone{opacity:0;}
-.hint-txt{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.4vw,.54rem);letter-spacing:.45em;color:#556070;text-transform:uppercase;margin-bottom:.5rem;}
-.hint-arrow{width:1px;height:28px;background:linear-gradient(to bottom,#ff4400,transparent);margin:0 auto;animation:pulse-arrow 1.6s ease-in-out infinite;}
+.hint-txt{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.4vw,.54rem);letter-spacing:.45em;color:#445060;text-transform:uppercase;margin-bottom:.5rem;}
+.hint-arrow{width:1px;height:28px;background:linear-gradient(to bottom,#d94400,transparent);margin:0 auto;animation:pulse-arrow 1.6s ease-in-out infinite;}
 @keyframes pulse-arrow{0%,100%{opacity:.3;transform:scaleY(.6);}50%{opacity:1;transform:scaleY(1);}}
 
 /* ── TEXT PANELS — DESKTOP ── */
@@ -44,44 +46,20 @@ canvas{position:fixed;inset:0;display:block;}
   position:fixed;opacity:0;pointer-events:none;z-index:20;
   transition:opacity .7s cubic-bezier(.22,.68,0,1.15), transform .7s cubic-bezier(.22,.68,0,1.15);
 }
-
 @media(min-width:641px){
-  .tp{
-    width:min(400px,36vw);
-    padding:clamp(1rem,1.8vw,1.5rem);
-    top:50%;
-    max-height:86vh;
-    overflow-y:auto;
-    scrollbar-width:none;
-  }
+  .tp{width:min(400px,36vw);padding:clamp(1rem,1.8vw,1.5rem);top:50%;max-height:86vh;overflow-y:auto;scrollbar-width:none;}
   .tp::-webkit-scrollbar{display:none;}
   .tp.L{left:3.5vw;transform:translateY(-50%) translateX(-70px);}
   .tp.L.vis{opacity:1;transform:translateY(-50%) translateX(0);}
   .tp.R{right:3.5vw;text-align:right;transform:translateY(-50%) translateX(70px);}
   .tp.R.vis{opacity:1;transform:translateY(-50%) translateX(0);}
-  .tp.C{
-    left:50%;width:min(520px,88vw)!important;
-    top:13%;text-align:center;
-    transform:translateX(-50%) translateY(28px);
-  }
+  .tp.C{left:50%;width:min(520px,88vw)!important;top:13%;text-align:center;transform:translateX(-50%) translateY(28px);}
   .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
 }
-
-/* ── TEXT PANELS — MOBILE ── */
 @media(max-width:640px){
-  .tp{
-    width:calc(100% - 2.4rem)!important;
-    padding:.85rem 1rem 1.4rem;
-    bottom:3.5vh;
-    max-height:52vh;
-    overflow-y:auto;
-    scrollbar-width:none;
+  .tp{width:calc(100% - 2.4rem)!important;padding:.85rem 1rem 1.4rem;bottom:3.5vh;max-height:52vh;overflow-y:auto;scrollbar-width:none;
     background:linear-gradient(to top,rgba(5,5,8,.97) 55%,rgba(5,5,8,.6));
-    border-top:1px solid rgba(255,68,0,.2);
-    top:auto;
-    left:1.2rem;
-    right:1.2rem;
-  }
+    border-top:1px solid rgba(210,70,0,.22);top:auto;left:1.2rem;right:1.2rem;}
   .tp::-webkit-scrollbar{display:none;}
   .tp.L{transform:translateX(-60px);opacity:0;}
   .tp.L.vis{opacity:1;transform:translateX(0);}
@@ -92,48 +70,28 @@ canvas{position:fixed;inset:0;display:block;}
 }
 
 /* TYPOGRAPHY */
-.ey{
-  font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);
-  letter-spacing:.42em;color:#ff4400;text-transform:uppercase;
-  margin-bottom:.4rem;display:block;
-}
-.hd{
-  font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);
-  line-height:.91;color:#eef2f6;margin-bottom:.6rem;
-}
-.hd em{color:#ff4400;font-style:normal;}
-.hd .gold{color:#ffcc00;font-style:normal;}
-.bd{
-  font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;
-  color:#7a8fa8;font-weight:300;letter-spacing:.025em;
-}
+/* colour fix: eyebrow → dark orange #d94400, not bright red-orange */
+.ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);letter-spacing:.42em;color:#d94400;text-transform:uppercase;margin-bottom:.4rem;display:block;}
+.hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);line-height:.91;color:#eef2f6;margin-bottom:.6rem;}
+.hd em{color:#d94400;font-style:normal;}
+.bd{font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;color:#7a8fa8;font-weight:300;letter-spacing:.025em;}
 .bd+.bd{margin-top:.55rem;}
 .bd strong{color:#b8ccd8;font-weight:500;}
-.bd em{color:#ff6622;font-style:normal;}
+.bd em{color:#d94400;font-style:normal;}
 
 /* FACT GRID */
-.fact-row{
-  display:flex;flex-wrap:wrap;gap:.4rem .7rem;
-  margin-top:.7rem;padding-top:.6rem;
-  border-top:1px solid rgba(255,68,0,.15);
-}
+.fact-row{display:flex;flex-wrap:wrap;gap:.4rem .7rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid rgba(210,70,0,.18);}
 .fact{flex:1 1 calc(50% - .35rem);min-width:90px;}
-.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#ff8800;line-height:1.05;}
+/* colour fix: fact values → dark orange, not amber/yellow */
+.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#d94400;line-height:1.05;}
 .fv small{font-size:.5em;color:#7a8fa8;}
 .fl{font-family:'Cinzel',serif;font-size:clamp(.33rem,.88vw,.43rem);letter-spacing:.2em;color:#7a8fa8;text-transform:uppercase;margin-top:.05rem;}
-.stat-stamp{
-  margin-top:.8rem;font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(1.3rem,2.8vw,2rem);color:#ffcc00;letter-spacing:.07em;
-}
+.stat-stamp{margin-top:.8rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2rem);color:#d94400;letter-spacing:.07em;}
 .stat-stamp small{font-family:'Rajdhani',sans-serif;font-size:.52em;color:#7a8fa8;letter-spacing:.14em;display:block;}
 
 /* TAG CHIPS */
 .tag-row{display:flex;flex-wrap:wrap;gap:.28rem;margin-top:.65rem;}
-.tag{
-  font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;
-  color:#ff4400;text-transform:uppercase;
-  border:1px solid rgba(255,68,0,.28);padding:.12rem .4rem;
-}
+.tag{font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;color:#d94400;text-transform:uppercase;border:1px solid rgba(210,70,0,.32);padding:.12rem .4rem;}
 
 @media(min-width:641px){
   .tp.R .fact-row{justify-content:flex-end;}
@@ -141,44 +99,32 @@ canvas{position:fixed;inset:0;display:block;}
   .tp.R .fact{text-align:right;}
   .tp.L,.tp.R{width:min(400px,36vw)!important;}
 }
-@media(max-width:640px){
-  .fact{flex:1 1 calc(50% - .35rem);}
-}
+@media(max-width:640px){.fact{flex:1 1 calc(50% - .35rem);}}
 
 /* ── LOADING ── */
-#ld{
-  position:fixed;inset:0;z-index:50;background:#050508;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;
-  transition:opacity .7s ease .1s,visibility .7s ease .1s;
-}
+#ld{position:fixed;inset:0;z-index:50;background:#050508;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;transition:opacity .7s ease .1s,visibility .7s ease .1s;}
 #ld.done{opacity:0;visibility:hidden;pointer-events:none;}
-.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#ff4400;}
+.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#d94400;}
 .lbw{width:min(220px,65vw);height:1px;background:rgba(255,255,255,.08);}
-.lb{height:100%;background:linear-gradient(90deg,#ff4400,#ffcc00);width:0%;transition:width .25s;}
+.lb{height:100%;background:linear-gradient(90deg,#b83300,#d94400);width:0%;transition:width .25s;}
 .lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#7a8fa8;}
 
 /* ── VIGNETTE ── */
-#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 25%,rgba(5,5,8,.75) 100%);}
+#vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 22%,rgba(5,5,8,.82) 100%);}
 
 /* ── FLASH ── */
 #flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(255,100,0,.3) 0%,rgba(120,30,0,.1) 45%,transparent 72%);
+  background:radial-gradient(ellipse at center,rgba(200,60,0,.28) 0%,rgba(100,20,0,.1) 45%,transparent 72%);
   transition:opacity .05s ease;}
 
 /* ── CTA ── */
-#cta{
-  position:fixed;bottom:7vh;left:50%;transform:translateX(-50%);
-  text-align:center;opacity:0;transition:opacity .9s;
-  white-space:nowrap;z-index:20;pointer-events:none;
-}
+#cta{position:fixed;bottom:7vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .9s;white-space:nowrap;z-index:20;pointer-events:none;}
 #cta.vis{opacity:1;}
 .cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.4em;color:#7a8fa8;text-transform:uppercase;margin-bottom:.7rem;}
-.cb{
-  font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5.5rem);
-  letter-spacing:.1em;line-height:.9;
-  background:linear-gradient(135deg,#ff4400,#ffcc00);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
+.cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5.5rem);letter-spacing:.1em;line-height:.9;
+  /* colour fix: gradient stays fully in dark-orange range */
+  background:linear-gradient(135deg,#b83300,#e04800);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 </style>
 </head>
 <body>
@@ -296,30 +242,32 @@ import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ─── RESPONSIVE — updates on resize ─── */
-// FIX #9: MOB is now a getter so device orientation / resize is always reflected
+/* ─── RESPONSIVE ─── */
 let _isMob = window.innerWidth < 768;
 const getMob = () => _isMob;
 window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 
-/* ─── SCROLL ZONES — single source of truth ─── */
-// FIX #13 + #14: renamed to be unambiguous; PAN_ZONES references these constants
+/* ─── SCROLL ZONES ───
+   Story is now:
+     0.00 – 0.44  eagle flies in and SWOOPS PAST the car (car already on plinth)
+     0.44 – 0.52  eagle exits off-screen, camera pivots to lock on car
+     0.52 – 0.60  car reveal / camera settle
+     0.60 – 1.00  cinematic car orbit + info panels
+─── */
 const ZONES = {
-  FLIGHT_END  : 0.46,   // eagle fully gone by here
-  LAND_START  : 0.40,   // eagle starts shrinking
-  LAND_END    : 0.48,   // eagle fully invisible; flash fires
-  PAUSE_END   : 0.54,
-  XFORM_START : 0.54,   // car starts materialising
-  XFORM_END   : 0.62,   // car fully revealed
+  SWOOP_PAST   : 0.40,   // eagle at closest point to car (side-pass)
+  EAGLE_EXIT   : 0.50,   // eagle fully off-screen
+  CAM_SETTLE   : 0.58,   // camera locked on car
+  ORBIT_START  : 0.60,   // cinematic orbit begins
 };
 
-// FIX #14: panel zones keyed from ZONES constants so they stay in sync
+/* Panel zones tied to ORBIT_START so they never drift */
 const PAN_ZONES = [
-  { s: 0.00,               e: 0.16,               id: 'p0' },
-  { s: ZONES.XFORM_END,    e: ZONES.XFORM_END+0.10, id: 'p1' },
-  { s: ZONES.XFORM_END+0.10, e: ZONES.XFORM_END+0.18, id: 'p2' },
-  { s: ZONES.XFORM_END+0.18, e: ZONES.XFORM_END+0.27, id: 'p3' },
-  { s: ZONES.XFORM_END+0.27, e: 1.01,             id: 'p4' },
+  { s: 0.00,                          e: 0.18,                          id: 'p0' },
+  { s: ZONES.ORBIT_START,             e: ZONES.ORBIT_START + 0.10,      id: 'p1' },
+  { s: ZONES.ORBIT_START + 0.10,      e: ZONES.ORBIT_START + 0.19,      id: 'p2' },
+  { s: ZONES.ORBIT_START + 0.19,      e: ZONES.ORBIT_START + 0.28,      id: 'p3' },
+  { s: ZONES.ORBIT_START + 0.28,      e: 1.01,                          id: 'p4' },
 ];
 
 /* ─── SCROLL ─── */
@@ -330,40 +278,31 @@ const SCROLL_SPEED_TOUCH = 0.00052;
 const LERP_F = 0.055;
 
 const hintEl = document.getElementById('hint');
-
 window.addEventListener('wheel', e => {
   e.preventDefault();
   targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED_WHEEL));
   hintEl.classList.add('gone');
 }, { passive: false });
-
 window.addEventListener('touchstart', e => {
-  lastTY = e.touches[0].clientY;
-  touchVel = 0;
-  isDragging = true;
+  lastTY = e.touches[0].clientY; touchVel = 0; isDragging = true;
   hintEl.classList.add('gone');
 }, { passive: true });
-
 window.addEventListener('touchmove', e => {
   if (!isDragging) return;
   const dy = lastTY - e.touches[0].clientY;
-  touchVel = dy;
-  lastTY = e.touches[0].clientY;
+  touchVel = dy; lastTY = e.touches[0].clientY;
   targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.8));
 }, { passive: true });
-
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
 /* ─── RENDERER ─── */
-const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  powerPreference: 'high-performance',
-  stencil: false
-});
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.8;
+/* colour fix: reduce exposure from 1.8 → 1.15 — stops warm lights washing out
+   orange to yellow; ACES still gives nice contrast at this value */
+renderer.toneMappingExposure = 1.15;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
@@ -379,27 +318,38 @@ camera.lookAt(0, 0, 0);
 
 /* ─── ENVIRONMENT ─── */
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.05).texture;
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS ─── */
-scene.add(new THREE.AmbientLight(0xd0d8ff, 3.0));
-const keyL = new THREE.DirectionalLight(0xffffff, 12);
+/* ─── LIGHTS ───
+   colour fix: fill light changed from warm #ffe8d0 → neutral white so it
+   doesn't push orange materials toward yellow; overall intensities scaled
+   down slightly to match the lower toneMappingExposure ─── */
+scene.add(new THREE.AmbientLight(0xd0d8ff, 2.2));
+
+const keyL = new THREE.DirectionalLight(0xffffff, 9);
 keyL.position.set(5, 10, 7);
 scene.add(keyL);
-const fillL = new THREE.DirectionalLight(0xffe8d0, 6);
+
+/* colour fix: fill was warm cream → now cool-neutral so it won't yellow the car */
+const fillL = new THREE.DirectionalLight(0xe8eeff, 4);
 fillL.position.set(-6, 4, 4);
 scene.add(fillL);
-const rimL = new THREE.DirectionalLight(0xaaccff, 8);
+
+const rimL = new THREE.DirectionalLight(0x99bbee, 6);
 rimL.position.set(0, 5, -8);
 scene.add(rimL);
-const frontL = new THREE.DirectionalLight(0xffffff, 7);
+
+const frontL = new THREE.DirectionalLight(0xffffff, 5);
 frontL.position.set(0, 2, 10);
 scene.add(frontL);
-const orangeL = new THREE.PointLight(0xff5500, 2.5, 9);
+
+/* colour fix: under-car accent uses true deep orange #cc3300, lower intensity */
+const orangeL = new THREE.PointLight(0xcc3300, 1.8, 8);
 orangeL.position.set(0, -0.3, 0);
 scene.add(orangeL);
-const rimPt = new THREE.PointLight(0xff2200, 1.5, 6);
+
+const rimPt = new THREE.PointLight(0xcc2200, 1.2, 5);
 rimPt.position.set(-2, 1, -2);
 scene.add(rimPt);
 
@@ -414,7 +364,7 @@ scene.add(floorMesh);
 
 const discMesh = new THREE.Mesh(
   new THREE.CircleGeometry(5.5, 128),
-  new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.02, metalness: 0.99, envMapIntensity: 5 })
+  new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.02, metalness: 0.99, envMapIntensity: 4 })
 );
 discMesh.rotation.x = -Math.PI / 2;
 discMesh.position.y = -1.06;
@@ -424,6 +374,7 @@ const gridMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uT: { value: 0 } },
   vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  /* colour fix: grid line colour changed from (1,.27,0) yellow-orange → (0.85,.22,0) darker orange */
   fragmentShader: `uniform float uT;varying vec2 vUv;
   void main(){
     vec2 uv=vUv*60.;uv.y+=uT*2.;
@@ -431,7 +382,7 @@ const gridMat = new THREE.ShaderMaterial({
     float g=1.-smoothstep(.02,.055,min(gx,gy));
     vec2 c=vUv-.5;float d=length(c)*2.;
     float fade=smoothstep(.05,.28,d)*smoothstep(1.,.42,d);
-    gl_FragColor=vec4(1.,.27,.0,g*fade*.18);
+    gl_FragColor=vec4(.85,.22,.0,g*fade*.16);
   }`
 });
 const gridMesh = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), gridMat);
@@ -443,13 +394,14 @@ const spokeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uAngle: { value: 0 } },
   vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  /* colour fix: spokes (.85,.28,0) instead of (1,.4,0) */
   fragmentShader: `uniform float uAngle;varying vec2 vUv;
   void main(){
     vec2 uv=vUv*2.-1.;float r=length(uv);
     float a=atan(uv.y,uv.x)+uAngle;
     float s=abs(fract(a/.628)*2.-1.);
     float ring=smoothstep(.05,.18,r)*smoothstep(1.,.6,r);
-    gl_FragColor=vec4(1.,.4,.0,s*ring*.22);
+    gl_FragColor=vec4(.85,.28,.0,s*ring*.20);
   }`
 });
 const spokeMesh = new THREE.Mesh(new THREE.CircleGeometry(5.4, 128), spokeMat);
@@ -457,23 +409,22 @@ spokeMesh.rotation.x = -Math.PI / 2;
 spokeMesh.position.y = -1.04;
 scene.add(spokeMesh);
 
+/* colour fix: edge ring → darker orange #cc3300 */
 const edgeRing = new THREE.Mesh(
   new THREE.RingGeometry(5.4, 6.2, 128),
-  new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
+  new THREE.MeshBasicMaterial({ color: 0xcc3300, transparent: true, opacity: 0.10, side: THREE.DoubleSide })
 );
 edgeRing.rotation.x = -Math.PI / 2;
 edgeRing.position.y = -1.03;
 scene.add(edgeRing);
 
-/* ─── PARTICLES ─── */
-const PC = 700;
-// Pre-allocate vectors used every frame outside the loop — FIX #7 #8
+/* ─── PRE-ALLOCATED VECTORS (no per-frame new THREE.Vector3) ─── */
 const _camDesV    = new THREE.Vector3();
 const _camTarV    = new THREE.Vector3();
-const _eagFwdPt   = new THREE.Vector3();  // look-ahead point for eagle facing
-const _eagChasePt = new THREE.Vector3();  // look-ahead point for chase cam
-const _ep         = new THREE.Vector3();  // current eagle position
-const _eagDir     = new THREE.Vector3();  // eagle forward dir for chase cam
+const _eagFwdPt   = new THREE.Vector3();
+const _eagChasePt = new THREE.Vector3();
+const _ep         = new THREE.Vector3();
+const _eagDir     = new THREE.Vector3();
 const _lateralV   = new THREE.Vector3();
 const _worldUp    = new THREE.Vector3(0, 1, 0);
 const _eagFwd     = new THREE.Vector3();
@@ -481,9 +432,10 @@ const _eagRight   = new THREE.Vector3();
 const _eagUp      = new THREE.Vector3();
 const _eagleM     = new THREE.Matrix4();
 const _eagleQ     = new THREE.Quaternion();
-// Separate target vector for camera lookAt in phase 1 (avoids _tmp aliasing — FIX #16)
 const _camLookAt  = new THREE.Vector3();
 
+/* ─── PARTICLES ─── */
+const PC = 700;
 const pPos = new Float32Array(PC * 3);
 const pVel = new Float32Array(PC * 3);
 for (let i = 0; i < PC; i++) {
@@ -496,57 +448,68 @@ for (let i = 0; i < PC; i++) {
 }
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+/* colour fix: particles use true dark orange #cc3300 */
 scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
-  size: 0.05, color: 0xff6622, transparent: true, opacity: 0.35,
+  size: 0.05, color: 0xcc3300, transparent: true, opacity: 0.30,
   blending: THREE.AdditiveBlending, depthWrite: false
 })));
 
-/* ─── EAGLE FLIGHT PATH ─── */
+/* ─── EAGLE FLIGHT PATH ───
+   New path: eagle sweeps in from above, dives LOW and PAST the car
+   (skimming beside it), then climbs away off to the right and exits.
+   The car sits at origin. The closest waypoint passes at (8, 1.5, 2)
+   which is beside the car, not on top of it.
+─── */
 const FLIGHT_PTS = [
-  new THREE.Vector3(   0, 180,  450),
-  new THREE.Vector3( 160, 145,  360),
-  new THREE.Vector3( 220, 105,  240),
-  new THREE.Vector3( 170,  78,  140),
-  new THREE.Vector3(  70,  52,   75),
-  new THREE.Vector3(-110,  32,   14),
-  new THREE.Vector3(-130,  18,  -22),
-  new THREE.Vector3( -65,  10,   42),
-  new THREE.Vector3(  22,   5,   22),
-  new THREE.Vector3(   6,   2,    9),
-  new THREE.Vector3(   0,   0,    0),
+  new THREE.Vector3(   0, 180,  450),  // 0 – far sky entry
+  new THREE.Vector3( 160, 140,  350),  // 1
+  new THREE.Vector3( 200,  95,  220),  // 2
+  new THREE.Vector3( 150,  65,  120),  // 3
+  new THREE.Vector3(  55,  38,   60),  // 4
+  new THREE.Vector3( -80,  20,   10),  // 5
+  new THREE.Vector3( -90,  10,  -12),  // 6
+  new THREE.Vector3( -30,   5,   20),  // 7
+  // ── swoop past ── eagle passes BESIDE the car, not overhead
+  new THREE.Vector3(  10,   2.5,  8),  // 8 – approaching at hood height
+  new THREE.Vector3(   8,   1.5,  2),  // 9 – closest: beside driver door, ~8 units right
+  new THREE.Vector3(  12,   3,   -8),  // 10 – banking away behind
+  new THREE.Vector3(  30,   8,  -22),  // 11 – climbing out
+  new THREE.Vector3(  80,  25,  -60),  // 12 – exiting right
+  new THREE.Vector3( 160,  55, -130),  // 13 – off-screen
+  new THREE.Vector3( 260,  90, -220),  // 14 – fully gone
 ];
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
-/* ─── CAMERA SHOTS — pulled back significantly ─── */
-// FIX: all distances increased ~1.6–2× so full car is always in frame
+/* ─── CINEMATIC CAR SHOTS — wide enough to always see full car ─── */
 const CAR_SHOTS = [
-  { p: 0.00, pos: new THREE.Vector3( 0,    3.5,  18), tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.14, pos: new THREE.Vector3(13,    2.5,  16), tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.28, pos: new THREE.Vector3(20,    3.0,   1), tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.42, pos: new THREE.Vector3(11,    2.0, -15), tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.55, pos: new THREE.Vector3( 0,    3.5, -18), tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.68, pos: new THREE.Vector3(-13,   2.5,  15), tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.80, pos: new THREE.Vector3(  0,  14.0,   5), tar: new THREE.Vector3(0, 0,   0) },
-  { p: 1.00, pos: new THREE.Vector3(  6,    2.0,  17), tar: new THREE.Vector3(0, 0.3, 0) },
+  { p: 0.00, pos: new THREE.Vector3(  0,  3.5,  18), tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.14, pos: new THREE.Vector3( 13,  2.5,  15), tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.28, pos: new THREE.Vector3( 18,  3.0,   0), tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.42, pos: new THREE.Vector3( 10,  2.0, -15), tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.56, pos: new THREE.Vector3(  0,  3.5, -18), tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.70, pos: new THREE.Vector3(-13,  2.5,  14), tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.84, pos: new THREE.Vector3(  0, 13.0,   4), tar: new THREE.Vector3(0, 0,   0) },
+  { p: 1.00, pos: new THREE.Vector3(  6,  2.0,  16), tar: new THREE.Vector3(0, 0.3, 0) },
 ];
 
 /* ─── EAGLE ORIENTATION ───
-   FIX #bird-direction: rotate the inner model 180° on Y so the beak faces
-   the travel direction (many eagle GLBs are authored facing -Z / backward).
-   setEagleFacing then points the group toward the tangent so the whole
-   assembly flies beak-first along the curve.
+   eagleGroup is positioned+oriented by setEagleFacing.
+   eagleInner holds the GLB rotated 180° so beak faces +Z (travel dir).
 ─── */
+const eagleGroup = new THREE.Group();
+const eagleInner = new THREE.Group();
+eagleInner.rotation.y = Math.PI;
+eagleGroup.add(eagleInner);
+scene.add(eagleGroup);
+let eagleMixer = null;
+
 function setEagleFacing(group, from, to) {
   _eagFwd.subVectors(to, from);
   if (_eagFwd.lengthSq() < 0.000001) return;
   _eagFwd.normalize();
-
   _eagRight.crossVectors(_eagFwd, _worldUp).normalize();
   if (_eagRight.lengthSq() < 0.0001) _eagRight.set(1, 0, 0);
   _eagUp.crossVectors(_eagRight, _eagFwd).normalize();
-
-  // Build matrix: columns are right, up, -fwd  (model beak = +Z, so fwd col = +fwd)
-  // FIX bird-direction: use +fwd in the Z column (not negated) so the model's +Z faces travel
   _eagleM.makeBasis(_eagRight, _eagUp, _eagFwd);
   _eagleQ.setFromRotationMatrix(_eagleM);
   group.quaternion.slerp(_eagleQ, 0.12);
@@ -562,8 +525,6 @@ const setP = (p, t) => { lbEl.style.width = p + '%'; ltEl.textContent = t; };
 
 let loadedCount = 0;
 const TOTAL_LOADS = 2;
-
-// FIX #11: single audio-start guard so it can only fire once
 let audioStarted = false;
 function startAudioOnce() {
   if (audioStarted) return;
@@ -572,68 +533,48 @@ function startAudioOnce() {
   aud.play().then(() => { audOn = true; updSnd(); }).catch(() => {});
 }
 
-// FIX #4: loadDone guard prevents double-dismiss from timeout + onLoaded racing
 let loadDone = false;
 function dismissLoader() {
   if (loadDone) return;
   loadDone = true;
-  renderer.render(scene, camera); // pre-warm
+  renderer.render(scene, camera);
   document.getElementById('ld').classList.add('done');
   showPanel('p0');
   startAudioOnce();
 }
-
 function onLoaded() {
   loadedCount++;
   if (loadedCount >= TOTAL_LOADS) dismissLoader();
 }
-
-// Fallback: dismiss after 18s regardless
 setTimeout(dismissLoader, 18000);
 
-/* ─── EAGLE ─── */
-// FIX bird-direction: wrap model in an inner group rotated 180° on Y.
-// eagleGroup is positioned/oriented by setEagleFacing;
-// eagleInner holds the GLB and is permanently flipped.
-const eagleGroup = new THREE.Group();
-const eagleInner = new THREE.Group();
-eagleInner.rotation.y = Math.PI; // 180° flip so beak faces +Z (travel direction)
-eagleGroup.add(eagleInner);
-scene.add(eagleGroup);
-let eagleMixer = null;
-
+/* ─── EAGLE MODEL ─── */
 const eagleLoader = new GLTFLoader();
 eagleLoader.setDRACOLoader(draco);
 eagleLoader.load('animated_eagle.glb',
   gltf => {
     const model = gltf.scene;
-    const box  = new THREE.Box3().setFromObject(model);
-    const sz   = box.getSize(new THREE.Vector3());
-    const s    = 3.0 / Math.max(sz.x, sz.y, sz.z);
+    const box = new THREE.Box3().setFromObject(model);
+    const sz  = box.getSize(new THREE.Vector3());
+    const s   = 3.0 / Math.max(sz.x, sz.y, sz.z);
     model.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(model);
     model.position.sub(box2.getCenter(new THREE.Vector3()));
-
     model.traverse(c => {
       if (!c.isMesh || !c.material) return;
       c.frustumCulled = false;
       const ms = Array.isArray(c.material) ? c.material : [c.material];
       ms.forEach(m => {
         if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) return;
-        m.envMapIntensity = 4;
-        m.metalness = Math.max(m.metalness, 0.75);
-        m.roughness  = Math.min(m.roughness,  0.35);
-        m.needsUpdate = true;
+        m.envMapIntensity = 3; m.metalness = Math.max(m.metalness, 0.7);
+        m.roughness = Math.min(m.roughness, 0.38); m.needsUpdate = true;
       });
     });
-
-    if (gltf.animations && gltf.animations.length > 0) {
+    if (gltf.animations?.length) {
       eagleMixer = new THREE.AnimationMixer(model);
-      const clip = eagleMixer.clipAction(gltf.animations[0]);
-      clip.play();
+      eagleMixer.clipAction(gltf.animations[0]).play();
     }
-
-    eagleInner.add(model); // add to inner group, not root group
+    eagleInner.add(model);
     setP(50, 'Loading McLaren W1…');
     onLoaded();
   },
@@ -642,15 +583,18 @@ eagleLoader.load('animated_eagle.glb',
 );
 
 /* ─── MCLAREN W1 ───
-   FIX: preserve all authored material colours exactly.
-   Only fix glass opacity; do NOT override paint/carbon colours.
+   colour fix: no colour overrides at all — pure authored materials.
+   Only glass transparency and minimal envMapIntensity boost preserved.
 ─── */
 let car = null;
 let carRotY = 0;
-let carFloorY = 0;   // FIX #5: store floor offset separately, not on the Group itself
+let carFloorY = 0;
 let carMixer = null;
-const CAR_ROT_SPEED = 0.18;
+const CAR_ROT_SPEED = 0.16;
 
+/* Car is ALWAYS visible from the start — it sits on the plinth while
+   the eagle flies in, just like a real reveal. We show it immediately
+   after load and never hide it again. */
 const carLoader = new GLTFLoader();
 carLoader.setDRACOLoader(draco);
 carLoader.load('mclaren_w1.glb',
@@ -663,56 +607,43 @@ carLoader.load('mclaren_w1.glb',
     car.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(car);
     car.position.set(-cn.x * s, -box2.min.y - 1.08, -cn.z * s);
-    carFloorY = car.position.y; // FIX #5: store in plain variable
+    carFloorY = car.position.y;
 
     car.traverse(c => {
       if (!c.isMesh || !c.material) return;
       c.frustumCulled = false;
       const ms = Array.isArray(c.material) ? c.material : [c.material];
       ms.forEach(m => {
-        if (!m || !m.isMaterial) return;
+        if (!m?.isMaterial) return;
         m.wireframe = false;
+        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
 
-        // FIX car-colour: only touch PBR materials for envmap boost — colours untouched
-        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) {
-          m.needsUpdate = true;
-          return;
-        }
+        /* colour fix: very modest env boost only — do not touch colour, roughness, or metalness */
+        m.envMapIntensity = Math.min((m.envMapIntensity || 1.0) * 1.3, 5);
 
-        // Modest env map boost only — preserves authored colour values
-        m.envMapIntensity = Math.min((m.envMapIntensity || 1.0) * 1.4, 6);
-
-        // Glass fix
+        /* glass only */
         const nm = (c.name + ' ' + (m.name || '')).toLowerCase();
-        const isGlass = nm.includes('glass') || nm.includes('windsh') ||
-                        nm.includes('window') || nm.includes('lens');
+        const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens');
         if (isGlass) {
-          m.transparent = true;
-          m.opacity = 0.25;
-          m.roughness = 0.02;
-          m.metalness = 0.05;
-          m.envMapIntensity = 3;
-          m.needsUpdate = true;
-          return;
+          m.transparent = true; m.opacity = 0.22;
+          m.roughness = 0.02; m.metalness = 0.05;
+          m.envMapIntensity = 2.5; m.needsUpdate = true; return;
         }
 
-        // Light emissive boost
-        const isLight = nm.includes('light') || nm.includes('lamp') ||
-                        nm.includes('tail')  || nm.includes('head');
-        if (isLight && m.emissive) {
-          m.emissiveIntensity = (m.emissiveIntensity || 0) + 0.4;
-        }
+        /* subtle emissive for lights */
+        const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head');
+        if (isLight && m.emissive) m.emissiveIntensity = (m.emissiveIntensity || 0) + 0.3;
 
         m.needsUpdate = true;
       });
     });
 
-    if (gltf.animations && gltf.animations.length > 0) {
+    if (gltf.animations?.length) {
       carMixer = new THREE.AnimationMixer(car);
       carMixer.clipAction(gltf.animations[0]).play();
     }
 
-    car.visible = false;
+    car.visible = true;   /* always on – eagle flies PAST it */
     scene.add(car);
     setP(100, 'Ready');
     onLoaded();
@@ -725,24 +656,18 @@ carLoader.load('mclaren_w1.glb',
 const aud = document.getElementById('aud');
 let audOn = false;
 const sndBtn = document.getElementById('snd');
-
 function updSnd() {
   sndBtn.textContent = audOn ? '♪ Sound On' : '♫ Muted';
   sndBtn.classList.toggle('on', audOn);
 }
-
 sndBtn.addEventListener('click', () => {
   if (audOn) { aud.pause(); audOn = false; }
-  else {
-    // FIX #12: user gesture handler — always safe to call play() here
-    aud.play().catch(() => {});
-    audOn = true;
-  }
+  else { aud.play().catch(() => {}); audOn = true; }
   updSnd();
 });
 
 /* ─── PANEL LOGIC ─── */
-const PANEL_IDS = ['p0', 'p1', 'p2', 'p3', 'p4'];
+const PANEL_IDS = ['p0','p1','p2','p3','p4'];
 let activePanel = '';
 function showPanel(id) {
   if (id === activePanel) return;
@@ -750,7 +675,6 @@ function showPanel(id) {
   if (id) document.getElementById(id)?.classList.add('vis');
   activePanel = id;
 }
-
 function updateUI(p) {
   let show = '';
   for (const z of PAN_ZONES) if (p >= z.s && p < z.e) { show = z.id; break; }
@@ -759,11 +683,8 @@ function updateUI(p) {
   document.getElementById('pb').style.width = (p * 100) + '%';
 }
 
-/* ─── FLASH STATE ─── */
-// FIX #1: track whether we're currently in the "eagle visible" zone so
-//         flashFired resets when user scrolls back before LAND_END.
-let flashFired = false;
-let flashOpacity = 0;
+/* ─── FLASH ─── */
+let flashFired = false, flashOpacity = 0;
 const flashEl = document.getElementById('flash');
 
 /* ─── RESIZE ─── */
@@ -771,7 +692,6 @@ window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
-  // _isMob already updated by the listener above
 });
 
 /* ─── ANIMATE ─── */
@@ -779,145 +699,133 @@ const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  const t  = clock.elapsedTime;
-  const MOB = getMob(); // FIX #9: read current value each frame
+  const dt  = Math.min(clock.getDelta(), 0.05);
+  const t   = clock.elapsedTime;
+  const MOB = getMob();
 
-  // Touch inertia
+  /* touch inertia */
   if (!isDragging && Math.abs(touchVel) > 0.05) {
     targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 1.4));
     touchVel *= 0.84;
   }
-
   currentS += (targetS - currentS) * LERP_F;
   if (Math.abs(targetS - currentS) < 0.00003) currentS = targetS;
   const s = currentS;
 
   updateUI(s);
 
-  /* ── EAGLE ANIMATION ── */
+  /* ── EAGLE ── */
   if (eagleMixer) eagleMixer.update(dt);
 
-  /* ── EAGLE POSITION + FACING ── */
-  const eagleT = Math.min(s / ZONES.FLIGHT_END, 1.0);
+  /* eagleT: 0→1 maps s from 0 → EAGLE_EXIT; beyond that eagle stays at path end */
+  const eagleT = Math.min(s / ZONES.EAGLE_EXIT, 1.0);
   flightCurve.getPoint(Math.min(eagleT, 1), _ep);
 
-  // FIX #16: use dedicated _eagFwdPt (not reused _tmp) for eagle look-ahead
-  const lookAheadT = Math.min(eagleT + 0.012, 1);
+  const lookAheadT = Math.min(eagleT + 0.010, 1);
   flightCurve.getPoint(lookAheadT, _eagFwdPt);
   setEagleFacing(eagleGroup, _ep, _eagFwdPt);
   eagleGroup.position.copy(_ep);
 
-  /* ── EAGLE SCALE / LANDING ── */
-  if (s >= ZONES.LAND_END) {
+  /* fade eagle out after it passes the car and exits */
+  if (s >= ZONES.EAGLE_EXIT) {
     eagleGroup.scale.setScalar(0);
-
-    // FIX #1: only fire flash once per entry into this zone
-    // (and allow it to re-fire if user scrolls back and re-enters)
     if (!flashFired) {
       flashFired = true;
-      flashOpacity = 1.0;
-      orangeL.intensity = 30;
-      rimPt.intensity   = 15;
+      flashOpacity = 0.6;   /* subtle flash as eagle disappears, not overwhelming */
+      orangeL.intensity = 12;
+      rimPt.intensity   = 7;
     }
-  } else {
-    // FIX #1: reset flashFired when eagle is visible again so re-entry works
+  } else if (s > ZONES.SWOOP_PAST) {
+    /* eagle already past car — shrink it as it flies away */
+    const ep = (s - ZONES.SWOOP_PAST) / (ZONES.EAGLE_EXIT - ZONES.SWOOP_PAST);
+    eagleGroup.scale.setScalar(Math.max(1 - ep, 0.004));
     flashFired = false;
-
-    if (s > ZONES.LAND_START) {
-      const lp = (s - ZONES.LAND_START) / (ZONES.LAND_END - ZONES.LAND_START);
-      eagleGroup.scale.setScalar(Math.max(1 - lp * lp, 0.004));
-    } else {
-      eagleGroup.scale.setScalar(1);
-    }
+  } else {
+    eagleGroup.scale.setScalar(1);
+    flashFired = false;
   }
 
-  // Flash decay
   if (flashOpacity > 0) {
-    flashOpacity = Math.max(0, flashOpacity - dt * 3.5);
+    flashOpacity = Math.max(0, flashOpacity - dt * 4.0);
     flashEl.style.opacity = flashOpacity;
   }
 
-  /* ── CAR MATERIALISE ── */
+  /* ── CAR always visible; slow rotation during orbit phase only ── */
   if (car) {
-    if (s < ZONES.XFORM_START) {
-      car.visible = false;
-      // FIX #2: only accumulate rotation while car is actually visible/rotating
-      // reset carRotY to 0 so it starts fresh on reveal
-      carRotY = 0;
+    car.visible = true;
+    car.position.y = carFloorY;
+    car.position.x = 0;
+    car.position.z = 0;
+
+    /* only rotate during orbit phase so car stays forward-facing during eagle flyby */
+    if (s >= ZONES.ORBIT_START) {
+      carRotY += CAR_ROT_SPEED * dt;
     } else {
-      car.visible = true;
-      const xp = Math.min((s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START), 1);
-      const xEased = 1 - Math.pow(1 - xp, 3);
-      car.scale.setScalar(xEased);
-      car.position.x = 0;
-      car.position.y = carFloorY; // FIX #5: use plain variable not car._floorY
-      car.position.z = 0;
-      carRotY += CAR_ROT_SPEED * dt; // FIX #2: only increments when visible
-      car.rotation.y = carRotY;
+      carRotY = 0;
     }
+    car.rotation.y = carRotY;
     if (carMixer) carMixer.update(dt);
   }
 
-  /* ─── CAMERA ─── */
-  // FIX #6: bird→car transition uses a dedicated "hold" position computed
-  //         from the actual landing zone, not a hardcoded coordinate that
-  //         drifts relative to the car. Camera smoothly bridges LAND_END → XFORM_END.
+  /* ─── CAMERA ───
+     Phase 1  (0 → SWOOP_PAST):        chase eagle, wide enough to see car in BG
+     Phase 2  (SWOOP_PAST → CAM_SETTLE): eagle banking away — camera pivots to car
+     Phase 3  (CAM_SETTLE → ORBIT_START): camera settles into orbit start position
+     Phase 4  (ORBIT_START → 1.0):     full cinematic orbit
+  ─── */
 
-  if (s < ZONES.LAND_END) {
-    /* PHASE 1: Eagle chase cam */
-    const closeBlend = s < 0.28 ? 0 : Math.min((s - 0.28) / (ZONES.LAND_START - 0.28), 1);
+  if (s < ZONES.SWOOP_PAST) {
+    /* ── PHASE 1: Follow eagle, car visible in background ── */
+    const closeBlend = s < 0.24 ? 0 : Math.min((s - 0.24) / (ZONES.SWOOP_PAST - 0.24), 1);
     const cb = closeBlend * closeBlend * (3 - 2 * closeBlend);
 
-    const BACK = 28 + (10 - 28) * cb;
-    const UP   = 10 + ( 3 - 10) * cb;
+    /* back off less as eagle approaches (was 28→10); keep distance so car is in frame */
+    const BACK = 32 + (16 - 32) * cb;
+    const UP   = 12 + ( 5 - 12) * cb;
 
-    // FIX #16: use dedicated _eagChasePt for chase cam look-ahead, not shared _tmp
-    const lookAheadT2 = Math.min(eagleT + 0.025, 1);
+    const lookAheadT2 = Math.min(eagleT + 0.022, 1);
     flightCurve.getPoint(lookAheadT2, _eagChasePt);
     _eagDir.subVectors(_eagChasePt, _ep).normalize();
 
-    _camDesV.copy(_ep)
-      .addScaledVector(_eagDir, -BACK);
+    _camDesV.copy(_ep).addScaledVector(_eagDir, -BACK);
     _camDesV.y += UP;
 
-    // FIX #8: lateral offset using pre-allocated _lateralV
     _lateralV.crossVectors(_eagDir, _worldUp).normalize();
-    _camDesV.addScaledVector(_lateralV, cb * 1.5);
+    _camDesV.addScaledVector(_lateralV, cb * 2.0);
 
-    camera.position.lerp(_camDesV, 0.045 + cb * 0.04);
+    camera.position.lerp(_camDesV, 0.040 + cb * 0.035);
 
-    // FIX #16: use dedicated _camLookAt, not reused _tmp
-    _camLookAt.copy(_ep).addScaledVector(_eagDir, 3);
+    /* look slightly ahead of eagle, biased toward car so car stays visible */
+    _camLookAt.copy(_ep).addScaledVector(_eagDir, 4);
+    /* blend lookAt toward car origin as eagle approaches */
+    _camLookAt.lerp(new THREE.Vector3(0, 0.4, 0), cb * 0.35);
     camera.lookAt(_camLookAt);
 
-  } else if (s < ZONES.XFORM_START) {
-    /* PHASE 2: Landing hold / transition bridge
-       FIX lag: push hold position further back (18 units) so car reveal
-       doesn't feel like a jump-cut; lerp speed increased to close gap fast */
-    const holdPos = MOB
-      ? _camDesV.set(7, 3.5, 14)
-      : _camDesV.set(10, 4.0, 18);
-    camera.position.lerp(holdPos, 0.07); // was 0.04 — faster convergence
-    camera.lookAt(0, 0.3, 0);
+  } else if (s < ZONES.CAM_SETTLE) {
+    /* ── PHASE 2: Eagle banking away — pivot camera to car ── */
+    const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
+    const ease2 = t2 * t2 * (3 - 2 * t2);
+    /* camera smoothly moves from chase position to a wide car-facing position */
+    const carFacingPos = MOB
+      ? _camDesV.set(-5, 4, 20)
+      : _camDesV.set(-8, 4, 22);
+    camera.position.lerp(carFacingPos, 0.06 + ease2 * 0.06);
+    camera.lookAt(0, 0.5, 0);
 
-  } else if (s < ZONES.XFORM_END) {
-    /* PHASE 3: Reveal pull-back — starts from wherever camera currently is
-       so there's no visible pop between phase 2 and 3 */
-    const xp = (s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START);
-    const xe = xp * xp * (3 - 2 * xp);
-    const endPos = MOB
-      ? _camDesV.set(0, 2.5, 18)
-      : _camDesV.set(0, 2.0, 16);
-    camera.position.lerp(endPos, 0.06 + xe * 0.04);
+  } else if (s < ZONES.ORBIT_START) {
+    /* ── PHASE 3: Settle into first orbit shot ── */
+    const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
+    const ease3 = t3 * t3 * (3 - 2 * t3);
+    const settlePos = MOB
+      ? _camDesV.set(0, 3, 18)
+      : _camDesV.set(0, 2.5, 16);
+    camera.position.lerp(settlePos, 0.05 + ease3 * 0.05);
     camera.lookAt(0, 0.5, 0);
 
   } else {
-    /* PHASE 4: Cinematic orbit */
-    const orbitT = (s - ZONES.XFORM_END) / (1.0 - ZONES.XFORM_END);
-
-    let shotA = CAR_SHOTS[0];
-    let shotB = CAR_SHOTS[1];
+    /* ── PHASE 4: Cinematic orbit ── */
+    const orbitT = (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START);
+    let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1];
     for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
       if (orbitT >= CAR_SHOTS[i].p && orbitT <= CAR_SHOTS[i+1].p) {
         shotA = CAR_SHOTS[i]; shotB = CAR_SHOTS[i+1]; break;
@@ -925,11 +833,8 @@ function animate() {
     }
     const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
     const ease   = localT * localT * (3 - 2 * localT);
-
-    // FIX #7: lerpVectors into pre-allocated vectors — no per-frame allocation
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
-
     camera.position.lerp(_camDesV, 0.05);
     camera.lookAt(_camTarV);
   }
@@ -951,15 +856,15 @@ function animate() {
   /* ── FLOOR SHADERS ── */
   gridMat.uniforms.uT.value = t;
   spokeMat.uniforms.uAngle.value = carRotY;
-  edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.045;
+  edgeRing.material.opacity = 0.06 + Math.sin(t * 1.3) * 0.035;
 
   /* ── PULSE LIGHTS ── */
-  if (!flashFired || orangeL.intensity <= 3) {
-    orangeL.intensity = 2.5 + Math.sin(t * 1.2) * 0.5;
-    rimPt.intensity   = 1.5 + Math.sin(t * 2.1) * 0.4;
+  if (!flashFired || orangeL.intensity <= 2.5) {
+    orangeL.intensity = 1.8 + Math.sin(t * 1.2) * 0.4;
+    rimPt.intensity   = 1.2 + Math.sin(t * 2.1) * 0.3;
   } else {
-    orangeL.intensity = Math.max(orangeL.intensity - dt * 45, 2.5 + Math.sin(t * 1.2) * 0.5);
-    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 30, 1.5 + Math.sin(t * 2.1) * 0.4);
+    orangeL.intensity = Math.max(orangeL.intensity - dt * 35, 1.8 + Math.sin(t * 1.2) * 0.4);
+    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 25, 1.2 + Math.sin(t * 2.1) * 0.3);
   }
 
   renderer.render(scene, camera);

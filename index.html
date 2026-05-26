@@ -9,7 +9,7 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;background:#050508;}
-body{font-family:'Rajdhani',sans-serif;color:#8a9ab0;touch-action:none;}
+body{font-family:'Rajdhani',sans-serif;color:#b0c0d0;touch-action:none;}
 canvas{position:fixed;inset:0;display:block;}
 
 /* ── NAV ── */
@@ -19,17 +19,15 @@ canvas{position:fixed;inset:0;display:block;}
   display:flex;justify-content:space-between;align-items:center;
   background:linear-gradient(to bottom,rgba(5,5,8,.92),transparent);
 }
-.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.95rem,3.5vw,1.25rem);letter-spacing:.28em;color:#e8eef4;}
-/* colour fix: logo accent → true McLaren papaya dark-orange */
-.logo span{color:#d94400;}
-#snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.18);color:#7a8fa8;
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(.95rem,3.5vw,1.25rem);letter-spacing:.28em;color:#eef2f6;}
+.logo span{color:#ff4400;}
+#snd{cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.18);color:#a0b0c0;
   font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.2em;
   padding:.35rem .85rem;text-transform:uppercase;transition:all .3s;}
-#snd.on{border-color:#d94400;color:#d94400;}
+#snd.on{border-color:#ff4400;color:#ff4400;}
 
 /* ── PROGRESS ── */
-/* colour fix: gradient ends at dark-orange, not yellow */
-#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#b83300,#d94400,#f05500);width:0%;z-index:30;transition:width .08s linear;}
+#pb{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#cc2200,#ff4400,#ff6600);width:0%;z-index:30;transition:width .08s linear;}
 
 /* ── SCROLL HINT ── */
 #hint{
@@ -37,8 +35,8 @@ canvas{position:fixed;inset:0;display:block;}
   z-index:20;opacity:1;transition:opacity .8s;pointer-events:none;text-align:center;
 }
 #hint.gone{opacity:0;}
-.hint-txt{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.4vw,.54rem);letter-spacing:.45em;color:#445060;text-transform:uppercase;margin-bottom:.5rem;}
-.hint-arrow{width:1px;height:28px;background:linear-gradient(to bottom,#d94400,transparent);margin:0 auto;animation:pulse-arrow 1.6s ease-in-out infinite;}
+.hint-txt{font-family:'Cinzel',serif;font-size:clamp(.42rem,1.4vw,.54rem);letter-spacing:.45em;color:#6070a0;text-transform:uppercase;margin-bottom:.5rem;}
+.hint-arrow{width:1px;height:28px;background:linear-gradient(to bottom,#ff4400,transparent);margin:0 auto;animation:pulse-arrow 1.6s ease-in-out infinite;}
 @keyframes pulse-arrow{0%,100%{opacity:.3;transform:scaleY(.6);}50%{opacity:1;transform:scaleY(1);}}
 
 /* ── TEXT PANELS — DESKTOP ── */
@@ -59,7 +57,7 @@ canvas{position:fixed;inset:0;display:block;}
 @media(max-width:640px){
   .tp{width:calc(100% - 2.4rem)!important;padding:.85rem 1rem 1.4rem;bottom:3.5vh;max-height:52vh;overflow-y:auto;scrollbar-width:none;
     background:linear-gradient(to top,rgba(5,5,8,.97) 55%,rgba(5,5,8,.6));
-    border-top:1px solid rgba(210,70,0,.22);top:auto;left:1.2rem;right:1.2rem;}
+    border-top:1px solid rgba(255,68,0,.30);top:auto;left:1.2rem;right:1.2rem;}
   .tp::-webkit-scrollbar{display:none;}
   .tp.L{transform:translateX(-60px);opacity:0;}
   .tp.L.vis{opacity:1;transform:translateX(0);}
@@ -69,29 +67,29 @@ canvas{position:fixed;inset:0;display:block;}
   .tp.C.vis{opacity:1;transform:translateY(0);}
 }
 
-/* TYPOGRAPHY */
-/* colour fix: eyebrow → dark orange #d94400, not bright red-orange */
-.ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);letter-spacing:.42em;color:#d94400;text-transform:uppercase;margin-bottom:.4rem;display:block;}
-.hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);line-height:.91;color:#eef2f6;margin-bottom:.6rem;}
-.hd em{color:#d94400;font-style:normal;}
-.bd{font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;color:#7a8fa8;font-weight:300;letter-spacing:.025em;}
+/* TYPOGRAPHY — bumped opacity/brightness across all text */
+.ey{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.56rem);letter-spacing:.42em;color:#ff5500;text-transform:uppercase;margin-bottom:.4rem;display:block;}
+.hd{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4.8vw,3.8rem);line-height:.91;color:#ffffff;margin-bottom:.6rem;}
+.hd em{color:#ff4400;font-style:normal;}
+/* body text: was #7a8fa8 → now #a8bfd0 — much more readable */
+.bd{font-size:clamp(.78rem,1.3vw,.9rem);line-height:1.74;color:#a8bfd0;font-weight:300;letter-spacing:.025em;}
 .bd+.bd{margin-top:.55rem;}
-.bd strong{color:#b8ccd8;font-weight:500;}
-.bd em{color:#d94400;font-style:normal;}
+.bd strong{color:#ddeeff;font-weight:500;}
+.bd em{color:#ff5500;font-style:normal;}
 
 /* FACT GRID */
-.fact-row{display:flex;flex-wrap:wrap;gap:.4rem .7rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid rgba(210,70,0,.18);}
+.fact-row{display:flex;flex-wrap:wrap;gap:.4rem .7rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid rgba(255,68,0,.28);}
 .fact{flex:1 1 calc(50% - .35rem);min-width:90px;}
-/* colour fix: fact values → dark orange, not amber/yellow */
-.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#d94400;line-height:1.05;}
-.fv small{font-size:.5em;color:#7a8fa8;}
-.fl{font-family:'Cinzel',serif;font-size:clamp(.33rem,.88vw,.43rem);letter-spacing:.2em;color:#7a8fa8;text-transform:uppercase;margin-top:.05rem;}
-.stat-stamp{margin-top:.8rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2rem);color:#d94400;letter-spacing:.07em;}
-.stat-stamp small{font-family:'Rajdhani',sans-serif;font-size:.52em;color:#7a8fa8;letter-spacing:.14em;display:block;}
+.fv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:#ff4400;line-height:1.05;}
+.fv small{font-size:.5em;color:#90a8c0;}
+/* fact labels: was #7a8fa8 → #90a8c0 */
+.fl{font-family:'Cinzel',serif;font-size:clamp(.33rem,.88vw,.43rem);letter-spacing:.2em;color:#90a8c0;text-transform:uppercase;margin-top:.05rem;}
+.stat-stamp{margin-top:.8rem;font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2rem);color:#ff4400;letter-spacing:.07em;}
+.stat-stamp small{font-family:'Rajdhani',sans-serif;font-size:.52em;color:#90a8c0;letter-spacing:.14em;display:block;}
 
 /* TAG CHIPS */
 .tag-row{display:flex;flex-wrap:wrap;gap:.28rem;margin-top:.65rem;}
-.tag{font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;color:#d94400;text-transform:uppercase;border:1px solid rgba(210,70,0,.32);padding:.12rem .4rem;}
+.tag{font-family:'Cinzel',serif;font-size:clamp(.3rem,.8vw,.4rem);letter-spacing:.16em;color:#ff5500;text-transform:uppercase;border:1px solid rgba(255,68,0,.45);padding:.12rem .4rem;}
 
 @media(min-width:641px){
   .tp.R .fact-row{justify-content:flex-end;}
@@ -104,27 +102,33 @@ canvas{position:fixed;inset:0;display:block;}
 /* ── LOADING ── */
 #ld{position:fixed;inset:0;z-index:50;background:#050508;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;transition:opacity .7s ease .1s,visibility .7s ease .1s;}
 #ld.done{opacity:0;visibility:hidden;pointer-events:none;}
-.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#d94400;}
+.ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#ff4400;}
 .lbw{width:min(220px,65vw);height:1px;background:rgba(255,255,255,.08);}
-.lb{height:100%;background:linear-gradient(90deg,#b83300,#d94400);width:0%;transition:width .25s;}
-.lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#7a8fa8;}
+.lb{height:100%;background:linear-gradient(90deg,#cc2200,#ff4400);width:0%;transition:width .25s;}
+.lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#90a8c0;}
 
 /* ── VIGNETTE ── */
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 22%,rgba(5,5,8,.82) 100%);}
 
 /* ── FLASH ── */
 #flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(200,60,0,.28) 0%,rgba(100,20,0,.1) 45%,transparent 72%);
+  background:radial-gradient(ellipse at center,rgba(255,60,0,.35) 0%,rgba(140,20,0,.15) 45%,transparent 72%);
   transition:opacity .05s ease;}
 
 /* ── CTA ── */
 #cta{position:fixed;bottom:7vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .9s;white-space:nowrap;z-index:20;pointer-events:none;}
 #cta.vis{opacity:1;}
-.cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.4em;color:#7a8fa8;text-transform:uppercase;margin-bottom:.7rem;}
+.cl{font-family:'Cinzel',serif;font-size:clamp(.44rem,1.5vw,.58rem);letter-spacing:.4em;color:#90a8c0;text-transform:uppercase;margin-bottom:.7rem;}
 .cb{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5.5rem);letter-spacing:.1em;line-height:.9;
-  /* colour fix: gradient stays fully in dark-orange range */
-  background:linear-gradient(135deg,#b83300,#e04800);
+  background:linear-gradient(135deg,#cc2200,#ff5500);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* ── SHOT LABEL ── */
+#shotlabel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Cinzel',serif;font-size:clamp(.38rem,1.2vw,.50rem);letter-spacing:.55em;
+  color:#ff4400;text-transform:uppercase;opacity:0;transition:opacity .5s;z-index:20;
+  pointer-events:none;text-shadow:0 0 12px rgba(255,68,0,.6);}
+#shotlabel.vis{opacity:1;}
 </style>
 </head>
 <body>
@@ -142,6 +146,7 @@ canvas{position:fixed;inset:0;display:block;}
 <div id="pb"></div>
 <div id="vig"></div>
 <div id="flash"></div>
+<div id="shotlabel"></div>
 
 <div id="hint">
   <div class="hint-txt">Scroll to Begin</div>
@@ -247,21 +252,15 @@ let _isMob = window.innerWidth < 768;
 const getMob = () => _isMob;
 window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 
-/* ─── SCROLL ZONES ───
-   Story is now:
-     0.00 – 0.44  eagle flies in and SWOOPS PAST the car (car already on plinth)
-     0.44 – 0.52  eagle exits off-screen, camera pivots to lock on car
-     0.52 – 0.60  car reveal / camera settle
-     0.60 – 1.00  cinematic car orbit + info panels
-─── */
+/* ─── SCROLL ZONES ─── */
 const ZONES = {
-  SWOOP_PAST   : 0.40,   // eagle at closest point to car (side-pass)
-  EAGLE_EXIT   : 0.50,   // eagle fully off-screen
-  CAM_SETTLE   : 0.58,   // camera locked on car
-  ORBIT_START  : 0.60,   // cinematic orbit begins
+  SWOOP_PAST   : 0.40,
+  EAGLE_EXIT   : 0.50,
+  CAM_SETTLE   : 0.58,
+  ORBIT_START  : 0.60,
 };
 
-/* Panel zones tied to ORBIT_START so they never drift */
+/* Panel zones */
 const PAN_ZONES = [
   { s: 0.00,                          e: 0.18,                          id: 'p0' },
   { s: ZONES.ORBIT_START,             e: ZONES.ORBIT_START + 0.10,      id: 'p1' },
@@ -300,8 +299,6 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'hi
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-/* colour fix: reduce exposure from 1.8 → 1.15 — stops warm lights washing out
-   orange to yellow; ACES still gives nice contrast at this value */
 renderer.toneMappingExposure = 1.15;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
@@ -321,35 +318,24 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS ───
-   colour fix: fill light changed from warm #ffe8d0 → neutral white so it
-   doesn't push orange materials toward yellow; overall intensities scaled
-   down slightly to match the lower toneMappingExposure ─── */
+/* ─── LIGHTS ─── */
 scene.add(new THREE.AmbientLight(0xd0d8ff, 2.2));
-
 const keyL = new THREE.DirectionalLight(0xffffff, 9);
 keyL.position.set(5, 10, 7);
 scene.add(keyL);
-
-/* colour fix: fill was warm cream → now cool-neutral so it won't yellow the car */
 const fillL = new THREE.DirectionalLight(0xe8eeff, 4);
 fillL.position.set(-6, 4, 4);
 scene.add(fillL);
-
 const rimL = new THREE.DirectionalLight(0x99bbee, 6);
 rimL.position.set(0, 5, -8);
 scene.add(rimL);
-
 const frontL = new THREE.DirectionalLight(0xffffff, 5);
 frontL.position.set(0, 2, 10);
 scene.add(frontL);
-
-/* colour fix: under-car accent uses true deep orange #cc3300, lower intensity */
-const orangeL = new THREE.PointLight(0xcc3300, 1.8, 8);
+const orangeL = new THREE.PointLight(0xff4400, 2.5, 10);
 orangeL.position.set(0, -0.3, 0);
 scene.add(orangeL);
-
-const rimPt = new THREE.PointLight(0xcc2200, 1.2, 5);
+const rimPt = new THREE.PointLight(0xff2200, 1.8, 6);
 rimPt.position.set(-2, 1, -2);
 scene.add(rimPt);
 
@@ -374,7 +360,6 @@ const gridMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uT: { value: 0 } },
   vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  /* colour fix: grid line colour changed from (1,.27,0) yellow-orange → (0.85,.22,0) darker orange */
   fragmentShader: `uniform float uT;varying vec2 vUv;
   void main(){
     vec2 uv=vUv*60.;uv.y+=uT*2.;
@@ -382,7 +367,7 @@ const gridMat = new THREE.ShaderMaterial({
     float g=1.-smoothstep(.02,.055,min(gx,gy));
     vec2 c=vUv-.5;float d=length(c)*2.;
     float fade=smoothstep(.05,.28,d)*smoothstep(1.,.42,d);
-    gl_FragColor=vec4(.85,.22,.0,g*fade*.16);
+    gl_FragColor=vec4(.95,.27,.0,g*fade*.20);
   }`
 });
 const gridMesh = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), gridMat);
@@ -394,14 +379,13 @@ const spokeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, side: THREE.DoubleSide,
   uniforms: { uAngle: { value: 0 } },
   vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  /* colour fix: spokes (.85,.28,0) instead of (1,.4,0) */
   fragmentShader: `uniform float uAngle;varying vec2 vUv;
   void main(){
     vec2 uv=vUv*2.-1.;float r=length(uv);
     float a=atan(uv.y,uv.x)+uAngle;
     float s=abs(fract(a/.628)*2.-1.);
     float ring=smoothstep(.05,.18,r)*smoothstep(1.,.6,r);
-    gl_FragColor=vec4(.85,.28,.0,s*ring*.20);
+    gl_FragColor=vec4(.95,.30,.0,s*ring*.24);
   }`
 });
 const spokeMesh = new THREE.Mesh(new THREE.CircleGeometry(5.4, 128), spokeMat);
@@ -409,16 +393,15 @@ spokeMesh.rotation.x = -Math.PI / 2;
 spokeMesh.position.y = -1.04;
 scene.add(spokeMesh);
 
-/* colour fix: edge ring → darker orange #cc3300 */
 const edgeRing = new THREE.Mesh(
   new THREE.RingGeometry(5.4, 6.2, 128),
-  new THREE.MeshBasicMaterial({ color: 0xcc3300, transparent: true, opacity: 0.10, side: THREE.DoubleSide })
+  new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0.14, side: THREE.DoubleSide })
 );
 edgeRing.rotation.x = -Math.PI / 2;
 edgeRing.position.y = -1.03;
 scene.add(edgeRing);
 
-/* ─── PRE-ALLOCATED VECTORS (no per-frame new THREE.Vector3) ─── */
+/* ─── PRE-ALLOCATED VECTORS ─── */
 const _camDesV    = new THREE.Vector3();
 const _camTarV    = new THREE.Vector3();
 const _eagFwdPt   = new THREE.Vector3();
@@ -448,54 +431,90 @@ for (let i = 0; i < PC; i++) {
 }
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-/* colour fix: particles use true dark orange #cc3300 */
 scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
-  size: 0.05, color: 0xcc3300, transparent: true, opacity: 0.30,
+  size: 0.05, color: 0xff4400, transparent: true, opacity: 0.35,
   blending: THREE.AdditiveBlending, depthWrite: false
 })));
 
-/* ─── EAGLE FLIGHT PATH ───
-   New path: eagle sweeps in from above, dives LOW and PAST the car
-   (skimming beside it), then climbs away off to the right and exits.
-   The car sits at origin. The closest waypoint passes at (8, 1.5, 2)
-   which is beside the car, not on top of it.
-─── */
+/* ─── EAGLE FLIGHT PATH ─── */
 const FLIGHT_PTS = [
-  new THREE.Vector3(   0, 180,  450),  // 0 – far sky entry
-  new THREE.Vector3( 160, 140,  350),  // 1
-  new THREE.Vector3( 200,  95,  220),  // 2
-  new THREE.Vector3( 150,  65,  120),  // 3
-  new THREE.Vector3(  55,  38,   60),  // 4
-  new THREE.Vector3( -80,  20,   10),  // 5
-  new THREE.Vector3( -90,  10,  -12),  // 6
-  new THREE.Vector3( -30,   5,   20),  // 7
-  // ── swoop past ── eagle passes BESIDE the car, not overhead
-  new THREE.Vector3(  10,   2.5,  8),  // 8 – approaching at hood height
-  new THREE.Vector3(   8,   1.5,  2),  // 9 – closest: beside driver door, ~8 units right
-  new THREE.Vector3(  12,   3,   -8),  // 10 – banking away behind
-  new THREE.Vector3(  30,   8,  -22),  // 11 – climbing out
-  new THREE.Vector3(  80,  25,  -60),  // 12 – exiting right
-  new THREE.Vector3( 160,  55, -130),  // 13 – off-screen
-  new THREE.Vector3( 260,  90, -220),  // 14 – fully gone
+  new THREE.Vector3(   0, 180,  450),
+  new THREE.Vector3( 160, 140,  350),
+  new THREE.Vector3( 200,  95,  220),
+  new THREE.Vector3( 150,  65,  120),
+  new THREE.Vector3(  55,  38,   60),
+  new THREE.Vector3( -80,  20,   10),
+  new THREE.Vector3( -90,  10,  -12),
+  new THREE.Vector3( -30,   5,   20),
+  new THREE.Vector3(  10,   2.5,  8),
+  new THREE.Vector3(   8,   1.5,  2),
+  new THREE.Vector3(  12,   3,   -8),
+  new THREE.Vector3(  30,   8,  -22),
+  new THREE.Vector3(  80,  25,  -60),
+  new THREE.Vector3( 160,  55, -130),
+  new THREE.Vector3( 260,  90, -220),
 ];
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
-/* ─── CINEMATIC CAR SHOTS — wide enough to always see full car ─── */
+/* ─── CINEMATIC CAR SHOTS ───────────────────────────────────────────
+   NEW SEQUENCE (orbitT 0→1 maps to s 0.60→1.00):
+
+   0.00  – wide front-3/4 (same as before)
+   0.10  – FRONT TYRE close-up  (driver side front wheel arch)
+   0.20  – side profile low shot
+   0.30  – REAR TYRE close-up  (passenger side rear wheel)
+   0.42  – rear 3/4 dramatic
+   0.56  – dead rear bumper / diffuser
+   0.70  – passenger side profile
+   0.84  – top-down hero
+   1.00  – front nose low
+─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
-  { p: 0.00, pos: new THREE.Vector3(  0,  3.5,  18), tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.14, pos: new THREE.Vector3( 13,  2.5,  15), tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.28, pos: new THREE.Vector3( 18,  3.0,   0), tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.42, pos: new THREE.Vector3( 10,  2.0, -15), tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.56, pos: new THREE.Vector3(  0,  3.5, -18), tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.70, pos: new THREE.Vector3(-13,  2.5,  14), tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.84, pos: new THREE.Vector3(  0, 13.0,   4), tar: new THREE.Vector3(0, 0,   0) },
-  { p: 1.00, pos: new THREE.Vector3(  6,  2.0,  16), tar: new THREE.Vector3(0, 0.3, 0) },
+  // wide front 3/4
+  { p: 0.00, pos: new THREE.Vector3(  0,  3.5,  18), tar: new THREE.Vector3(0, 0.5,  0), label: '' },
+
+  // FRONT TYRE: tight shot — camera very close to front-right wheel
+  // x≈3.2 (right side), y≈0.2 (wheel height), z≈4 (slightly forward)
+  { p: 0.10, pos: new THREE.Vector3(  3.8,  0.4,  5.2), tar: new THREE.Vector3( 2.8,  0.1,  3.8), label: 'Front Tyre · Pirelli P Zero' },
+
+  // side profile, low and close
+  { p: 0.22, pos: new THREE.Vector3( 14,  1.5,   0), tar: new THREE.Vector3(0, 0.6, 0), label: '' },
+
+  // REAR TYRE: tight shot — camera behind and beside rear-left wheel
+  // rear of car ≈ z −3.5; rear wheel x≈−3.0
+  { p: 0.34, pos: new THREE.Vector3( -4.0,  0.5, -4.5), tar: new THREE.Vector3(-2.8,  0.15, -3.6), label: 'Rear Tyre · 305/30 ZR20' },
+
+  // rear 3/4 dramatic
+  { p: 0.44, pos: new THREE.Vector3( 10,  2.0, -15), tar: new THREE.Vector3(0, 0.4, 0), label: '' },
+
+  // dead rear / diffuser
+  { p: 0.58, pos: new THREE.Vector3(  0,  3.5, -18), tar: new THREE.Vector3(0, 0.5, 0), label: '' },
+
+  // passenger side
+  { p: 0.70, pos: new THREE.Vector3(-13,  2.5,  14), tar: new THREE.Vector3(0, 0.4, 0), label: '' },
+
+  // top-down hero
+  { p: 0.84, pos: new THREE.Vector3(  0, 13.0,   4), tar: new THREE.Vector3(0, 0,   0), label: '' },
+
+  // front nose low close
+  { p: 1.00, pos: new THREE.Vector3(  0,  0.8,   7), tar: new THREE.Vector3(0, 0.2, 0), label: '' },
 ];
 
-/* ─── EAGLE ORIENTATION ───
-   eagleGroup is positioned+oriented by setEagleFacing.
-   eagleInner holds the GLB rotated 180° so beak faces +Z (travel dir).
-─── */
+/* ─── SHOT LABEL LOGIC ─── */
+const shotLabelEl = document.getElementById('shotlabel');
+let activeShotLabel = '';
+function updateShotLabel(label) {
+  if (label === activeShotLabel) return;
+  activeShotLabel = label;
+  if (label) {
+    shotLabelEl.textContent = label;
+    shotLabelEl.classList.add('vis');
+  } else {
+    shotLabelEl.classList.remove('vis');
+  }
+}
+
+/* ─── EAGLE GROUP ─── */
 const eagleGroup = new THREE.Group();
 const eagleInner = new THREE.Group();
 eagleInner.rotation.y = Math.PI;
@@ -527,25 +546,20 @@ let loadedCount = 0;
 const TOTAL_LOADS = 2;
 let audioStarted = false;
 function startAudioOnce() {
-  if (audioStarted) return;
-  audioStarted = true;
+  if (audioStarted) return; audioStarted = true;
   aud.volume = 0.32;
   aud.play().then(() => { audOn = true; updSnd(); }).catch(() => {});
 }
 
 let loadDone = false;
 function dismissLoader() {
-  if (loadDone) return;
-  loadDone = true;
+  if (loadDone) return; loadDone = true;
   renderer.render(scene, camera);
   document.getElementById('ld').classList.add('done');
   showPanel('p0');
   startAudioOnce();
 }
-function onLoaded() {
-  loadedCount++;
-  if (loadedCount >= TOTAL_LOADS) dismissLoader();
-}
+function onLoaded() { loadedCount++; if (loadedCount >= TOTAL_LOADS) dismissLoader(); }
 setTimeout(dismissLoader, 18000);
 
 /* ─── EAGLE MODEL ─── */
@@ -582,19 +596,21 @@ eagleLoader.load('animated_eagle.glb',
   err => { console.warn('Eagle load failed:', err); onLoaded(); }
 );
 
-/* ─── MCLAREN W1 ───
-   colour fix: no colour overrides at all — pure authored materials.
-   Only glass transparency and minimal envMapIntensity boost preserved.
-─── */
-let car = null;
-let carRotY = 0;
-let carFloorY = 0;
-let carMixer = null;
+/* ─── MCLAREN W1 ───────────────────────────────────────────────────
+   AGGRESSIVE ORANGE: every body panel gets McLaren Papaya orange.
+   We identify non-glass, non-black, non-tyre meshes and override
+   their colour to the iconic Papaya orange (#FF4400 / #E8500A).
+   Glass, rubber, and dark trim are kept or darkened.
+─────────────────────────────────────────────────────────────────── */
+let car = null, carRotY = 0, carFloorY = 0, carMixer = null;
 const CAR_ROT_SPEED = 0.16;
 
-/* Car is ALWAYS visible from the start — it sits on the plinth while
-   the eagle flies in, just like a real reveal. We show it immediately
-   after load and never hide it again. */
+// McLaren Papaya orange — the most aggressive shade
+const PAPAYA         = new THREE.Color(0xFF4400);   // hero orange
+const PAPAYA_DEEP    = new THREE.Color(0xCC2800);   // shadowed panels
+const CARBON_BLACK   = new THREE.Color(0x0A0A0C);   // carbon fibre trim
+const WHEEL_DARK     = new THREE.Color(0x111115);   // wheels/tyres
+
 const carLoader = new GLTFLoader();
 carLoader.setDRACOLoader(draco);
 carLoader.load('mclaren_w1.glb',
@@ -616,24 +632,60 @@ carLoader.load('mclaren_w1.glb',
       ms.forEach(m => {
         if (!m?.isMaterial) return;
         m.wireframe = false;
-        if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
 
-        /* colour fix: very modest env boost only — do not touch colour, roughness, or metalness */
-        m.envMapIntensity = Math.min((m.envMapIntensity || 1.0) * 1.3, 5);
-
-        /* glass only */
         const nm = (c.name + ' ' + (m.name || '')).toLowerCase();
-        const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens');
+
+        /* ── GLASS ── keep transparent */
+        const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens') || nm.includes('screen');
         if (isGlass) {
-          m.transparent = true; m.opacity = 0.22;
+          m.transparent = true; m.opacity = 0.18;
           m.roughness = 0.02; m.metalness = 0.05;
-          m.envMapIntensity = 2.5; m.needsUpdate = true; return;
+          m.envMapIntensity = 2.5;
+          m.color = new THREE.Color(0x88aacc);
+          m.needsUpdate = true; return;
         }
 
-        /* subtle emissive for lights */
-        const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head');
-        if (isLight && m.emissive) m.emissiveIntensity = (m.emissiveIntensity || 0) + 0.3;
+        /* ── TYRES / RUBBER ── stay dark */
+        const isTyre = nm.includes('tyre') || nm.includes('tire') || nm.includes('rubber') || nm.includes('wheel') || nm.includes('rim') || nm.includes('brake') || nm.includes('caliper') || nm.includes('rotor') || nm.includes('disc');
+        if (isTyre) {
+          if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
+          m.color = WHEEL_DARK.clone();
+          m.roughness = 0.88; m.metalness = 0.05;
+          m.envMapIntensity = 0.5; m.needsUpdate = true; return;
+        }
 
+        /* ── CARBON TRIM / DIFFUSER ── stay dark */
+        const isCarbon = nm.includes('carbon') || nm.includes('diffuser') || nm.includes('splitter') || nm.includes('undertray') || nm.includes('floor');
+        if (isCarbon) {
+          if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
+          m.color = CARBON_BLACK.clone();
+          m.roughness = 0.35; m.metalness = 0.8;
+          m.envMapIntensity = 2; m.needsUpdate = true; return;
+        }
+
+        /* ── LIGHTS ── emissive orange glow */
+        const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head') || nm.includes('led');
+        if (isLight) {
+          if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
+            m.emissive = new THREE.Color(0xff3300);
+            m.emissiveIntensity = 1.2;
+            m.color = new THREE.Color(0xff4400);
+          }
+          m.needsUpdate = true; return;
+        }
+
+        /* ── BODY PANELS — AGGRESSIVE ORANGE ──
+           Everything else (body, hood, doors, wings, sideskirts, mirrors)
+           gets the full Papaya orange treatment */
+        if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
+          // Slight variation: use deeper orange for darker/shadowed panels
+          const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin');
+          m.color = isDeep ? PAPAYA_DEEP.clone() : PAPAYA.clone();
+          m.roughness = 0.08;      // high-gloss clear coat
+          m.metalness = 0.0;       // pure paint, not metallic
+          m.envMapIntensity = 3.5; // strong reflections in the orange
+          if (m.emissive) m.emissiveIntensity = 0;
+        }
         m.needsUpdate = true;
       });
     });
@@ -643,7 +695,7 @@ carLoader.load('mclaren_w1.glb',
       carMixer.clipAction(gltf.animations[0]).play();
     }
 
-    car.visible = true;   /* always on – eagle flies PAST it */
+    car.visible = true;
     scene.add(car);
     setP(100, 'Ready');
     onLoaded();
@@ -703,7 +755,6 @@ function animate() {
   const t   = clock.elapsedTime;
   const MOB = getMob();
 
-  /* touch inertia */
   if (!isDragging && Math.abs(touchVel) > 0.05) {
     targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 1.4));
     touchVel *= 0.84;
@@ -716,27 +767,20 @@ function animate() {
 
   /* ── EAGLE ── */
   if (eagleMixer) eagleMixer.update(dt);
-
-  /* eagleT: 0→1 maps s from 0 → EAGLE_EXIT; beyond that eagle stays at path end */
   const eagleT = Math.min(s / ZONES.EAGLE_EXIT, 1.0);
   flightCurve.getPoint(Math.min(eagleT, 1), _ep);
-
   const lookAheadT = Math.min(eagleT + 0.010, 1);
   flightCurve.getPoint(lookAheadT, _eagFwdPt);
   setEagleFacing(eagleGroup, _ep, _eagFwdPt);
   eagleGroup.position.copy(_ep);
 
-  /* fade eagle out after it passes the car and exits */
   if (s >= ZONES.EAGLE_EXIT) {
     eagleGroup.scale.setScalar(0);
     if (!flashFired) {
-      flashFired = true;
-      flashOpacity = 0.6;   /* subtle flash as eagle disappears, not overwhelming */
-      orangeL.intensity = 12;
-      rimPt.intensity   = 7;
+      flashFired = true; flashOpacity = 0.6;
+      orangeL.intensity = 12; rimPt.intensity = 7;
     }
   } else if (s > ZONES.SWOOP_PAST) {
-    /* eagle already past car — shrink it as it flies away */
     const ep = (s - ZONES.SWOOP_PAST) / (ZONES.EAGLE_EXIT - ZONES.SWOOP_PAST);
     eagleGroup.scale.setScalar(Math.max(1 - ep, 0.004));
     flashFired = false;
@@ -750,80 +794,54 @@ function animate() {
     flashEl.style.opacity = flashOpacity;
   }
 
-  /* ── CAR always visible; slow rotation during orbit phase only ── */
+  /* ── CAR ── */
   if (car) {
     car.visible = true;
     car.position.y = carFloorY;
     car.position.x = 0;
     car.position.z = 0;
-
-    /* only rotate during orbit phase so car stays forward-facing during eagle flyby */
-    if (s >= ZONES.ORBIT_START) {
-      carRotY += CAR_ROT_SPEED * dt;
-    } else {
-      carRotY = 0;
-    }
+    if (s >= ZONES.ORBIT_START) { carRotY += CAR_ROT_SPEED * dt; } else { carRotY = 0; }
     car.rotation.y = carRotY;
     if (carMixer) carMixer.update(dt);
   }
 
-  /* ─── CAMERA ───
-     Phase 1  (0 → SWOOP_PAST):        chase eagle, wide enough to see car in BG
-     Phase 2  (SWOOP_PAST → CAM_SETTLE): eagle banking away — camera pivots to car
-     Phase 3  (CAM_SETTLE → ORBIT_START): camera settles into orbit start position
-     Phase 4  (ORBIT_START → 1.0):     full cinematic orbit
-  ─── */
-
+  /* ─── CAMERA ─── */
   if (s < ZONES.SWOOP_PAST) {
-    /* ── PHASE 1: Follow eagle, car visible in background ── */
     const closeBlend = s < 0.24 ? 0 : Math.min((s - 0.24) / (ZONES.SWOOP_PAST - 0.24), 1);
     const cb = closeBlend * closeBlend * (3 - 2 * closeBlend);
-
-    /* back off less as eagle approaches (was 28→10); keep distance so car is in frame */
     const BACK = 32 + (16 - 32) * cb;
     const UP   = 12 + ( 5 - 12) * cb;
-
     const lookAheadT2 = Math.min(eagleT + 0.022, 1);
     flightCurve.getPoint(lookAheadT2, _eagChasePt);
     _eagDir.subVectors(_eagChasePt, _ep).normalize();
-
     _camDesV.copy(_ep).addScaledVector(_eagDir, -BACK);
     _camDesV.y += UP;
-
     _lateralV.crossVectors(_eagDir, _worldUp).normalize();
     _camDesV.addScaledVector(_lateralV, cb * 2.0);
-
     camera.position.lerp(_camDesV, 0.040 + cb * 0.035);
-
-    /* look slightly ahead of eagle, biased toward car so car stays visible */
     _camLookAt.copy(_ep).addScaledVector(_eagDir, 4);
-    /* blend lookAt toward car origin as eagle approaches */
     _camLookAt.lerp(new THREE.Vector3(0, 0.4, 0), cb * 0.35);
     camera.lookAt(_camLookAt);
+    updateShotLabel('');
 
   } else if (s < ZONES.CAM_SETTLE) {
-    /* ── PHASE 2: Eagle banking away — pivot camera to car ── */
     const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
     const ease2 = t2 * t2 * (3 - 2 * t2);
-    /* camera smoothly moves from chase position to a wide car-facing position */
-    const carFacingPos = MOB
-      ? _camDesV.set(-5, 4, 20)
-      : _camDesV.set(-8, 4, 22);
+    const carFacingPos = MOB ? _camDesV.set(-5, 4, 20) : _camDesV.set(-8, 4, 22);
     camera.position.lerp(carFacingPos, 0.06 + ease2 * 0.06);
     camera.lookAt(0, 0.5, 0);
+    updateShotLabel('');
 
   } else if (s < ZONES.ORBIT_START) {
-    /* ── PHASE 3: Settle into first orbit shot ── */
     const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
     const ease3 = t3 * t3 * (3 - 2 * t3);
-    const settlePos = MOB
-      ? _camDesV.set(0, 3, 18)
-      : _camDesV.set(0, 2.5, 16);
+    const settlePos = MOB ? _camDesV.set(0, 3, 18) : _camDesV.set(0, 2.5, 16);
     camera.position.lerp(settlePos, 0.05 + ease3 * 0.05);
     camera.lookAt(0, 0.5, 0);
+    updateShotLabel('');
 
   } else {
-    /* ── PHASE 4: Cinematic orbit ── */
+    /* ── Cinematic orbit with close-up shots ── */
     const orbitT = (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START);
     let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1];
     for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
@@ -833,10 +851,23 @@ function animate() {
     }
     const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
     const ease   = localT * localT * (3 - 2 * localT);
+
+    /* ── FOV: narrow (zoom) for tyre close-ups, wide otherwise ── */
+    const isTyreShotA = shotA.label && shotA.label.length > 0;
+    const isTyreShotB = shotB.label && shotB.label.length > 0;
+    const targetFOV = (isTyreShotA || (ease > 0.5 && isTyreShotB)) ? 28 : 52;
+    camera.fov += (targetFOV - camera.fov) * 0.06;
+    camera.updateProjectionMatrix();
+
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
-    camera.position.lerp(_camDesV, 0.05);
+    camera.position.lerp(_camDesV, 0.045);
     camera.lookAt(_camTarV);
+
+    /* Show shot label when we're deep in a named shot */
+    const atShotA = isTyreShotA && localT < 0.6;
+    const atShotB = isTyreShotB && localT > 0.4;
+    updateShotLabel(atShotA ? shotA.label : (atShotB ? shotB.label : ''));
   }
 
   /* ── PARTICLES ── */
@@ -856,15 +887,15 @@ function animate() {
   /* ── FLOOR SHADERS ── */
   gridMat.uniforms.uT.value = t;
   spokeMat.uniforms.uAngle.value = carRotY;
-  edgeRing.material.opacity = 0.06 + Math.sin(t * 1.3) * 0.035;
+  edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
   /* ── PULSE LIGHTS ── */
   if (!flashFired || orangeL.intensity <= 2.5) {
-    orangeL.intensity = 1.8 + Math.sin(t * 1.2) * 0.4;
-    rimPt.intensity   = 1.2 + Math.sin(t * 2.1) * 0.3;
+    orangeL.intensity = 2.5 + Math.sin(t * 1.2) * 0.6;
+    rimPt.intensity   = 1.8 + Math.sin(t * 2.1) * 0.4;
   } else {
-    orangeL.intensity = Math.max(orangeL.intensity - dt * 35, 1.8 + Math.sin(t * 1.2) * 0.4);
-    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 25, 1.2 + Math.sin(t * 2.1) * 0.3);
+    orangeL.intensity = Math.max(orangeL.intensity - dt * 35, 2.5 + Math.sin(t * 1.2) * 0.6);
+    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 25, 1.8 + Math.sin(t * 2.1) * 0.4);
   }
 
   renderer.render(scene, camera);

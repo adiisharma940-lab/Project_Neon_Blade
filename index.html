@@ -67,7 +67,7 @@ canvas{position:fixed;inset:0;display:block;}
   .tp.C.vis{opacity:1;transform:translateX(-50%) translateY(0);}
 }
 
-/* ── TEXT PANELS — MOBILE: slide in from left/right ── */
+/* ── TEXT PANELS — MOBILE ── */
 @media(max-width:640px){
   .tp{
     width:calc(100% - 2.4rem)!important;
@@ -78,46 +78,17 @@ canvas{position:fixed;inset:0;display:block;}
     scrollbar-width:none;
     background:linear-gradient(to top,rgba(5,5,8,.97) 55%,rgba(5,5,8,.6));
     border-top:1px solid rgba(255,68,0,.2);
-    /* default off-screen directions */
     top:auto;
     left:1.2rem;
     right:1.2rem;
   }
   .tp::-webkit-scrollbar{display:none;}
-
-  /* Left panels slide in from left */
-  .tp.L{
-    transform:translateX(-60px);
-    opacity:0;
-  }
-  .tp.L.vis{
-    opacity:1;
-    transform:translateX(0);
-  }
-
-  /* Right panels slide in from right */
-  .tp.R{
-    transform:translateX(60px);
-    opacity:0;
-    text-align:left;
-  }
-  .tp.R.vis{
-    opacity:1;
-    transform:translateX(0);
-  }
-
-  /* Centre panels slide up */
-  .tp.C{
-    left:1.2rem!important;
-    right:1.2rem!important;
-    top:auto;
-    transform:translateY(20px);
-    text-align:center;
-  }
-  .tp.C.vis{
-    opacity:1;
-    transform:translateY(0);
-  }
+  .tp.L{transform:translateX(-60px);opacity:0;}
+  .tp.L.vis{opacity:1;transform:translateX(0);}
+  .tp.R{transform:translateX(60px);opacity:0;text-align:left;}
+  .tp.R.vis{opacity:1;transform:translateX(0);}
+  .tp.C{left:1.2rem!important;right:1.2rem!important;top:auto;transform:translateY(20px);text-align:center;}
+  .tp.C.vis{opacity:1;transform:translateY(0);}
 }
 
 /* TYPOGRAPHY */
@@ -309,7 +280,7 @@ canvas{position:fixed;inset:0;display:block;}
   <div class="cb">BEYOND<br/>LIMITS</div>
 </div>
 
-<audio id="aud" loop preload="none">
+<audio id="aud" loop preload="auto">
   <source src="wow.mp3" type="audio/mpeg"/>
 </audio>
 
@@ -325,49 +296,71 @@ import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ─── CONSTANTS ─── */
-const MOB = innerWidth < 768;
+/* ─── RESPONSIVE — updates on resize ─── */
+// FIX #9: MOB is now a getter so device orientation / resize is always reflected
+let _isMob = window.innerWidth < 768;
+const getMob = () => _isMob;
+window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 
+/* ─── SCROLL ZONES — single source of truth ─── */
+// FIX #13 + #14: renamed to be unambiguous; PAN_ZONES references these constants
 const ZONES = {
-  FLIGHT_END  : 0.48,
-  LAND_START  : 0.42,
-  LAND_END    : 0.50,
-  PAUSE_END   : 0.56,
-  XFORM_START : 0.56,
-  XFORM_END   : 0.64,
+  FLIGHT_END  : 0.46,   // eagle fully gone by here
+  LAND_START  : 0.40,   // eagle starts shrinking
+  LAND_END    : 0.48,   // eagle fully invisible; flash fires
+  PAUSE_END   : 0.54,
+  XFORM_START : 0.54,   // car starts materialising
+  XFORM_END   : 0.62,   // car fully revealed
 };
+
+// FIX #14: panel zones keyed from ZONES constants so they stay in sync
+const PAN_ZONES = [
+  { s: 0.00,               e: 0.16,               id: 'p0' },
+  { s: ZONES.XFORM_END,    e: ZONES.XFORM_END+0.10, id: 'p1' },
+  { s: ZONES.XFORM_END+0.10, e: ZONES.XFORM_END+0.18, id: 'p2' },
+  { s: ZONES.XFORM_END+0.18, e: ZONES.XFORM_END+0.27, id: 'p3' },
+  { s: ZONES.XFORM_END+0.27, e: 1.01,             id: 'p4' },
+];
 
 /* ─── SCROLL ─── */
 let targetS = 0, currentS = 0;
 let isDragging = false, lastTY = 0, touchVel = 0;
-const SCROLL_SPEED = MOB ? 0.00052 : 0.00036;
-const LERP_F = MOB ? 0.07 : 0.055;
+const SCROLL_SPEED_WHEEL = 0.00036;
+const SCROLL_SPEED_TOUCH = 0.00052;
+const LERP_F = 0.055;
 
 const hintEl = document.getElementById('hint');
+
 window.addEventListener('wheel', e => {
   e.preventDefault();
-  targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED));
+  targetS = Math.max(0, Math.min(1, targetS + e.deltaY * SCROLL_SPEED_WHEEL));
   hintEl.classList.add('gone');
 }, { passive: false });
+
 window.addEventListener('touchstart', e => {
-  lastTY = e.touches[0].clientY; touchVel = 0; isDragging = true;
+  lastTY = e.touches[0].clientY;
+  touchVel = 0;
+  isDragging = true;
   hintEl.classList.add('gone');
 }, { passive: true });
+
 window.addEventListener('touchmove', e => {
   if (!isDragging) return;
   const dy = lastTY - e.touches[0].clientY;
-  touchVel = dy; lastTY = e.touches[0].clientY;
-  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED * 1.8));
+  touchVel = dy;
+  lastTY = e.touches[0].clientY;
+  targetS = Math.max(0, Math.min(1, targetS + dy * SCROLL_SPEED_TOUCH * 1.8));
 }, { passive: true });
+
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
 /* ─── RENDERER ─── */
 const renderer = new THREE.WebGLRenderer({
-  antialias: !MOB,
+  antialias: true,
   powerPreference: 'high-performance',
   stencil: false
 });
-renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.8;
@@ -378,9 +371,9 @@ document.body.appendChild(renderer.domElement);
 /* ─── SCENE ─── */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050508);
-scene.fog = new THREE.FogExp2(0x050508, MOB ? 0.010 : 0.006);
+scene.fog = new THREE.FogExp2(0x050508, 0.006);
 
-const camera = new THREE.PerspectiveCamera(MOB ? 65 : 52, innerWidth / innerHeight, 0.05, 800);
+const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.05, 800);
 camera.position.set(0, 50, 150);
 camera.lookAt(0, 0, 0);
 
@@ -392,18 +385,23 @@ pmrem.dispose();
 /* ─── LIGHTS ─── */
 scene.add(new THREE.AmbientLight(0xd0d8ff, 3.0));
 const keyL = new THREE.DirectionalLight(0xffffff, 12);
-keyL.position.set(5, 10, 7); scene.add(keyL);
+keyL.position.set(5, 10, 7);
+scene.add(keyL);
 const fillL = new THREE.DirectionalLight(0xffe8d0, 6);
-fillL.position.set(-6, 4, 4); scene.add(fillL);
+fillL.position.set(-6, 4, 4);
+scene.add(fillL);
 const rimL = new THREE.DirectionalLight(0xaaccff, 8);
-rimL.position.set(0, 5, -8); scene.add(rimL);
+rimL.position.set(0, 5, -8);
+scene.add(rimL);
 const frontL = new THREE.DirectionalLight(0xffffff, 7);
-frontL.position.set(0, 2, 10); scene.add(frontL);
-// Under-car accent — subtle, don't overwhelm colours
+frontL.position.set(0, 2, 10);
+scene.add(frontL);
 const orangeL = new THREE.PointLight(0xff5500, 2.5, 9);
-orangeL.position.set(0, -0.3, 0); scene.add(orangeL);
+orangeL.position.set(0, -0.3, 0);
+scene.add(orangeL);
 const rimPt = new THREE.PointLight(0xff2200, 1.5, 6);
-rimPt.position.set(-2, 1, -2); scene.add(rimPt);
+rimPt.position.set(-2, 1, -2);
+scene.add(rimPt);
 
 /* ─── FLOOR ─── */
 const floorMesh = new THREE.Mesh(
@@ -468,7 +466,24 @@ edgeRing.position.y = -1.03;
 scene.add(edgeRing);
 
 /* ─── PARTICLES ─── */
-const PC = MOB ? 300 : 700;
+const PC = 700;
+// Pre-allocate vectors used every frame outside the loop — FIX #7 #8
+const _camDesV    = new THREE.Vector3();
+const _camTarV    = new THREE.Vector3();
+const _eagFwdPt   = new THREE.Vector3();  // look-ahead point for eagle facing
+const _eagChasePt = new THREE.Vector3();  // look-ahead point for chase cam
+const _ep         = new THREE.Vector3();  // current eagle position
+const _eagDir     = new THREE.Vector3();  // eagle forward dir for chase cam
+const _lateralV   = new THREE.Vector3();
+const _worldUp    = new THREE.Vector3(0, 1, 0);
+const _eagFwd     = new THREE.Vector3();
+const _eagRight   = new THREE.Vector3();
+const _eagUp      = new THREE.Vector3();
+const _eagleM     = new THREE.Matrix4();
+const _eagleQ     = new THREE.Quaternion();
+// Separate target vector for camera lookAt in phase 1 (avoids _tmp aliasing — FIX #16)
+const _camLookAt  = new THREE.Vector3();
+
 const pPos = new Float32Array(PC * 3);
 const pVel = new Float32Array(PC * 3);
 for (let i = 0; i < PC; i++) {
@@ -502,60 +517,37 @@ const FLIGHT_PTS = [
 ];
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
-/* ─── CLOSEUP CAMERA SHOTS ───
-   Pulled back significantly so full car is visible.
-   Desktop: ~10-14 units away. Mobile: ~12-16 units.
-─── */
-const D = MOB ? 1.55 : 1.0; // distance multiplier — pull back more on mobile
+/* ─── CAMERA SHOTS — pulled back significantly ─── */
+// FIX: all distances increased ~1.6–2× so full car is always in frame
 const CAR_SHOTS = [
-  { p: 0.00, pos: new THREE.Vector3(0,     2.2,  11*D),  tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.14, pos: new THREE.Vector3(7*D,   1.2,   9*D),  tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.28, pos: new THREE.Vector3(12*D,  2.0,   1  ),  tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.42, pos: new THREE.Vector3(6*D,   1.0,  -8*D),  tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.55, pos: new THREE.Vector3(0,     2.2, -11*D),  tar: new THREE.Vector3(0, 0.5, 0) },
-  { p: 0.68, pos: new THREE.Vector3(-7*D,  1.2,   8*D),  tar: new THREE.Vector3(0, 0.4, 0) },
-  { p: 0.80, pos: new THREE.Vector3(0,     9.0,   4  ),  tar: new THREE.Vector3(0, 0,   0) },
-  { p: 1.00, pos: new THREE.Vector3(3*D,   1.0,  10*D),  tar: new THREE.Vector3(0, 0.3, 0) },
+  { p: 0.00, pos: new THREE.Vector3( 0,    3.5,  18), tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.14, pos: new THREE.Vector3(13,    2.5,  16), tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.28, pos: new THREE.Vector3(20,    3.0,   1), tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.42, pos: new THREE.Vector3(11,    2.0, -15), tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.55, pos: new THREE.Vector3( 0,    3.5, -18), tar: new THREE.Vector3(0, 0.5, 0) },
+  { p: 0.68, pos: new THREE.Vector3(-13,   2.5,  15), tar: new THREE.Vector3(0, 0.4, 0) },
+  { p: 0.80, pos: new THREE.Vector3(  0,  14.0,   5), tar: new THREE.Vector3(0, 0,   0) },
+  { p: 1.00, pos: new THREE.Vector3(  6,    2.0,  17), tar: new THREE.Vector3(0, 0.3, 0) },
 ];
 
-/* ─── REUSABLE VECTORS ─── */
-const _ep     = new THREE.Vector3();
-const _eNext  = new THREE.Vector3();
-const _dir    = new THREE.Vector3();
-const _camDes = new THREE.Vector3();
-const _camTar = new THREE.Vector3();
-const _eagDir = new THREE.Vector3();
-const _tmp    = new THREE.Vector3();
-
-/* ─── EAGLE ORIENTATION HELPER ───
-   We build a proper look-at quaternion without Three's Object3D overhead
-   so we can control the "up" vector and avoid gimbal flip.
-   Eagles fly beak-first (+Z in most rigs). We find the forward vector
-   from the curve tangent and construct a quaternion from it.
+/* ─── EAGLE ORIENTATION ───
+   FIX #bird-direction: rotate the inner model 180° on Y so the beak faces
+   the travel direction (many eagle GLBs are authored facing -Z / backward).
+   setEagleFacing then points the group toward the tangent so the whole
+   assembly flies beak-first along the curve.
 ─── */
-const _eagleQ  = new THREE.Quaternion();
-const _eagleM  = new THREE.Matrix4();
-const _fwd     = new THREE.Vector3();
-const _right   = new THREE.Vector3();
-const _up2     = new THREE.Vector3();
-const WORLD_UP = new THREE.Vector3(0, 1, 0);
-
 function setEagleFacing(group, from, to) {
-  _fwd.subVectors(to, from);
-  if (_fwd.lengthSq() < 0.000001) return;
-  _fwd.normalize();
+  _eagFwd.subVectors(to, from);
+  if (_eagFwd.lengthSq() < 0.000001) return;
+  _eagFwd.normalize();
 
-  // Right = fwd × worldUp, then true up = right × fwd
-  _right.crossVectors(_fwd, WORLD_UP).normalize();
-  if (_right.lengthSq() < 0.0001) {
-    // Degenerate: flying straight up/down — use a fallback
-    _right.set(1, 0, 0);
-  }
-  _up2.crossVectors(_right, _fwd).normalize();
+  _eagRight.crossVectors(_eagFwd, _worldUp).normalize();
+  if (_eagRight.lengthSq() < 0.0001) _eagRight.set(1, 0, 0);
+  _eagUp.crossVectors(_eagRight, _eagFwd).normalize();
 
-  // Build rotation matrix: columns are right, up, -fwd
-  // (GLB models typically have +Z as forward, so -fwd = model's backward = -Z col)
-  _eagleM.makeBasis(_right, _up2, _fwd.clone().negate());
+  // Build matrix: columns are right, up, -fwd  (model beak = +Z, so fwd col = +fwd)
+  // FIX bird-direction: use +fwd in the Z column (not negated) so the model's +Z faces travel
+  _eagleM.makeBasis(_eagRight, _eagUp, _eagFwd);
   _eagleQ.setFromRotationMatrix(_eagleM);
   group.quaternion.slerp(_eagleQ, 0.12);
 }
@@ -570,25 +562,43 @@ const setP = (p, t) => { lbEl.style.width = p + '%'; ltEl.textContent = t; };
 
 let loadedCount = 0;
 const TOTAL_LOADS = 2;
+
+// FIX #11: single audio-start guard so it can only fire once
+let audioStarted = false;
+function startAudioOnce() {
+  if (audioStarted) return;
+  audioStarted = true;
+  aud.volume = 0.32;
+  aud.play().then(() => { audOn = true; updSnd(); }).catch(() => {});
+}
+
+// FIX #4: loadDone guard prevents double-dismiss from timeout + onLoaded racing
+let loadDone = false;
+function dismissLoader() {
+  if (loadDone) return;
+  loadDone = true;
+  renderer.render(scene, camera); // pre-warm
+  document.getElementById('ld').classList.add('done');
+  showPanel('p0');
+  startAudioOnce();
+}
+
 function onLoaded() {
   loadedCount++;
   if (loadedCount >= TOTAL_LOADS) dismissLoader();
 }
 
-let loadDone = false;
-function dismissLoader() {
-  if (loadDone) return;
-  loadDone = true;
-  // Pre-warm renderer to eliminate first-frame stutter
-  renderer.render(scene, camera);
-  document.getElementById('ld').classList.add('done');
-  showPanel('p0');
-  startAudio();
-}
+// Fallback: dismiss after 18s regardless
 setTimeout(dismissLoader, 18000);
 
 /* ─── EAGLE ─── */
+// FIX bird-direction: wrap model in an inner group rotated 180° on Y.
+// eagleGroup is positioned/oriented by setEagleFacing;
+// eagleInner holds the GLB and is permanently flipped.
 const eagleGroup = new THREE.Group();
+const eagleInner = new THREE.Group();
+eagleInner.rotation.y = Math.PI; // 180° flip so beak faces +Z (travel direction)
+eagleGroup.add(eagleInner);
 scene.add(eagleGroup);
 let eagleMixer = null;
 
@@ -599,7 +609,7 @@ eagleLoader.load('animated_eagle.glb',
     const model = gltf.scene;
     const box  = new THREE.Box3().setFromObject(model);
     const sz   = box.getSize(new THREE.Vector3());
-    const s    = (MOB ? 3.8 : 3.0) / Math.max(sz.x, sz.y, sz.z);
+    const s    = 3.0 / Math.max(sz.x, sz.y, sz.z);
     model.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(model);
     model.position.sub(box2.getCenter(new THREE.Vector3()));
@@ -623,7 +633,7 @@ eagleLoader.load('animated_eagle.glb',
       clip.play();
     }
 
-    eagleGroup.add(model);
+    eagleInner.add(model); // add to inner group, not root group
     setP(50, 'Loading McLaren W1…');
     onLoaded();
   },
@@ -632,12 +642,12 @@ eagleLoader.load('animated_eagle.glb',
 );
 
 /* ─── MCLAREN W1 ───
-   KEY FIX: Do NOT override the model's authored colours.
-   Only fix glass opacity and ensure env map intensity is high.
-   This preserves the actual McLaren paint, carbon, and interior colours.
+   FIX: preserve all authored material colours exactly.
+   Only fix glass opacity; do NOT override paint/carbon colours.
 ─── */
 let car = null;
 let carRotY = 0;
+let carFloorY = 0;   // FIX #5: store floor offset separately, not on the Group itself
 let carMixer = null;
 const CAR_ROT_SPEED = 0.18;
 
@@ -653,7 +663,7 @@ carLoader.load('mclaren_w1.glb',
     car.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(car);
     car.position.set(-cn.x * s, -box2.min.y - 1.08, -cn.z * s);
-    car._floorY = car.position.y;
+    carFloorY = car.position.y; // FIX #5: store in plain variable
 
     car.traverse(c => {
       if (!c.isMesh || !c.material) return;
@@ -663,19 +673,19 @@ carLoader.load('mclaren_w1.glb',
         if (!m || !m.isMaterial) return;
         m.wireframe = false;
 
-        // Only touch PBR materials — preserve authored colours exactly
+        // FIX car-colour: only touch PBR materials for envmap boost — colours untouched
         if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) {
           m.needsUpdate = true;
           return;
         }
 
-        // Boost environment map so reflections read in dark scene
-        m.envMapIntensity = (m.envMapIntensity || 1.0) * 1.6;
-        m.envMapIntensity = Math.min(m.envMapIntensity, 8);
+        // Modest env map boost only — preserves authored colour values
+        m.envMapIntensity = Math.min((m.envMapIntensity || 1.0) * 1.4, 6);
 
-        // Fix glass only — make it transparent
+        // Glass fix
         const nm = (c.name + ' ' + (m.name || '')).toLowerCase();
-        const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens');
+        const isGlass = nm.includes('glass') || nm.includes('windsh') ||
+                        nm.includes('window') || nm.includes('lens');
         if (isGlass) {
           m.transparent = true;
           m.opacity = 0.25;
@@ -686,8 +696,9 @@ carLoader.load('mclaren_w1.glb',
           return;
         }
 
-        // Emissive boost for light elements
-        const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head');
+        // Light emissive boost
+        const isLight = nm.includes('light') || nm.includes('lamp') ||
+                        nm.includes('tail')  || nm.includes('head');
         if (isLight && m.emissive) {
           m.emissiveIntensity = (m.emissiveIntensity || 0) + 0.4;
         }
@@ -713,18 +724,20 @@ carLoader.load('mclaren_w1.glb',
 /* ─── AUDIO ─── */
 const aud = document.getElementById('aud');
 let audOn = false;
-function startAudio() {
-  aud.volume = 0.32;
-  aud.play().then(() => { audOn = true; updSnd(); }).catch(() => {});
-}
 const sndBtn = document.getElementById('snd');
+
 function updSnd() {
   sndBtn.textContent = audOn ? '♪ Sound On' : '♫ Muted';
   sndBtn.classList.toggle('on', audOn);
 }
+
 sndBtn.addEventListener('click', () => {
   if (audOn) { aud.pause(); audOn = false; }
-  else { aud.play().catch(() => {}); audOn = true; }
+  else {
+    // FIX #12: user gesture handler — always safe to call play() here
+    aud.play().catch(() => {});
+    audOn = true;
+  }
   updSnd();
 });
 
@@ -737,13 +750,7 @@ function showPanel(id) {
   if (id) document.getElementById(id)?.classList.add('vis');
   activePanel = id;
 }
-const PAN_ZONES = [
-  { s: 0.00, e: 0.16, id: 'p0' },
-  { s: 0.64, e: 0.74, id: 'p1' },
-  { s: 0.74, e: 0.82, id: 'p2' },
-  { s: 0.82, e: 0.91, id: 'p3' },
-  { s: 0.91, e: 1.01, id: 'p4' },
-];
+
 function updateUI(p) {
   let show = '';
   for (const z of PAN_ZONES) if (p >= z.s && p < z.e) { show = z.id; break; }
@@ -753,7 +760,10 @@ function updateUI(p) {
 }
 
 /* ─── FLASH STATE ─── */
-let flashFired = false, flashOpacity = 0;
+// FIX #1: track whether we're currently in the "eagle visible" zone so
+//         flashFired resets when user scrolls back before LAND_END.
+let flashFired = false;
+let flashOpacity = 0;
 const flashEl = document.getElementById('flash');
 
 /* ─── RESIZE ─── */
@@ -761,21 +771,21 @@ window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  // _isMob already updated by the listener above
 });
 
 /* ─── ANIMATE ─── */
 const clock = new THREE.Clock();
-// Pre-warm: render two blank frames before showing UI to avoid first-frame stutter
-let warmFrames = 0;
 
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
   const t  = clock.elapsedTime;
+  const MOB = getMob(); // FIX #9: read current value each frame
 
   // Touch inertia
   if (!isDragging && Math.abs(touchVel) > 0.05) {
-    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED * 1.4));
+    targetS = Math.max(0, Math.min(1, targetS + touchVel * SCROLL_SPEED_TOUCH * 1.4));
     touchVel *= 0.84;
   }
 
@@ -788,32 +798,38 @@ function animate() {
   /* ── EAGLE ANIMATION ── */
   if (eagleMixer) eagleMixer.update(dt);
 
-  /* ── EAGLE POSITION ── */
+  /* ── EAGLE POSITION + FACING ── */
   const eagleT = Math.min(s / ZONES.FLIGHT_END, 1.0);
   flightCurve.getPoint(Math.min(eagleT, 1), _ep);
 
-  // ── EAGLE FACING FIX ──
-  // Use the tangent at this point for stable forward direction
-  // Then build an orthonormal basis so the eagle always faces its travel direction
+  // FIX #16: use dedicated _eagFwdPt (not reused _tmp) for eagle look-ahead
   const lookAheadT = Math.min(eagleT + 0.012, 1);
-  flightCurve.getPoint(lookAheadT, _eNext);
-  setEagleFacing(eagleGroup, _ep, _eNext);
+  flightCurve.getPoint(lookAheadT, _eagFwdPt);
+  setEagleFacing(eagleGroup, _ep, _eagFwdPt);
   eagleGroup.position.copy(_ep);
 
   /* ── EAGLE SCALE / LANDING ── */
   if (s >= ZONES.LAND_END) {
     eagleGroup.scale.setScalar(0);
+
+    // FIX #1: only fire flash once per entry into this zone
+    // (and allow it to re-fire if user scrolls back and re-enters)
     if (!flashFired) {
       flashFired = true;
       flashOpacity = 1.0;
       orangeL.intensity = 30;
       rimPt.intensity   = 15;
     }
-  } else if (s > ZONES.LAND_START) {
-    const lp = (s - ZONES.LAND_START) / (ZONES.LAND_END - ZONES.LAND_START);
-    eagleGroup.scale.setScalar(Math.max(1 - lp * lp, 0.004));
   } else {
-    eagleGroup.scale.setScalar(1);
+    // FIX #1: reset flashFired when eagle is visible again so re-entry works
+    flashFired = false;
+
+    if (s > ZONES.LAND_START) {
+      const lp = (s - ZONES.LAND_START) / (ZONES.LAND_END - ZONES.LAND_START);
+      eagleGroup.scale.setScalar(Math.max(1 - lp * lp, 0.004));
+    } else {
+      eagleGroup.scale.setScalar(1);
+    }
   }
 
   // Flash decay
@@ -826,61 +842,74 @@ function animate() {
   if (car) {
     if (s < ZONES.XFORM_START) {
       car.visible = false;
+      // FIX #2: only accumulate rotation while car is actually visible/rotating
+      // reset carRotY to 0 so it starts fresh on reveal
+      carRotY = 0;
     } else {
       car.visible = true;
       const xp = Math.min((s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START), 1);
       const xEased = 1 - Math.pow(1 - xp, 3);
       car.scale.setScalar(xEased);
       car.position.x = 0;
-      car.position.y = car._floorY;
+      car.position.y = carFloorY; // FIX #5: use plain variable not car._floorY
       car.position.z = 0;
-      carRotY += CAR_ROT_SPEED * dt;
+      carRotY += CAR_ROT_SPEED * dt; // FIX #2: only increments when visible
       car.rotation.y = carRotY;
     }
     if (carMixer) carMixer.update(dt);
   }
 
   /* ─── CAMERA ─── */
+  // FIX #6: bird→car transition uses a dedicated "hold" position computed
+  //         from the actual landing zone, not a hardcoded coordinate that
+  //         drifts relative to the car. Camera smoothly bridges LAND_END → XFORM_END.
+
   if (s < ZONES.LAND_END) {
     /* PHASE 1: Eagle chase cam */
     const closeBlend = s < 0.28 ? 0 : Math.min((s - 0.28) / (ZONES.LAND_START - 0.28), 1);
     const cb = closeBlend * closeBlend * (3 - 2 * closeBlend);
 
-    // Wider chase: 28→10 back, 10→3 up  (more breathing room during descent)
     const BACK = 28 + (10 - 28) * cb;
     const UP   = 10 + ( 3 - 10) * cb;
 
+    // FIX #16: use dedicated _eagChasePt for chase cam look-ahead, not shared _tmp
     const lookAheadT2 = Math.min(eagleT + 0.025, 1);
-    flightCurve.getPoint(lookAheadT2, _tmp);
-    _eagDir.subVectors(_tmp, _ep).normalize();
+    flightCurve.getPoint(lookAheadT2, _eagChasePt);
+    _eagDir.subVectors(_eagChasePt, _ep).normalize();
 
-    _camDes.copy(_ep)
-      .addScaledVector(_eagDir, -BACK)
-      .add(new THREE.Vector3(0, UP, 0));
+    _camDesV.copy(_ep)
+      .addScaledVector(_eagDir, -BACK);
+    _camDesV.y += UP;
 
-    // Cinematic lateral offset — stays gentle
-    const lateralOffset = new THREE.Vector3().crossVectors(_eagDir, new THREE.Vector3(0,1,0)).normalize();
-    _camDes.addScaledVector(lateralOffset, cb * 1.5);
+    // FIX #8: lateral offset using pre-allocated _lateralV
+    _lateralV.crossVectors(_eagDir, _worldUp).normalize();
+    _camDesV.addScaledVector(_lateralV, cb * 1.5);
 
-    camera.position.lerp(_camDes, 0.045 + cb * 0.04);
-    // Look slightly ahead of eagle so it's not dead-centre
-    _tmp.copy(_ep).addScaledVector(_eagDir, 3);
-    camera.lookAt(_tmp);
+    camera.position.lerp(_camDesV, 0.045 + cb * 0.04);
+
+    // FIX #16: use dedicated _camLookAt, not reused _tmp
+    _camLookAt.copy(_ep).addScaledVector(_eagDir, 3);
+    camera.lookAt(_camLookAt);
 
   } else if (s < ZONES.XFORM_START) {
-    /* PHASE 2: Landing hold — wider/further so you see the context */
-    const holdPos = new THREE.Vector3(MOB ? 6 : 8, MOB ? 2.5 : 3.0, MOB ? 8 : 10);
-    camera.position.lerp(holdPos, 0.04);
+    /* PHASE 2: Landing hold / transition bridge
+       FIX lag: push hold position further back (18 units) so car reveal
+       doesn't feel like a jump-cut; lerp speed increased to close gap fast */
+    const holdPos = MOB
+      ? _camDesV.set(7, 3.5, 14)
+      : _camDesV.set(10, 4.0, 18);
+    camera.position.lerp(holdPos, 0.07); // was 0.04 — faster convergence
     camera.lookAt(0, 0.3, 0);
 
   } else if (s < ZONES.XFORM_END) {
-    /* PHASE 3: Reveal pull-back */
+    /* PHASE 3: Reveal pull-back — starts from wherever camera currently is
+       so there's no visible pop between phase 2 and 3 */
     const xp = (s - ZONES.XFORM_START) / (ZONES.XFORM_END - ZONES.XFORM_START);
     const xe = xp * xp * (3 - 2 * xp);
-    const startPos = new THREE.Vector3(MOB ? 6 : 8, MOB ? 2.5 : 3.0, MOB ? 8 : 10);
-    const endPos   = new THREE.Vector3(0, 2.0, MOB ? 14 : 11);
-    _camDes.lerpVectors(startPos, endPos, xe);
-    camera.position.lerp(_camDes, 0.08);
+    const endPos = MOB
+      ? _camDesV.set(0, 2.5, 18)
+      : _camDesV.set(0, 2.0, 16);
+    camera.position.lerp(endPos, 0.06 + xe * 0.04);
     camera.lookAt(0, 0.5, 0);
 
   } else {
@@ -897,11 +926,12 @@ function animate() {
     const localT = shotA.p === shotB.p ? 0 : (orbitT - shotA.p) / (shotB.p - shotA.p);
     const ease   = localT * localT * (3 - 2 * localT);
 
-    _camDes.lerpVectors(shotA.pos, shotB.pos, ease);
-    _camTar.lerpVectors(shotA.tar, shotB.tar, ease);
+    // FIX #7: lerpVectors into pre-allocated vectors — no per-frame allocation
+    _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
+    _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
 
-    camera.position.lerp(_camDes, 0.05);
-    camera.lookAt(_camTar);
+    camera.position.lerp(_camDesV, 0.05);
+    camera.lookAt(_camTarV);
   }
 
   /* ── PARTICLES ── */

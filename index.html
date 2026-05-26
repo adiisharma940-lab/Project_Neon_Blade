@@ -374,7 +374,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'hi
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;  // slightly brighter to compensate for ACES contrast
+renderer.toneMappingExposure = 0.82;  // pulled back — prevents red from clipping to toy-bright
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
@@ -390,51 +390,52 @@ camera.lookAt(0, 0, 0);
 
 /* ─── ENVIRONMENT ─── */
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.08).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS — tuned for deep red paint ─────────────────────────────
-   Strategy: warm key from front-right saturates the red; cool blue rim
-   from behind creates crisp silhouette separation (blue vs red = maximum
-   contrast). Fill from left prevents shadow side going completely black.
-   Under-car red bounce adds depth without flooding. ──────────────────── */
+/* ─── LIGHTS — cinematic studio for deep red paint ───────────────────
+   One hard key creates a dominant highlight streak across the body.
+   Almost-black ambient means shadow side nearly disappears — depth.
+   Cold blue rim cuts the silhouette. Small fill just lifts detail.
+   No coloured floods — let the paint pigment be the only red. ──── */
 
-/* Dim warm ambient — lifts shadow floors, keeps detail visible in recesses */
-scene.add(new THREE.AmbientLight(0x1a0505, 1.8));
+/* Near-black ambient — just enough to see detail in deep shadows */
+scene.add(new THREE.AmbientLight(0x0a0202, 3.0));
 
-/* Key — warm white slightly front-right, main illumination of body panels */
-const keyL = new THREE.DirectionalLight(0xfff0e8, 4.0);
-keyL.position.set(7, 14, 9);
+/* KEY — hard, bright, slightly front-right. Single dominant light source.
+   This creates the long white highlight streak on the bonnet and roof. */
+const keyL = new THREE.DirectionalLight(0xffffff, 5.5);
+keyL.position.set(8, 16, 10);
 scene.add(keyL);
 
-/* Fill — cool neutral, shadow side, low so dark panels stay dark */
-const fillL = new THREE.DirectionalLight(0xd8e8ff, 1.1);
-fillL.position.set(-8, 6, 5);
+/* FILL — very dim, opposite side, just lifts shadow detail off black */
+const fillL = new THREE.DirectionalLight(0xc0d8ff, 0.6);
+fillL.position.set(-10, 6, 4);
 scene.add(fillL);
 
-/* Rim — cold blue from rear: makes red silhouette pop dramatically */
-const rimL = new THREE.DirectionalLight(0x8ab0ff, 3.0);
-rimL.position.set(0, 5, -10);
+/* RIM — hard cold blue from rear-top. Silhouette separation. */
+const rimL = new THREE.DirectionalLight(0x6090ff, 3.8);
+rimL.position.set(0, 8, -12);
 scene.add(rimL);
 
-/* Front soft — lifts the nose and front splitter */
-const frontL = new THREE.DirectionalLight(0xfff8f8, 1.4);
-frontL.position.set(0, 3, 12);
+/* FRONT KICKER — small, lifts the nose tip so it reads from front */
+const frontL = new THREE.DirectionalLight(0xfff8f8, 0.9);
+frontL.position.set(0, 2, 14);
 scene.add(frontL);
 
-/* Under-car red bounce — saturates deep panel gaps and undercuts with red */
-const orangeL = new THREE.PointLight(0xcc0808, 2.2, 9);
-orangeL.position.set(0, -0.6, 0);
+/* UNDER-CAR BLEED — very subtle deep red, paints the disc and floor red */
+const orangeL = new THREE.PointLight(0x880404, 2.8, 10);
+orangeL.position.set(0, -0.8, 0);
 scene.add(orangeL);
 
-/* Left rear accent — warm fill for rear haunch detailing */
-const rimPt = new THREE.PointLight(0xff4040, 1.5, 8);
-rimPt.position.set(-3, 1.5, -3);
+/* REAR HAUNCH ACCENT — tiny warm point for the rear quarter detailing */
+const rimPt = new THREE.PointLight(0xffe8e0, 0.9, 6);
+rimPt.position.set(-3.5, 1.5, -3.5);
 scene.add(rimPt);
 
-/* Top warm — catches roof and bonnet highlights */
-const topOrange = new THREE.PointLight(0xff2020, 1.8, 11);
-topOrange.position.set(1, 5, 1);
+/* TOP GLANCE — catches roof line at oblique angle */
+const topOrange = new THREE.PointLight(0xfff0f0, 1.1, 9);
+topOrange.position.set(2, 6, 0);
 scene.add(topOrange);
 
 /* ─── FLOOR ─── */
@@ -571,58 +572,58 @@ const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 
 const CAR_SHOTS = [
   {
     p:0.00, hold:0.88,
-    pos:new THREE.Vector3(  8,  4.5,  22),
-    tar:new THREE.Vector3(  0,  0.8,   0),
+    pos:new THREE.Vector3(  5.5,  3.2, 15),
+    tar:new THREE.Vector3(  0,  0.6,  0),
     label:''
   },
   {
     // LEFT FRONT TYRE — camera on left side (negative X), wheel height, close
     p:0.12, hold:0.90,
-    pos:new THREE.Vector3( -4.2, 0.18, 3.2),
-    tar:new THREE.Vector3( -1.8,-0.25, 3.0),
+    pos:new THREE.Vector3( -3.5, 0.15, 2.8),
+    tar:new THREE.Vector3( -1.5,-0.30, 2.8),
     label:'Front Tyre · Left · Pirelli P Zero'
   },
   {
     p:0.25, hold:0.88,
-    pos:new THREE.Vector3( 20,  1.8,   0),
+    pos:new THREE.Vector3( 13,  1.4,   0),
     tar:new THREE.Vector3(  0,  0.5,   0),
     label:''
   },
   {
     // RIGHT REAR TYRE — close, rear haunch
     p:0.38, hold:0.90,
-    pos:new THREE.Vector3(-4.8, 0.15,-3.8),
-    tar:new THREE.Vector3(-1.8,-0.3,-3.2),
+    pos:new THREE.Vector3(-3.8, 0.14,-3.2),
+    tar:new THREE.Vector3(-1.5,-0.30,-3.0),
     label:'Rear Tyre · 305/30 ZR20'
   },
   {
     p:0.51, hold:0.88,
-    pos:new THREE.Vector3( 10,  3.0, -20),
-    tar:new THREE.Vector3(  0,  1.0,   0),
-    label:''
-  },
-  {
-    p:0.63, hold:0.88,
-    pos:new THREE.Vector3(  0,  4.0, -24),
+    pos:new THREE.Vector3(  7,  2.2, -14),
     tar:new THREE.Vector3(  0,  0.8,   0),
     label:''
   },
   {
+    p:0.63, hold:0.88,
+    pos:new THREE.Vector3(  0,  2.8, -16),
+    tar:new THREE.Vector3(  0,  0.7,   0),
+    label:''
+  },
+  {
     p:0.74, hold:0.88,
-    pos:new THREE.Vector3(-20,  2.5,  10),
-    tar:new THREE.Vector3(  0,  0.6,   0),
+    pos:new THREE.Vector3(-13,  1.8,   7),
+    tar:new THREE.Vector3(  0,  0.5,   0),
     label:''
   },
   {
     p:0.85, hold:0.88,
-    pos:new THREE.Vector3(  3, 18.0,   5),
+    pos:new THREE.Vector3(  2, 13.0,   3),
     tar:new THREE.Vector3(  0,  0,     0),
     label:''
   },
   {
     p:1.00, hold:1.00,
-    pos:new THREE.Vector3(  0,  0.3,   9),
-    tar:new THREE.Vector3(  0,  0.5,   0),
+    pos:new THREE.Vector3(  0,  0.28,  7),
+    tar:new THREE.Vector3(  0,  0.4,   0),
     label:''
   },
 ];
@@ -744,9 +745,11 @@ eagleLoader.load('animated_eagle.glb',
 );
 
 /* ─── COLOUR CONSTANTS ─── */
-/* Deep gloss red — saturated hero panels with darker shadow tone for depth */
-const PAPAYA         = new THREE.Color(0xC8100A);  // hero red
-const PAPAYA_DEEP    = new THREE.Color(0x6A0505);  // deep shadow / undercut panels
+/* Automotive deep red — muted base so clearcoat/highlights do the work.
+   Hero panels: dark desaturated red (paint seen straight-on)
+   Deep panels: near-black crimson for recesses, sills, undercuts */
+const PAPAYA         = new THREE.Color(0xA00808);  // deep automotive red — not toy-bright
+const PAPAYA_DEEP    = new THREE.Color(0x3A0303);  // near-black for recesses
 const CARBON_BLACK   = new THREE.Color(0x0D0D0F);
 /* Wheels AND tyres — gloss black, matching 720S reference */
 const WHEEL_BLACK    = new THREE.Color(0x0E0E10);
@@ -764,7 +767,7 @@ carLoader.load('mclaren_w1.glb',
     const box  = new THREE.Box3().setFromObject(car);
     const sz   = box.getSize(new THREE.Vector3());
     const cn   = box.getCenter(new THREE.Vector3());
-    const s    = 6.8 / Math.max(sz.x, sz.y, sz.z);
+    const s    = 9.5 / Math.max(sz.x, sz.y, sz.z);
     car.scale.setScalar(s);
     const box2 = new THREE.Box3().setFromObject(car);
     car.position.set(-cn.x * s, -box2.min.y - 1.08, -cn.z * s);
@@ -844,16 +847,20 @@ carLoader.load('mclaren_w1.glb',
         if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
           const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin') || nm.includes('sill') || nm.includes('floor');
           m.color = isDeep ? PAPAYA_DEEP.clone() : PAPAYA.clone();
-          /* Red automotive paint: low roughness for deep gloss, slight metalness
-             for the wet-look depth. High clearcoat makes highlights pop white
-             over the red base — this is the Ferrari/McLaren GT paint look. */
-          m.roughness = isDeep ? 0.45 : 0.14;   // shadow panels rougher = absorb light
-          m.metalness = isDeep ? 0.05 : 0.10;
-          m.envMapIntensity = isDeep ? 0.6 : 1.8;
+          /* 2-stage automotive paint model:
+             - Colour coat: metalness=0 keeps pigment saturated, not metallic-grey
+             - Clearcoat (Physical only): separate glossy layer on top — this is
+               where white specular highlights come from, not the base colour
+             - Low roughness on clearcoat = mirror finish
+             - High envMapIntensity = surface reads differently at every angle
+             Shadow panels: rougher, less clearcoat, darker = depth & realism */
+          m.roughness = isDeep ? 0.55 : 0.08;
+          m.metalness = 0.0;   // zero metalness = full colour saturation, no grey cast
+          m.envMapIntensity = isDeep ? 0.4 : 2.2;
           if (m.emissive) { m.emissive.set(0,0,0); m.emissiveIntensity = 0; }
           if (m.isMeshPhysicalMaterial) {
-            m.clearcoat = isDeep ? 0.3 : 1.0;        // shadow panels less shiny
-            m.clearcoatRoughness = isDeep ? 0.3 : 0.03;
+            m.clearcoat = isDeep ? 0.15 : 1.0;
+            m.clearcoatRoughness = isDeep ? 0.5 : 0.02;  // mirror gloss on hero panels
           }
         }
         m.needsUpdate = true;
@@ -1008,7 +1015,7 @@ function animate() {
   } else if (s < ZONES.CAM_SETTLE) {
     const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
     const ease2 = t2 * t2 * (3 - 2 * t2);
-    const carFacingPos = MOB ? _camDesV.set(-8, 6, 30) : _camDesV.set(-10, 5, 32);
+    const carFacingPos = MOB ? _camDesV.set(-6, 4, 20) : _camDesV.set(-7,  4, 22);
     camera.position.lerp(carFacingPos, 0.10 + ease2 * 0.10);  // faster snap to car
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
@@ -1016,7 +1023,7 @@ function animate() {
   } else if (s < ZONES.ORBIT_START) {
     const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
     const ease3 = t3 * t3 * (3 - 2 * t3);
-    const settlePos = MOB ? _camDesV.set(0, 4, 26) : _camDesV.set(0, 3.5, 24);
+    const settlePos = MOB ? _camDesV.set(0, 3, 18) : _camDesV.set(0, 2.8, 16);
     camera.position.lerp(settlePos, 0.09 + ease3 * 0.08);  // faster settle
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
@@ -1081,14 +1088,14 @@ function animate() {
   spokeMat.uniforms.uAngle.value = carRotY;
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
-  if (!flashFired || orangeL.intensity <= 1.6) {
-    orangeL.intensity  = 1.6  + Math.sin(t * 1.2) * 0.4;
-    rimPt.intensity    = 1.2  + Math.sin(t * 2.1) * 0.3;
-    topOrange.intensity= 1.4  + Math.sin(t * 0.9) * 0.3;
+  if (!flashFired || orangeL.intensity <= 2.8) {
+    orangeL.intensity  = 2.8  + Math.sin(t * 1.2) * 0.5;
+    rimPt.intensity    = 0.9  + Math.sin(t * 2.1) * 0.2;
+    topOrange.intensity= 1.1  + Math.sin(t * 0.9) * 0.2;
   } else {
-    orangeL.intensity  = Math.max(orangeL.intensity  - dt * 35, 1.6  + Math.sin(t * 1.2) * 0.4);
-    rimPt.intensity    = Math.max(rimPt.intensity    - dt * 25, 1.2  + Math.sin(t * 2.1) * 0.3);
-    topOrange.intensity= Math.max(topOrange.intensity- dt * 20, 1.4  + Math.sin(t * 0.9) * 0.3);
+    orangeL.intensity  = Math.max(orangeL.intensity  - dt * 35, 2.8  + Math.sin(t * 1.2) * 0.5);
+    rimPt.intensity    = Math.max(rimPt.intensity    - dt * 25, 0.9  + Math.sin(t * 2.1) * 0.2);
+    topOrange.intensity= Math.max(topOrange.intensity- dt * 20, 1.1  + Math.sin(t * 0.9) * 0.2);
   }
 
   renderer.render(scene, camera);

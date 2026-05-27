@@ -110,10 +110,7 @@ canvas{position:fixed;inset:0;display:block;}
 /* ── VIGNETTE ── */
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 22%,rgba(5,5,8,.85) 100%);}
 
-/* ── FLASH — white-blue xenon burst ── */
-#flash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at 55% 45%, rgba(220,240,255,1.0) 0%, rgba(160,200,255,0.7) 25%, rgba(80,120,200,0.25) 55%, transparent 75%);
-  transition:opacity .03s ease;}
+
 
 /* ── CTA ── */
 #cta{
@@ -162,12 +159,7 @@ canvas{position:fixed;inset:0;display:block;}
   pointer-events:none;text-shadow:0 0 12px rgba(80,160,220,.6);}
 #shotlabel.vis{opacity:1;}
 
-/* ── CAMERA LOCK FLASH OVERLAY ── */
-#lockflash{
-  position:fixed;inset:0;z-index:39;pointer-events:none;opacity:0;
-  background:rgba(255,255,255,1);
-  transition:opacity .02s ease;
-}
+
 </style>
 </head>
 <body>
@@ -184,8 +176,7 @@ canvas{position:fixed;inset:0;display:block;}
 </div>
 <div id="pb"></div>
 <div id="vig"></div>
-<div id="lockflash"></div>
-<div id="flash"></div>
+
 <div id="shotdots"></div>
 <div id="shotlabel"></div>
 
@@ -313,7 +304,7 @@ const PAN_ZONES = [
 
 /* ─── SCROLL ─── */
 let targetS = 0, currentS = 0;
-const SCROLL_SPEED_WHEEL = 0.00018;
+const SCROLL_SPEED_WHEEL = 0.000055;
 let touchStartY = 0, touchLastY = 0, touchLastT = 0;
 let touchVelPx = 0;
 let isDragging = false;
@@ -346,7 +337,7 @@ window.addEventListener('touchmove', e => {
   touchLastY = e.touches[0].clientY;
   touchLastT = now;
   const dragRatio = dy / window.innerHeight;
-  targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.28));
+  targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.10));
 }, { passive: true });
 
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
@@ -553,58 +544,67 @@ const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 
    Shot 8:  ground-level nose (final)
 ─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
+  /* ── SHOT 0: Wide front 3/4 establish — camera eye-level right, slightly high */
   {
-    p:0.00, hold:0.88, isCloseUp:false,
-    pos:new THREE.Vector3(  5.5,  3.2, 15),
-    tar:new THREE.Vector3(  0,  0.6,  0),
+    p:0.00, hold:0.92, isCloseUp:false,
+    pos:new THREE.Vector3( 9.0,  2.2,  11.0),
+    tar:new THREE.Vector3( 0,    0.8,   0),
     label:''
   },
+  /* ── SHOT 1: Dead straight front — bonnet, nose, headlights */
   {
-    p:0.12, hold:0.90, isCloseUp:true,
-    pos:new THREE.Vector3( -3.5, 0.15, 2.8),
-    tar:new THREE.Vector3( -1.5,-0.30, 2.8),
-    label:'Front Tyre · Left · Pirelli P Zero'
-  },
-  {
-    p:0.25, hold:0.88, isCloseUp:false,
-    pos:new THREE.Vector3( 14,  1.4,   4),
-    tar:new THREE.Vector3(  0,  0.5,   0),
+    p:0.12, hold:0.92, isCloseUp:false,
+    pos:new THREE.Vector3( 0,    2.0,  14.0),
+    tar:new THREE.Vector3( 0,    0.7,   0),
     label:''
   },
+  /* ── SHOT 2: Front left tyre close-up — camera outside wheel arch, tyre fills frame */
   {
-    p:0.38, hold:0.90, isCloseUp:true,
-    pos:new THREE.Vector3(-3.8, 0.14,-3.2),
-    tar:new THREE.Vector3(-1.5,-0.30,-3.0),
-    label:'Rear Tyre · 305/30 ZR20'
+    p:0.24, hold:0.93, isCloseUp:true,
+    pos:new THREE.Vector3(-4.8,  0.18,  3.2),
+    tar:new THREE.Vector3(-2.0, -0.15,  3.2),
+    label:'Front Tyre · Left · Pirelli P Zero Corsa'
   },
+  /* ── SHOT 3: Right side full profile — classic car mag profile, mid-height */
   {
-    p:0.51, hold:0.88, isCloseUp:false,
-    pos:new THREE.Vector3(  7,  2.2, -14),
-    tar:new THREE.Vector3(  0,  0.8,   0),
+    p:0.37, hold:0.92, isCloseUp:false,
+    pos:new THREE.Vector3(16.0,  1.8,   0),
+    tar:new THREE.Vector3( 0,    0.9,   0),
     label:''
   },
+  /* ── SHOT 4: Rear right tyre — outside rear arch, brake disc visible */
   {
-    p:0.63, hold:0.88, isCloseUp:false,
-    pos:new THREE.Vector3(  0,  2.8, -16),
-    tar:new THREE.Vector3(  0,  0.7,   0),
+    p:0.50, hold:0.93, isCloseUp:true,
+    pos:new THREE.Vector3( 4.8,  0.18, -3.5),
+    tar:new THREE.Vector3( 2.0, -0.15, -3.5),
+    label:'Rear Tyre · 305/30 ZR20 · Carbon Ceramic Brake'
+  },
+  /* ── SHOT 5: Rear 3/4 — diffuser, wing, haunches */
+  {
+    p:0.63, hold:0.92, isCloseUp:false,
+    pos:new THREE.Vector3(-8.0,  2.4, -12.0),
+    tar:new THREE.Vector3( 0,    0.8,   0),
     label:''
   },
+  /* ── SHOT 6: Dead straight rear — exhaust, diffuser, rear wing head-on */
   {
-    p:0.74, hold:0.88, isCloseUp:false,
-    pos:new THREE.Vector3(-13,  1.8,   7),
-    tar:new THREE.Vector3(  0,  0.5,   0),
+    p:0.74, hold:0.92, isCloseUp:false,
+    pos:new THREE.Vector3( 0,    1.8, -14.5),
+    tar:new THREE.Vector3( 0,    0.7,   0),
     label:''
   },
+  /* ── SHOT 7: Low nose ground-level — dramatic front splitter angle */
   {
-    p:0.85, hold:0.88, isCloseUp:false,
-    pos:new THREE.Vector3(  2, 13.0,   3),
-    tar:new THREE.Vector3(  0,  0,     0),
+    p:0.85, hold:0.92, isCloseUp:false,
+    pos:new THREE.Vector3( 0,    0.32,  9.5),
+    tar:new THREE.Vector3( 0,    0.55,  0),
     label:''
   },
+  /* ── SHOT 8: High hero overhead — top-down showing full roofline */
   {
     p:1.00, hold:1.00, isCloseUp:false,
-    pos:new THREE.Vector3(  0,  0.35,  8),
-    tar:new THREE.Vector3(  0,  0.5,   0),
+    pos:new THREE.Vector3( 2,   14.0,   4),
+    tar:new THREE.Vector3( 0,    0,      0),
     label:''
   },
 ];
@@ -899,14 +899,7 @@ function updateUI(p) {
   document.getElementById('pb').style.width = (p * 100) + '%';
 }
 
-/* ─── FLASH STATE ─── */
-let eagleFlashFired = false, eagleFlashOpacity = 0;
-const flashEl = document.getElementById('flash');
 
-/* ─── CAMERA LOCK FLASH — big white xenon burst when camera first settles ── */
-let lockFlashFired = false, lockFlashOpacity = 0, lockFlashDecayStarted = false;
-const lockFlashEl = document.getElementById('lockflash');
-const LOCK_FLASH_THRESHOLD = ZONES.CAM_SETTLE + 0.005;  /* fires just as camera settles */
 
 /* ─── RESIZE ─── */
 window.addEventListener('resize', () => {
@@ -926,9 +919,9 @@ function animate() {
 
   /* ── Fling momentum ── */
   if (!isDragging && Math.abs(touchVelPx) > 0.02) {
-    const flingDelta = touchVelPx / window.innerHeight * 0.28;
+    const flingDelta = touchVelPx / window.innerHeight * 0.10;
     targetS   = Math.max(0, Math.min(1, targetS + flingDelta));
-    touchVelPx *= 0.82;
+    touchVelPx *= 0.72;
     if (Math.abs(touchVelPx) < 0.005) touchVelPx = 0;
   }
 
@@ -955,46 +948,11 @@ function animate() {
 
   if (s >= ZONES.EAGLE_EXIT) {
     eagleGroup.scale.setScalar(0);
-    if (!eagleFlashFired) {
-      eagleFlashFired = true; eagleFlashOpacity = 0.5;
-      underL.intensity = 6; rimPt.intensity = 4; topL.intensity = 5;
-    }
   } else if (s > ZONES.SWOOP_PAST) {
     const ep = (s - ZONES.SWOOP_PAST) / (ZONES.EAGLE_EXIT - ZONES.SWOOP_PAST);
     eagleGroup.scale.setScalar(Math.max(1 - ep, 0.004));
-    eagleFlashFired = false;
   } else {
     eagleGroup.scale.setScalar(1);
-    eagleFlashFired = false;
-  }
-
-  /* Eagle exit glow fade */
-  if (eagleFlashOpacity > 0) {
-    eagleFlashOpacity = Math.max(0, eagleFlashOpacity - dt * 4.0);
-    flashEl.style.opacity = eagleFlashOpacity;
-  }
-
-  /* ── CAMERA LOCK FLASH — fires once when camera first settles on car ── */
-  if (!lockFlashFired && s >= LOCK_FLASH_THRESHOLD && s < ZONES.ORBIT_START + 0.02) {
-    lockFlashFired = true;
-    lockFlashOpacity = 1.0;      /* full white-out burst */
-    lockFlashDecayStarted = false;
-  }
-  /* Reset if user scrolls back */
-  if (s < LOCK_FLASH_THRESHOLD - 0.02) {
-    lockFlashFired = false;
-    lockFlashOpacity = 0;
-    lockFlashEl.style.opacity = 0;
-  }
-  if (lockFlashOpacity > 0) {
-    /* Hold at full for 2 frames then decay fast — camera-flash feel */
-    if (!lockFlashDecayStarted && lockFlashOpacity >= 1.0) {
-      lockFlashDecayStarted = true;
-    }
-    if (lockFlashDecayStarted) {
-      lockFlashOpacity = Math.max(0, lockFlashOpacity - dt * 5.5);
-    }
-    lockFlashEl.style.opacity = lockFlashOpacity;
   }
 
   /* ── CAR — rotation logic ──────────────────────────────────────────
@@ -1113,7 +1071,7 @@ function animate() {
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
 
-    const lerpSpeed = localT === 0.0 ? 0.06 : 0.016;
+    const lerpSpeed = localT === 0.0 ? 0.055 : 0.010;
     camera.position.lerp(_camDesV, lerpSpeed);
     camera.lookAt(_camTarV);
 
@@ -1140,15 +1098,9 @@ function animate() {
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
   /* Under-car and accent light animation */
-  if (!eagleFlashFired || underL.intensity <= 2.2) {
-    underL.intensity   = 2.2  + Math.sin(t * 1.2) * 0.4;
-    rimPt.intensity    = 1.2  + Math.sin(t * 2.1) * 0.2;
-    topL.intensity     = 1.4  + Math.sin(t * 0.9) * 0.2;
-  } else {
-    underL.intensity  = Math.max(underL.intensity  - dt * 30, 2.2 + Math.sin(t*1.2)*0.4);
-    rimPt.intensity   = Math.max(rimPt.intensity   - dt * 22, 1.2 + Math.sin(t*2.1)*0.2);
-    topL.intensity    = Math.max(topL.intensity    - dt * 18, 1.4 + Math.sin(t*0.9)*0.2);
-  }
+  underL.intensity  = 2.2 + Math.sin(t * 1.2) * 0.4;
+  rimPt.intensity   = 1.2 + Math.sin(t * 2.1) * 0.2;
+  topL.intensity    = 1.4 + Math.sin(t * 0.9) * 0.2;
 
   renderer.render(scene, camera);
 }

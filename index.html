@@ -308,6 +308,7 @@ const SCROLL_SPEED_WHEEL = 0.000055;
 let touchStartY = 0, touchLastY = 0, touchLastT = 0;
 let touchVelPx = 0;
 let isDragging = false;
+let isMobileDrag = false;
 const LERP_NEAR = 0.10;
 const LERP_FAR  = 0.20;
 
@@ -325,6 +326,7 @@ window.addEventListener('touchstart', e => {
   touchLastT  = performance.now();
   touchVelPx  = 0;
   isDragging  = true;
+  isMobileDrag = true;
   hintEl.classList.add('gone');
 }, { passive: true });
 
@@ -340,7 +342,7 @@ window.addEventListener('touchmove', e => {
   targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.32));
 }, { passive: true });
 
-window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
+window.addEventListener('touchend', () => { isDragging = false; isMobileDrag = false; }, { passive: true });
 
 /* ─── RENDERER ─── */
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
@@ -921,15 +923,21 @@ function animate() {
   if (!isDragging && Math.abs(touchVelPx) > 0.02) {
     const flingDelta = touchVelPx / window.innerHeight * 0.32;
     targetS   = Math.max(0, Math.min(1, targetS + flingDelta));
-    touchVelPx *= 0.78;
+    touchVelPx *= 0.70;
     if (Math.abs(touchVelPx) < 0.005) touchVelPx = 0;
   }
 
   /* ── Adaptive lerp ── */
-  const gap = targetS - currentS;
-  const lf  = Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR;
-  currentS += gap * lf;
-  if (Math.abs(gap) < 0.00002) currentS = targetS;
+  if (isMobileDrag) {
+    // Live finger drag — zero lag, track finger exactly
+    currentS = targetS;
+  } else {
+    // Wheel / fling — smooth lerp
+    const gap = targetS - currentS;
+    const lf  = Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR;
+    currentS += gap * lf;
+    if (Math.abs(gap) < 0.00002) currentS = targetS;
+  }
   const s = currentS;
 
   updateUI(s);

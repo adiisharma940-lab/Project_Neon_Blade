@@ -287,10 +287,10 @@ window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 
 /* ─── SCROLL ZONES ─── */
 const ZONES = {
-  SWOOP_PAST   : 0.40,
-  EAGLE_EXIT   : 0.50,
-  CAM_SETTLE   : 0.52,
-  ORBIT_START  : 0.55,
+  SWOOP_PAST   : 0.22,   // eagle swoops past car much sooner
+  EAGLE_EXIT   : 0.30,   // eagle exits at 30% of total scroll
+  CAM_SETTLE   : 0.31,   // camera snaps to car immediately after
+  ORBIT_START  : 0.33,   // shots begin almost instantly — 2% gap only
 };
 
 /* Panel zones */
@@ -308,8 +308,8 @@ const SCROLL_SPEED_WHEEL = 0.000055;
 let touchStartY = 0, touchLastY = 0, touchLastT = 0;
 let touchVelPx = 0;
 let isDragging = false;
-const LERP_NEAR = 0.055;
-const LERP_FAR  = 0.12;
+const LERP_NEAR = 0.10;
+const LERP_FAR  = 0.20;
 
 const hintEl = document.getElementById('hint');
 
@@ -337,7 +337,7 @@ window.addEventListener('touchmove', e => {
   touchLastY = e.touches[0].clientY;
   touchLastT = now;
   const dragRatio = dy / window.innerHeight;
-  targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.10));
+  targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.32));
 }, { passive: true });
 
 window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
@@ -544,67 +544,67 @@ const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 
    Shot 8:  ground-level nose (final)
 ─────────────────────────────────────────────────────────────────── */
 const CAR_SHOTS = [
-  /* ── SHOT 0: Wide front 3/4 establish — camera eye-level right, slightly high */
+  /* ── SHOT 0: Wide front 3/4 establish */
   {
-    p:0.00, hold:0.92, isCloseUp:false,
-    pos:new THREE.Vector3( 9.0,  2.2,  11.0),
-    tar:new THREE.Vector3( 0,    0.8,   0),
+    p:0.00, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3(  11.5,  3.50,   9.5),
+    tar:new THREE.Vector3(  0.0,  0.8,  0.0),
     label:''
   },
-  /* ── SHOT 1: Dead straight front — bonnet, nose, headlights */
+  /* ── SHOT 1: Dead straight front — nose and headlights */
   {
-    p:0.12, hold:0.92, isCloseUp:false,
-    pos:new THREE.Vector3( 0,    2.0,  14.0),
-    tar:new THREE.Vector3( 0,    0.7,   0),
+    p:0.12, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3(   0.0,  2.80,  16.0),
+    tar:new THREE.Vector3(  0.0,  0.7,  0.0),
     label:''
   },
-  /* ── SHOT 2: Front left tyre close-up — camera outside wheel arch, tyre fills frame */
+  /* ── SHOT 2: Front left tyre close-up — camera outside wheel arch */
   {
-    p:0.24, hold:0.93, isCloseUp:true,
-    pos:new THREE.Vector3(-4.8,  0.18,  3.2),
-    tar:new THREE.Vector3(-2.0, -0.15,  3.2),
+    p:0.24, hold:0.62, isCloseUp:true,
+    pos:new THREE.Vector3( -10.0,  0.55,   3.5),
+    tar:new THREE.Vector3( -4.5,  0.1,  3.5),
     label:'Front Tyre · Left · Pirelli P Zero Corsa'
   },
-  /* ── SHOT 3: Right side full profile — classic car mag profile, mid-height */
+  /* ── SHOT 3: Left side full profile */
   {
-    p:0.37, hold:0.92, isCloseUp:false,
-    pos:new THREE.Vector3(16.0,  1.8,   0),
-    tar:new THREE.Vector3( 0,    0.9,   0),
+    p:0.37, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3( -17.0,  2.20,   0.0),
+    tar:new THREE.Vector3(  0.0,  0.9,  0.0),
     label:''
   },
-  /* ── SHOT 4: Rear right tyre — outside rear arch, brake disc visible */
+  /* ── SHOT 4: Rear left tyre close-up */
   {
-    p:0.50, hold:0.93, isCloseUp:true,
-    pos:new THREE.Vector3( 4.8,  0.18, -3.5),
-    tar:new THREE.Vector3( 2.0, -0.15, -3.5),
-    label:'Rear Tyre · 305/30 ZR20 · Carbon Ceramic Brake'
+    p:0.50, hold:0.62, isCloseUp:true,
+    pos:new THREE.Vector3( -10.0,  0.55,  -3.5),
+    tar:new THREE.Vector3( -4.5,  0.1, -3.5),
+    label:'Rear Tyre · Left · 305/30 ZR20'
   },
-  /* ── SHOT 5: Rear 3/4 — diffuser, wing, haunches */
+  /* ── SHOT 5: Rear 3/4 — diffuser and wing */
   {
-    p:0.63, hold:0.92, isCloseUp:false,
-    pos:new THREE.Vector3(-8.0,  2.4, -12.0),
-    tar:new THREE.Vector3( 0,    0.8,   0),
+    p:0.63, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3( -11.0,  3.00, -12.5),
+    tar:new THREE.Vector3(  0.0,  0.8,  0.0),
     label:''
   },
-  /* ── SHOT 6: Dead straight rear — exhaust, diffuser, rear wing head-on */
+  /* ── SHOT 6: Dead straight rear */
   {
-    p:0.74, hold:0.92, isCloseUp:false,
-    pos:new THREE.Vector3( 0,    1.8, -14.5),
-    tar:new THREE.Vector3( 0,    0.7,   0),
+    p:0.74, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3(   0.0,  2.20, -16.0),
+    tar:new THREE.Vector3(  0.0,  0.7,  0.0),
     label:''
   },
-  /* ── SHOT 7: Low nose ground-level — dramatic front splitter angle */
+  /* ── SHOT 7: Right rear 3/4 — quarter panel */
   {
-    p:0.85, hold:0.92, isCloseUp:false,
-    pos:new THREE.Vector3( 0,    0.32,  9.5),
-    tar:new THREE.Vector3( 0,    0.55,  0),
+    p:0.85, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3(  15.0,  2.00,  -8.0),
+    tar:new THREE.Vector3(  0.0,  0.7,  0.0),
     label:''
   },
-  /* ── SHOT 8: High hero overhead — top-down showing full roofline */
+  /* ── SHOT 8: High overhead hero */
   {
-    p:1.00, hold:1.00, isCloseUp:false,
-    pos:new THREE.Vector3( 2,   14.0,   4),
-    tar:new THREE.Vector3( 0,    0,      0),
+    p:1.00, hold:0.60, isCloseUp:false,
+    pos:new THREE.Vector3(   2.0, 16.00,   4.0),
+    tar:new THREE.Vector3(  0.0,  0.0,  0.0),
     label:''
   },
 ];
@@ -919,9 +919,9 @@ function animate() {
 
   /* ── Fling momentum ── */
   if (!isDragging && Math.abs(touchVelPx) > 0.02) {
-    const flingDelta = touchVelPx / window.innerHeight * 0.10;
+    const flingDelta = touchVelPx / window.innerHeight * 0.32;
     targetS   = Math.max(0, Math.min(1, targetS + flingDelta));
-    touchVelPx *= 0.72;
+    touchVelPx *= 0.78;
     if (Math.abs(touchVelPx) < 0.005) touchVelPx = 0;
   }
 
@@ -1005,7 +1005,7 @@ function animate() {
 
   /* ─── CAMERA ─── */
   if (s < ZONES.SWOOP_PAST) {
-    const closeBlend = s < 0.24 ? 0 : Math.min((s - 0.24) / (ZONES.SWOOP_PAST - 0.24), 1);
+    const closeBlend = s < 0.12 ? 0 : Math.min((s - 0.12) / (ZONES.SWOOP_PAST - 0.12), 1);
     const cb = closeBlend * closeBlend * (3 - 2 * closeBlend);
     const BACK = 32 + (16 - 32) * cb;
     const UP   = 12 + ( 5 - 12) * cb;
@@ -1071,8 +1071,24 @@ function animate() {
     _camDesV.lerpVectors(shotA.pos, shotB.pos, ease);
     _camTarV.lerpVectors(shotA.tar, shotB.tar, ease);
 
-    const lerpSpeed = localT === 0.0 ? 0.055 : 0.010;
+    const lerpSpeed = localT === 0.0 ? 0.07 : 0.022;
     camera.position.lerp(_camDesV, lerpSpeed);
+
+    /* Ellipsoid clamp — car is longer in Z than X, enforce axis-scaled exclusion.
+       Scale camera into ellipsoid space, if inside push to surface, scale back. */
+    {
+      const _ex = camera.position.x / 7.0;   // half-width safety margin
+      const _ey = Math.max(camera.position.y, 0.4) / 3.5;  // never below floor
+      const _ez = camera.position.z / 9.0;   // half-length safety margin
+      const _er = Math.sqrt(_ex*_ex + _ey*_ey + _ez*_ez);
+      if (_er < 1.0) {
+        const _ef = 1.0 / Math.max(_er, 0.001);
+        camera.position.x = _ex * _ef * 7.0;
+        camera.position.y = Math.max(_ey * _ef * 3.5, 0.4);
+        camera.position.z = _ez * _ef * 9.0;
+      }
+    }
+
     camera.lookAt(_camTarV);
 
     const showLabel = isTyreShotA && localT < 0.60;

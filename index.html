@@ -287,10 +287,10 @@ window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 
 /* ─── SCROLL ZONES ─── */
 const ZONES = {
-  SWOOP_PAST   : 0.22,   // eagle swoops past car much sooner
-  EAGLE_EXIT   : 0.30,   // eagle exits at 30% of total scroll
-  CAM_SETTLE   : 0.31,   // camera snaps to car immediately after
-  ORBIT_START  : 0.33,   // shots begin almost instantly — 2% gap only
+  SWOOP_PAST   : 0.20,   // eagle swoops past car
+  EAGLE_EXIT   : 0.27,   // eagle exits
+  CAM_SETTLE   : 0.28,   // camera begins settling onto car
+  ORBIT_START  : 0.38,   // wider settle window — camera has time to reach car position
 };
 
 /* Panel zones */
@@ -928,13 +928,13 @@ function animate() {
   }
 
   /* ── Adaptive lerp ── */
-  if (isMobileDrag) {
-    // Live finger drag — zero lag, track finger exactly
-    currentS = targetS;
-  } else {
-    // Wheel / fling — smooth lerp
+  {
     const gap = targetS - currentS;
-    const lf  = Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR;
+    // Mobile drag: very fast lerp (near-instant, no perceptible lag, no scene cuts)
+    // Wheel/fling: standard smooth lerp
+    const lf = isMobileDrag
+      ? 0.55
+      : (Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR);
     currentS += gap * lf;
     if (Math.abs(gap) < 0.00002) currentS = targetS;
   }
@@ -1024,7 +1024,7 @@ function animate() {
     _camDesV.y += UP;
     _lateralV.crossVectors(_eagDir, _worldUp).normalize();
     _camDesV.addScaledVector(_lateralV, cb * 2.0);
-    camera.position.lerp(_camDesV, 0.040 + cb * 0.035);
+    camera.position.lerp(_camDesV, MOB ? 0.12 : (0.040 + cb * 0.035));
     _camLookAt.copy(_ep).addScaledVector(_eagDir, 4);
     _camLookAt.lerp(new THREE.Vector3(0, 0.4, 0), cb * 0.35);
     camera.lookAt(_camLookAt);
@@ -1034,7 +1034,7 @@ function animate() {
     const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
     const ease2 = t2 * t2 * (3 - 2 * t2);
     const carFacingPos = MOB ? _camDesV.set(-6, 4, 20) : _camDesV.set(-7, 4, 22);
-    camera.position.lerp(carFacingPos, 0.10 + ease2 * 0.10);
+    camera.position.lerp(carFacingPos, MOB ? 0.35 : 0.14);
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
 
@@ -1042,7 +1042,7 @@ function animate() {
     const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
     const ease3 = t3 * t3 * (3 - 2 * t3);
     const settlePos = MOB ? _camDesV.set(0, 3, 18) : _camDesV.set(0, 2.8, 16);
-    camera.position.lerp(settlePos, 0.09 + ease3 * 0.08);
+    camera.position.lerp(settlePos, MOB ? 0.35 : 0.12);
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
 

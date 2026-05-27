@@ -110,8 +110,6 @@ canvas{position:fixed;inset:0;display:block;}
 /* ── VIGNETTE ── */
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 22%,rgba(5,5,8,.85) 100%);}
 
-
-
 /* ── CTA ── */
 #cta{
   position:fixed;
@@ -158,8 +156,6 @@ canvas{position:fixed;inset:0;display:block;}
   color:#aaccee;text-transform:uppercase;opacity:0;transition:opacity .5s;z-index:20;
   pointer-events:none;text-shadow:0 0 12px rgba(80,160,220,.6);}
 #shotlabel.vis{opacity:1;}
-
-
 </style>
 </head>
 <body>
@@ -285,17 +281,17 @@ let _isMob = window.innerWidth < 768;
 const getMob = () => _isMob;
 window.addEventListener('resize', () => { _isMob = window.innerWidth < 768; });
 
-/* ─── SCROLL ZONES ─── */
+/* ─── SCROLL ZONES — tightened for snappier intro ─── */
 const ZONES = {
-  SWOOP_PAST   : 0.20,   // eagle swoops past car
-  EAGLE_EXIT   : 0.27,   // eagle exits
-  CAM_SETTLE   : 0.28,   // camera begins settling onto car
-  ORBIT_START  : 0.38,   // wider settle window — camera has time to reach car position
+  SWOOP_PAST   : 0.12,   // eagle swoops past car at 12%
+  EAGLE_EXIT   : 0.18,   // eagle fully gone by 18%
+  CAM_SETTLE   : 0.19,   // camera snaps to car
+  ORBIT_START  : 0.21,   // cinematic shots begin at 21%
 };
 
-/* Panel zones */
+/* Panel zones — auto-scale off ORBIT_START */
 const PAN_ZONES = [
-  { s: 0.00,                          e: 0.18,                          id: 'p0' },
+  { s: 0.00,                          e: 0.10,                          id: 'p0' },
   { s: ZONES.ORBIT_START,             e: ZONES.ORBIT_START + 0.10,      id: 'p1' },
   { s: ZONES.ORBIT_START + 0.10,      e: ZONES.ORBIT_START + 0.19,      id: 'p2' },
   { s: ZONES.ORBIT_START + 0.19,      e: ZONES.ORBIT_START + 0.28,      id: 'p3' },
@@ -308,7 +304,6 @@ const SCROLL_SPEED_WHEEL = 0.000055;
 let touchStartY = 0, touchLastY = 0, touchLastT = 0;
 let touchVelPx = 0;
 let isDragging = false;
-let isMobileDrag = false;
 const LERP_NEAR = 0.10;
 const LERP_FAR  = 0.20;
 
@@ -326,7 +321,6 @@ window.addEventListener('touchstart', e => {
   touchLastT  = performance.now();
   touchVelPx  = 0;
   isDragging  = true;
-  isMobileDrag = true;
   hintEl.classList.add('gone');
 }, { passive: true });
 
@@ -342,14 +336,14 @@ window.addEventListener('touchmove', e => {
   targetS = Math.max(0, Math.min(1, targetS + dragRatio * 0.32));
 }, { passive: true });
 
-window.addEventListener('touchend', () => { isDragging = false; isMobileDrag = false; }, { passive: true });
+window.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
 
 /* ─── RENDERER ─── */
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.75;  /* slightly dark — lets specular highlights pop on black */
+renderer.toneMappingExposure = 0.75;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
@@ -368,46 +362,33 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.08).texture;
 pmrem.dispose();
 
-/* ─── LIGHTS — tuned for obsidian black paint ───────────────────────
-   Black paint needs sharp specular spikes, not ambient fill.
-   Low ambient = deep shadow voids.
-   Hard key from front-right = one dominant white streak on bonnet/roof.
-   Cold blue rim from rear = steel-blue silhouette edge.
-   No red lights — clean white/blue palette for the black body. ──── */
+/* ─── LIGHTS ─── */
+scene.add(new THREE.AmbientLight(0x080810, 1.8));
 
-scene.add(new THREE.AmbientLight(0x080810, 1.8));   /* cool very-dark blue-black ambient */
-
-/* KEY — primary specular driver */
 const keyL = new THREE.DirectionalLight(0xffffff, 8.0);
 keyL.position.set(8, 18, 10);
 scene.add(keyL);
 
-/* FILL — barely lifts shadow side */
 const fillL = new THREE.DirectionalLight(0x9fb8e0, 0.5);
 fillL.position.set(-10, 6, 4);
 scene.add(fillL);
 
-/* RIM — cold blue-white from rear, silhouette definition */
 const rimL = new THREE.DirectionalLight(0x80aaff, 5.0);
 rimL.position.set(0, 10, -14);
 scene.add(rimL);
 
-/* FRONT KICKER — lifts the nose */
 const frontL = new THREE.DirectionalLight(0xffffff, 1.2);
 frontL.position.set(0, 2, 14);
 scene.add(frontL);
 
-/* UNDER-CAR GLOW — subtle cool blue floor reflection */
 const underL = new THREE.PointLight(0x2244aa, 2.2, 12);
 underL.position.set(0, -0.8, 0);
 scene.add(underL);
 
-/* REAR HAUNCH ACCENT */
 const rimPt = new THREE.PointLight(0xc0d8ff, 1.2, 7);
 rimPt.position.set(-3.5, 1.5, -3.5);
 scene.add(rimPt);
 
-/* TOP GLANCE — roof line */
 const topL = new THREE.PointLight(0xffffff, 1.4, 10);
 topL.position.set(2, 7, 0);
 scene.add(topL);
@@ -509,104 +490,88 @@ scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
   blending: THREE.AdditiveBlending, depthWrite: false
 })));
 
-/* ─── EAGLE FLIGHT PATH ─── */
+/* ─── EAGLE FLIGHT PATH — mobile-safe ───────────────────────────────
+   On portrait mobile the horizontal frustum is very narrow (~56° wide).
+   Large X values (±160-200) blow off-screen. Scale lateral and depth
+   by _xScale / _zScale on mobile to keep the entire arc in-frame.
+─────────────────────────────────────────────────────────────────── */
+const _mob      = window.innerWidth < 768;
+const _xScale   = _mob ? 0.55 : 1.0;
+const _zScale   = _mob ? 0.75 : 1.0;
+
 const FLIGHT_PTS = [
-  new THREE.Vector3(   0, 180,  450),
-  new THREE.Vector3( 160, 140,  350),
-  new THREE.Vector3( 200,  95,  220),
-  new THREE.Vector3( 150,  65,  120),
-  new THREE.Vector3(  55,  38,   60),
-  new THREE.Vector3( -80,  20,   10),
-  new THREE.Vector3( -90,  10,  -12),
-  new THREE.Vector3( -30,   5,   20),
-  new THREE.Vector3(  10,   2.5,  8),
-  new THREE.Vector3(   8,   1.5,  2),
-  new THREE.Vector3(  12,   3,   -8),
-  new THREE.Vector3(  30,   8,  -22),
-  new THREE.Vector3(  80,  25,  -60),
-  new THREE.Vector3( 160,  55, -130),
-  new THREE.Vector3( 260,  90, -220),
+  new THREE.Vector3(   0,                  180,   450 * _zScale),
+  new THREE.Vector3(  80 * _xScale,        130,   320 * _zScale),
+  new THREE.Vector3( 110 * _xScale,         85,   200 * _zScale),
+  new THREE.Vector3(  80 * _xScale,         55,   110 * _zScale),
+  new THREE.Vector3(  35 * _xScale,         32,    55 * _zScale),
+  new THREE.Vector3( -50 * _xScale,         18,     8           ),
+  new THREE.Vector3( -55 * _xScale,          9,   -10           ),
+  new THREE.Vector3( -20 * _xScale,          5,    18           ),
+  new THREE.Vector3(  10,                   2.5,    8           ),
+  new THREE.Vector3(   8,                   1.5,    2           ),
+  new THREE.Vector3(  12,                   3,     -8           ),
+  new THREE.Vector3(  25 * _xScale,          8,   -20           ),
+  new THREE.Vector3(  55 * _xScale,         22,   -55 * _zScale),
+  new THREE.Vector3( 100 * _xScale,         48,  -110 * _zScale),
+  new THREE.Vector3( 160 * _xScale,         80,  -180 * _zScale),
 ];
 const flightCurve = new THREE.CatmullRomCurve3(FLIGHT_PTS, false, 'catmullrom', 0.5);
 
-/* ─── CINEMATIC CAR SHOTS — ALL EXTERIOR ─────────────────────────────
-   Every shot is from outside the car body.
-   Shots marked isCloseUp=true will STOP the car rotation for the
-   entire hold phase, then resume a gentle spin as the camera moves
-   to the next angle.
-
-   Shot 0:  wide front 3/4 hero establish
-   Shot 1:  front left tyre — CLOSE-UP (car stops)
-   Shot 2:  low sweeping side profile
-   Shot 3:  rear right tyre — CLOSE-UP (car stops)
-   Shot 4:  rear 3/4 wide
-   Shot 5:  dead straight rear
-   Shot 6:  left side profile
-   Shot 7:  top-down overhead
-   Shot 8:  ground-level nose (final)
-─────────────────────────────────────────────────────────────────── */
+/* ─── CINEMATIC CAR SHOTS ─── */
 const CAR_SHOTS = [
-  /* ── SHOT 0: Wide front 3/4 establish */
   {
     p:0.00, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3(  11.5,  3.50,   9.5),
-    tar:new THREE.Vector3(  0.0,  0.8,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.8,   0.0),
     label:''
   },
-  /* ── SHOT 1: Dead straight front — nose and headlights */
   {
     p:0.12, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3(   0.0,  2.80,  16.0),
-    tar:new THREE.Vector3(  0.0,  0.7,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.7,   0.0),
     label:''
   },
-  /* ── SHOT 2: Front left tyre close-up — camera outside wheel arch */
   {
     p:0.24, hold:0.62, isCloseUp:true,
     pos:new THREE.Vector3( -10.0,  0.55,   3.5),
-    tar:new THREE.Vector3( -4.5,  0.1,  3.5),
+    tar:new THREE.Vector3(  -4.5,  0.1,   3.5),
     label:'Front Tyre · Left · Pirelli P Zero Corsa'
   },
-  /* ── SHOT 3: Left side full profile */
   {
     p:0.37, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3( -17.0,  2.20,   0.0),
-    tar:new THREE.Vector3(  0.0,  0.9,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.9,   0.0),
     label:''
   },
-  /* ── SHOT 4: Rear left tyre close-up */
   {
     p:0.50, hold:0.62, isCloseUp:true,
     pos:new THREE.Vector3( -10.0,  0.55,  -3.5),
-    tar:new THREE.Vector3( -4.5,  0.1, -3.5),
+    tar:new THREE.Vector3(  -4.5,  0.1,  -3.5),
     label:'Rear Tyre · Left · 305/30 ZR20'
   },
-  /* ── SHOT 5: Rear 3/4 — diffuser and wing */
   {
     p:0.63, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3( -11.0,  3.00, -12.5),
-    tar:new THREE.Vector3(  0.0,  0.8,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.8,   0.0),
     label:''
   },
-  /* ── SHOT 6: Dead straight rear */
   {
     p:0.74, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3(   0.0,  2.20, -16.0),
-    tar:new THREE.Vector3(  0.0,  0.7,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.7,   0.0),
     label:''
   },
-  /* ── SHOT 7: Right rear 3/4 — quarter panel */
   {
     p:0.85, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3(  15.0,  2.00,  -8.0),
-    tar:new THREE.Vector3(  0.0,  0.7,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.7,   0.0),
     label:''
   },
-  /* ── SHOT 8: High overhead hero */
   {
     p:1.00, hold:0.60, isCloseUp:false,
     pos:new THREE.Vector3(   2.0, 16.00,   4.0),
-    tar:new THREE.Vector3(  0.0,  0.0,  0.0),
+    tar:new THREE.Vector3(   0.0,  0.0,   0.0),
     label:''
   },
 ];
@@ -727,25 +692,19 @@ eagleLoader.load('animated_eagle.glb',
   err => { console.warn('Eagle load failed:', err); onLoaded(); }
 );
 
-/* ─── COLOUR CONSTANTS — OBSIDIAN BLACK ─── */
-/* Metallic black = very dark base + high metalness + high clearcoat.
-   The "colour" is essentially the reflections of the lights.
-   Hero panels: mirror-gloss obsidian
-   Deep panels: flat-black for maximum depth contrast
-   Wheels: slightly lighter gunmetal — differentiated from body */
-const OBSIDIAN_HERO  = new THREE.Color(0x0A0A0E);  /* near-black with faint blue-steel cast */
-const OBSIDIAN_DEEP  = new THREE.Color(0x050507);  /* absolute black for recesses */
-const GUNMETAL_WHEEL = new THREE.Color(0x111318);  /* dark gunmetal, slight shimmer */
-const TYRE_RUBBER    = new THREE.Color(0x080808);  /* flat rubber black */
-const CARBON_BLACK   = new THREE.Color(0x0C0C10);  /* carbon weave */
+/* ─── COLOUR CONSTANTS ─── */
+const OBSIDIAN_HERO  = new THREE.Color(0x0A0A0E);
+const OBSIDIAN_DEEP  = new THREE.Color(0x050507);
+const GUNMETAL_WHEEL = new THREE.Color(0x111318);
+const TYRE_RUBBER    = new THREE.Color(0x080808);
+const CARBON_BLACK   = new THREE.Color(0x0C0C10);
 
 /* ─── MCLAREN W1 ─── */
 let car = null, carRotY = 0, carFloorY = 0, carMixer = null;
 const CAR_ROT_SPEED = 0.16;
 
-/* Close-up rotation freeze state */
 let carRotFrozen = false;
-let carRotFreezeTarget = 0;  /* the Y angle the car locks to during close-up */
+let carRotFreezeTarget = 0;
 
 const carLoader = new GLTFLoader();
 carLoader.setDRACOLoader(draco);
@@ -771,7 +730,6 @@ carLoader.load('mclaren_w1.glb',
 
         const nm = (c.name + ' ' + (m.name || '')).toLowerCase();
 
-        /* ── GLASS ── */
         const isGlass = nm.includes('glass') || nm.includes('windsh') || nm.includes('window') || nm.includes('lens') || nm.includes('screen');
         if (isGlass) {
           m.transparent = true; m.opacity = 0.15;
@@ -781,7 +739,6 @@ carLoader.load('mclaren_w1.glb',
           m.needsUpdate = true; return;
         }
 
-        /* ── TYRES / RUBBER ── */
         const isTyre = nm.includes('tyre') || nm.includes('tire') || nm.includes('rubber');
         if (isTyre) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
@@ -790,28 +747,24 @@ carLoader.load('mclaren_w1.glb',
           m.envMapIntensity = 0.05; m.needsUpdate = true; return;
         }
 
-        /* ── WHEELS / RIMS — dark gunmetal ── */
         const isWheel = nm.includes('wheel') || nm.includes('rim') || nm.includes('spoke') || nm.includes('alloy') || nm.includes('hub');
         if (isWheel) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
           m.color = GUNMETAL_WHEEL.clone();
-          m.roughness = 0.18;
-          m.metalness = 0.88;
+          m.roughness = 0.18; m.metalness = 0.88;
           m.envMapIntensity = 2.5;
           if (m.isMeshPhysicalMaterial) { m.clearcoat = 0.9; m.clearcoatRoughness = 0.04; }
           m.needsUpdate = true; return;
         }
 
-        /* ── BRAKE / CALIPER — silver/grey, not coloured on black car ── */
         const isBrake = nm.includes('brake') || nm.includes('caliper') || nm.includes('rotor') || nm.includes('disc');
         if (isBrake) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
-          m.color = new THREE.Color(0x888888); /* bare metal calipers */
+          m.color = new THREE.Color(0x888888);
           m.roughness = 0.4; m.metalness = 0.7;
           m.envMapIntensity = 1.2; m.needsUpdate = true; return;
         }
 
-        /* ── CARBON TRIM / DIFFUSER ── */
         const isCarbon = nm.includes('carbon') || nm.includes('diffuser') || nm.includes('splitter') || nm.includes('undertray') || nm.includes('floor');
         if (isCarbon) {
           if (!m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) { m.needsUpdate = true; return; }
@@ -820,7 +773,6 @@ carLoader.load('mclaren_w1.glb',
           m.envMapIntensity = 2.2; m.needsUpdate = true; return;
         }
 
-        /* ── LIGHTS — cool blue-white DRL / LED on black car ── */
         const isLight = nm.includes('light') || nm.includes('lamp') || nm.includes('tail') || nm.includes('head') || nm.includes('led');
         if (isLight) {
           if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
@@ -831,15 +783,6 @@ carLoader.load('mclaren_w1.glb',
           m.needsUpdate = true; return;
         }
 
-        /* ── BODY PANELS — Obsidian Metallic Black ──────────────────
-           Paint model:
-           • metalness=0.85 — metallic flake in the black paint
-           • roughness=0.06 — near-mirror surface
-           • clearcoat=1.0 — thick automotive lacquer (Physical only)
-           • clearcoatRoughness=0.018 — glass-smooth clearcoat
-           • envMapIntensity=3.5 — maximise environment reflections
-           The result: panels reflect light as moving pools of white/blue,
-           with near-black between them. Deep panels stay matte-black. ── */
         if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
           const isDeep = nm.includes('under') || nm.includes('inner') || nm.includes('interior') || nm.includes('seat') || nm.includes('dash') || nm.includes('cabin') || nm.includes('sill') || nm.includes('floor');
           m.color = isDeep ? OBSIDIAN_DEEP.clone() : OBSIDIAN_HERO.clone();
@@ -901,8 +844,6 @@ function updateUI(p) {
   document.getElementById('pb').style.width = (p * 100) + '%';
 }
 
-
-
 /* ─── RESIZE ─── */
 window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
@@ -923,21 +864,15 @@ function animate() {
   if (!isDragging && Math.abs(touchVelPx) > 0.02) {
     const flingDelta = touchVelPx / window.innerHeight * 0.32;
     targetS   = Math.max(0, Math.min(1, targetS + flingDelta));
-    touchVelPx *= 0.70;
+    touchVelPx *= 0.78;
     if (Math.abs(touchVelPx) < 0.005) touchVelPx = 0;
   }
 
   /* ── Adaptive lerp ── */
-  {
-    const gap = targetS - currentS;
-    // Mobile drag: very fast lerp (near-instant, no perceptible lag, no scene cuts)
-    // Wheel/fling: standard smooth lerp
-    const lf = isMobileDrag
-      ? 0.55
-      : (Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR);
-    currentS += gap * lf;
-    if (Math.abs(gap) < 0.00002) currentS = targetS;
-  }
+  const gap = targetS - currentS;
+  const lf  = Math.abs(gap) > 0.08 ? LERP_FAR : LERP_NEAR;
+  currentS += gap * lf;
+  if (Math.abs(gap) < 0.00002) currentS = targetS;
   const s = currentS;
 
   updateUI(s);
@@ -963,11 +898,7 @@ function animate() {
     eagleGroup.scale.setScalar(1);
   }
 
-  /* ── CAR — rotation logic ──────────────────────────────────────────
-     During a close-up shot (isCloseUp=true):
-       • In the HOLD phase (camera still): car rotation freezes.
-       • In the MOVE phase (camera transitioning out): rotation resumes.
-     Normal shots: car rotates continuously. ── */
+  /* ── CAR ── */
   if (car) {
     car.visible = true;
     car.position.y = carFloorY;
@@ -977,7 +908,6 @@ function animate() {
     if (s >= ZONES.ORBIT_START) {
       const orbitT = (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START);
 
-      /* Find current shot segment */
       let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1];
       for (let i = 0; i < CAR_SHOTS.length - 1; i++) {
         if (orbitT >= CAR_SHOTS[i].p && orbitT <= CAR_SHOTS[i+1].p) {
@@ -989,9 +919,7 @@ function animate() {
       const holdFrac = shotA.hold ?? 0.65;
       const inHoldPhase = rawT <= holdFrac;
 
-      /* Freeze rotation during close-up hold */
       if (shotA.isCloseUp && inHoldPhase) {
-        /* Lock to current angle when freeze begins */
         if (!carRotFrozen) {
           carRotFrozen = true;
           carRotFreezeTarget = carRotY;
@@ -1013,7 +941,7 @@ function animate() {
 
   /* ─── CAMERA ─── */
   if (s < ZONES.SWOOP_PAST) {
-    const closeBlend = s < 0.12 ? 0 : Math.min((s - 0.12) / (ZONES.SWOOP_PAST - 0.12), 1);
+    const closeBlend = s < 0.05 ? 0 : Math.min((s - 0.05) / (ZONES.SWOOP_PAST - 0.05), 1);
     const cb = closeBlend * closeBlend * (3 - 2 * closeBlend);
     const BACK = 32 + (16 - 32) * cb;
     const UP   = 12 + ( 5 - 12) * cb;
@@ -1024,7 +952,7 @@ function animate() {
     _camDesV.y += UP;
     _lateralV.crossVectors(_eagDir, _worldUp).normalize();
     _camDesV.addScaledVector(_lateralV, cb * 2.0);
-    camera.position.lerp(_camDesV, MOB ? 0.12 : (0.040 + cb * 0.035));
+    camera.position.lerp(_camDesV, 0.040 + cb * 0.035);
     _camLookAt.copy(_ep).addScaledVector(_eagDir, 4);
     _camLookAt.lerp(new THREE.Vector3(0, 0.4, 0), cb * 0.35);
     camera.lookAt(_camLookAt);
@@ -1034,7 +962,7 @@ function animate() {
     const t2 = (s - ZONES.SWOOP_PAST) / (ZONES.CAM_SETTLE - ZONES.SWOOP_PAST);
     const ease2 = t2 * t2 * (3 - 2 * t2);
     const carFacingPos = MOB ? _camDesV.set(-6, 4, 20) : _camDesV.set(-7, 4, 22);
-    camera.position.lerp(carFacingPos, MOB ? 0.35 : 0.14);
+    camera.position.lerp(carFacingPos, 0.10 + ease2 * 0.10);
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
 
@@ -1042,12 +970,11 @@ function animate() {
     const t3 = (s - ZONES.CAM_SETTLE) / (ZONES.ORBIT_START - ZONES.CAM_SETTLE);
     const ease3 = t3 * t3 * (3 - 2 * t3);
     const settlePos = MOB ? _camDesV.set(0, 3, 18) : _camDesV.set(0, 2.8, 16);
-    camera.position.lerp(settlePos, MOB ? 0.35 : 0.12);
+    camera.position.lerp(settlePos, 0.09 + ease3 * 0.08);
     camera.lookAt(0, 0.5, 0);
     updateShotLabel('');
 
   } else {
-    /* ── Cinematic shot sequence ── */
     const orbitT = (s - ZONES.ORBIT_START) / (1.0 - ZONES.ORBIT_START);
 
     let shotA = CAR_SHOTS[0], shotB = CAR_SHOTS[1];
@@ -1069,7 +996,6 @@ function animate() {
     }
     const ease = localT * localT * (3 - 2 * localT);
 
-    /* FOV: telephoto for close-up tyre shots */
     const isTyreShotA = !!(shotA.isCloseUp);
     const isTyreShotB = !!(shotB.isCloseUp);
     const targetFOV = (isTyreShotA && localT < 0.7) || (isTyreShotB && localT > 0.3 && ease > 0.4) ? 22 : 48;
@@ -1082,12 +1008,10 @@ function animate() {
     const lerpSpeed = localT === 0.0 ? 0.07 : 0.022;
     camera.position.lerp(_camDesV, lerpSpeed);
 
-    /* Ellipsoid clamp — car is longer in Z than X, enforce axis-scaled exclusion.
-       Scale camera into ellipsoid space, if inside push to surface, scale back. */
     {
-      const _ex = camera.position.x / 7.0;   // half-width safety margin
-      const _ey = Math.max(camera.position.y, 0.4) / 3.5;  // never below floor
-      const _ez = camera.position.z / 9.0;   // half-length safety margin
+      const _ex = camera.position.x / 7.0;
+      const _ey = Math.max(camera.position.y, 0.4) / 3.5;
+      const _ez = camera.position.z / 9.0;
       const _er = Math.sqrt(_ex*_ex + _ey*_ey + _ez*_ez);
       if (_er < 1.0) {
         const _ef = 1.0 / Math.max(_er, 0.001);
@@ -1121,7 +1045,6 @@ function animate() {
   spokeMat.uniforms.uAngle.value = carRotY;
   edgeRing.material.opacity = 0.08 + Math.sin(t * 1.3) * 0.04;
 
-  /* Under-car and accent light animation */
   underL.intensity  = 2.2 + Math.sin(t * 1.2) * 0.4;
   rimPt.intensity   = 1.2 + Math.sin(t * 2.1) * 0.2;
   topL.intensity    = 1.4 + Math.sin(t * 0.9) * 0.2;
@@ -1132,3 +1055,5 @@ animate();
 </script>
 </body>
 </html>
+HTMLEOF
+echo "Done"

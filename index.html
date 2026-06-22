@@ -175,6 +175,27 @@ import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+/* ── Global failsafe: if ANYTHING throws before the normal loader logic
+   gets a chance to run, show a real message instead of hanging forever
+   on the "Initialising…" screen. This must be registered first, before
+   any THREE/WebGL code that could throw synchronously. ── */
+let _failsafeShown = false;
+function _showFailMsg(msg){
+  const ltEl0 = document.getElementById('lt');
+  if (ltEl0) ltEl0.textContent = msg;
+  if (_failsafeShown) return;
+  _failsafeShown = true;
+  setTimeout(() => { document.getElementById('ld')?.classList.add('done'); }, 7000);
+}
+window.addEventListener('error', e => {
+  console.error('Caught error:', e.error || e.message);
+  _showFailMsg('Could not start 3D view. If you use Brave, try lowering Shields for this site (click the lion icon → Shields settings), or open this page in Chrome/Firefox/Edge.');
+});
+window.addEventListener('unhandledrejection', e => {
+  console.error('Caught rejection:', e.reason);
+  _showFailMsg('Could not start 3D view. If you use Brave, try lowering Shields for this site (click the lion icon → Shields settings), or open this page in Chrome/Firefox/Edge.');
+});
+
 /* ── Mobile detection (live) ── */
 const isMob = () => window.innerWidth < 768;
 
@@ -216,11 +237,18 @@ window.addEventListener('touchend',()=>{ isDragging=false; },{passive:true});
 
 /* ── Renderer ── */
 const MOB_NOW = isMob();
-const renderer = new THREE.WebGLRenderer({
-  antialias: false,                          /* OFF on all — tiny visual diff, big perf gain */
-  powerPreference: 'high-performance',
-  stencil: false, depth: true
-});
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({
+    antialias: false,                          /* OFF on all — tiny visual diff, big perf gain */
+    powerPreference: 'high-performance',
+    stencil: false, depth: true
+  });
+} catch (renErr) {
+  console.error('WebGL renderer creation failed:', renErr);
+  _showFailMsg('WebGL is blocked or unavailable in this browser/tab. If you use Brave, click the lion icon and lower Shields for this site, or try Chrome/Firefox/Edge.');
+  throw renErr;
+}
 renderer.setPixelRatio(MOB_NOW ? 1 : Math.min(devicePixelRatio, 1.5)); /* mobile: native 1:1 */
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;

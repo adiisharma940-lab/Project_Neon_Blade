@@ -69,8 +69,8 @@ canvas{position:fixed;inset:0;display:block;}
 #ld.done{opacity:0;visibility:hidden;pointer-events:none;}
 .ll{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,7vw,3.2rem);letter-spacing:.5em;color:#aaccee;}
 .lbw{width:min(220px,65vw);height:1px;background:rgba(255,255,255,.08);}
-.lb{height:100%;background:linear-gradient(90deg,#334466,#6688bb);width:0%;transition:width .25s;}
-.lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#90a8c0;}
+.lb{height:100%;background:linear-gradient(90deg,#334466,#6688bb);width:0%;transition:width .25s,background .4s;}
+.lt{font-family:'Cinzel',serif;font-size:clamp(.48rem,1.4vw,.56rem);letter-spacing:.3em;color:#90a8c0;max-width:80vw;text-align:center;line-height:1.6;}
 #vig{position:fixed;inset:0;z-index:9;pointer-events:none;background:radial-gradient(ellipse at center,transparent 22%,rgba(5,5,8,.85) 100%);}
 #cta{position:fixed;bottom:2.5vh;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .9s;white-space:nowrap;z-index:15;pointer-events:none;}
 #cta.vis{opacity:1;}
@@ -163,6 +163,30 @@ canvas{position:fixed;inset:0;display:block;}
 </div>
 <audio id="aud" loop preload="auto"><source src="wow.mp3" type="audio/mpeg"/></audio>
 
+<!--
+  WATCHDOG — deliberately NOT type="module" and placed BEFORE the module
+  script below. This is the important fix: everything that used to catch
+  and report errors lived *inside* the module, after its `import`
+  statements. If those imports fail to resolve (CDN blocked by an
+  ad-blocker/Shields, offline, slow network, jsdelivr down, etc.) the
+  module never runs a single line — including its own error handling —
+  and the page hangs on "Initialising…" forever with no visible error.
+  This watchdog runs independently of the module and can't be silenced
+  by a failed import.
+-->
+<script>
+(function(){
+  window.__W1_MODULE_STARTED = false;
+  setTimeout(function(){
+    if (window.__W1_MODULE_STARTED) return; // module booted fine, nothing to do
+    var lt = document.getElementById('lt');
+    var lb = document.getElementById('lb');
+    if (lt) lt.textContent = 'The 3D scene failed to load (likely blocked by an ad-blocker, browser Shields, or a network/CDN issue). Try disabling content-blocking for this page, or open it in a different browser, then reload.';
+    if (lb) { lb.style.width = '100%'; lb.style.background = '#7a3030'; }
+  }, 9000);
+})();
+</script>
+
 <script type="importmap">
 {"imports":{
   "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -175,10 +199,11 @@ import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ── Global failsafe: if ANYTHING throws before the normal loader logic
-   gets a chance to run, show a real message instead of hanging forever
-   on the "Initialising…" screen. This must be registered first, before
-   any THREE/WebGL code that could throw synchronously. ── */
+/* Tell the watchdog the module actually started executing (imports resolved). */
+window.__W1_MODULE_STARTED = true;
+
+/* ── In-module failsafe: if ANYTHING throws once we're running, show a
+   real message instead of hanging forever on the "Initialising…" screen. ── */
 let _failsafeShown = false;
 function _showFailMsg(msg){
   const ltEl0 = document.getElementById('lt');
@@ -291,12 +316,19 @@ rimL.position.set(0,10,-14); scene.add(rimL);
 const underL = new THREE.PointLight(0x2244aa, 2.2, 12);
 underL.position.set(0,-0.8,0); scene.add(underL);
 
-/* ── Floor (simplified on mobile) ── */
-scene.add(Object.assign(
-  new THREE.Mesh(new THREE.PlaneGeometry(400,400),
-    new THREE.MeshStandardMaterial({color:0x04050a,roughness:0.9,metalness:0.05})),
-  {rotation:{x:-Math.PI/2,y:0,z:0}, position:{x:0,y:-1.08,z:0}}
-));
+/* ── Floor (simplified on mobile) ──
+   FIX: previously built with Object.assign(mesh, {rotation:{...}, position:{...}}),
+   which overwrites Three.js's real Euler/Vector3 instances on the mesh with plain
+   {x,y,z} objects. That breaks the internal Euler→Quaternion sync, so the floor's
+   rotation is silently never applied (renders flat/vertical instead of as ground).
+   Set the properties normally instead. */
+const floorMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(400,400),
+  new THREE.MeshStandardMaterial({color:0x04050a,roughness:0.9,metalness:0.05})
+);
+floorMesh.rotation.x = -Math.PI/2;
+floorMesh.position.set(0,-1.08,0);
+scene.add(floorMesh);
 
 const discMesh = new THREE.Mesh(
   new THREE.CircleGeometry(5.5, MOB_NOW ? 48 : 128),
@@ -465,9 +497,10 @@ function onLoaded(){ loadedCount++; if(loadedCount>=TOTAL_LOADS) dismissLoader()
 setTimeout(dismissLoader,18000);
 
 /* Eagle */
-new GLTFLoader().setDRACOLoader(draco) && (() => {
-  const el = new GLTFLoader(); el.setDRACOLoader(draco);
-  el.load('animated_eagle.glb', gltf=>{
+{
+  const eagleLoader = new GLTFLoader();
+  eagleLoader.setDRACOLoader(draco);
+  eagleLoader.load('animated_eagle.glb', gltf=>{
     const model=gltf.scene;
     const box=new THREE.Box3().setFromObject(model), sz=box.getSize(new THREE.Vector3());
     const s=3.0/Math.max(sz.x,sz.y,sz.z); model.scale.setScalar(s);
@@ -483,7 +516,7 @@ new GLTFLoader().setDRACOLoader(draco) && (() => {
     if(gltf.animations?.length){ eagleMixer=new THREE.AnimationMixer(model); eagleMixer.clipAction(gltf.animations[0]).play(); }
     eagleInner.add(model); setP(50,'Loading McLaren W1…'); onLoaded();
   }, undefined, err=>{ console.warn('Eagle:',err); onLoaded(); });
-})();
+}
 
 /* Car */
 const OBSIDIAN_HERO=new THREE.Color(0x0A0A0E), OBSIDIAN_DEEP=new THREE.Color(0x050507);
@@ -492,9 +525,10 @@ const CARBON_BLACK=new THREE.Color(0x0C0C10);
 let car=null, carRotY=0, carFloorY=0, carMixer=null, carRotFrozen=false, carRotFreezeTarget=0;
 const CAR_ROT_SPEED=0.16;
 
-(() => {
-  const cl = new GLTFLoader(); cl.setDRACOLoader(draco);
-  cl.load('mclaren_w1.glb', gltf=>{
+{
+  const carLoader = new GLTFLoader();
+  carLoader.setDRACOLoader(draco);
+  carLoader.load('mclaren_w1.glb', gltf=>{
     car=gltf.scene;
     const box=new THREE.Box3().setFromObject(car), sz=box.getSize(new THREE.Vector3()), cn=box.getCenter(new THREE.Vector3());
     const s=9.5/Math.max(sz.x,sz.y,sz.z); car.scale.setScalar(s);
@@ -539,7 +573,7 @@ const CAR_ROT_SPEED=0.16;
     car.visible=true; scene.add(car); setP(100,'Ready'); onLoaded();
   }, p=>{ if(p.total) setP(50+(p.loaded/p.total)*50,'Loading McLaren W1…'); },
   err=>{ console.error('Car:',err); setP(100,'Ready'); onLoaded(); });
-})();
+}
 
 /* ── Audio ── */
 const aud=document.getElementById('aud'); let audOn=false;

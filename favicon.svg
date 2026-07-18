@@ -1,0 +1,31 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#101114"/>
+      <stop offset="100%" stop-color="#1c1d22"/>
+    </linearGradient>
+    <linearGradient id="papaya" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF8700"/>
+      <stop offset="100%" stop-color="#FF5F00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Badge background -->
+  <circle cx="50" cy="50" r="48" fill="url(#bg)"/>
+  <circle cx="50" cy="50" r="48" fill="none" stroke="#FF8700" stroke-width="2" opacity="0.6"/>
+
+  <!-- Speed chevrons (McLaren-style motion marks) -->
+  <path d="M8 62 L24 62 L16 50 L8 62 Z" fill="#FF8700" opacity="0.55"/>
+  <path d="M14 72 L30 72 L22 60 L14 72 Z" fill="#FF8700" opacity="0.85"/>
+
+  <!-- Monogram H, built from angled speed-slashed bars -->
+  <g>
+    <path d="M32 24 L44 24 L44 44 L58 44 L58 24 L70 24 L70 76 L58 76 L58 54 L44 54 L44 76 L32 76 Z"
+          fill="url(#papaya)"/>
+    <!-- diagonal racing slash across the crossbar -->
+    <path d="M40 44 L62 44 L58 54 L36 54 Z" fill="#101114" opacity="0.85"/>
+  </g>
+
+  <!-- Underline accent -->
+  <rect x="30" y="82" width="40" height="3" rx="1.5" fill="#FF8700"/>
+</svg>
